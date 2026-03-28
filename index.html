@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>koels.site — Links</title>
+<title>koels</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
@@ -206,15 +206,32 @@ body::after{
       </div>
     </div>
 
-    <!-- spotify row -->
-    <div id="spotify-row" style="display:none;margin:0 14px 14px;padding-top:12px;border-top:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:#1db954;flex-shrink:0;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-        <div style="min-width:0;">
-          <div id="spotify-song" style="font-family:var(--mono);font-size:0.65rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-          <div id="spotify-artist" style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+    <!-- activity rows: always reserve space to prevent jitter -->
+    <div id="activity-rows" style="margin:0 14px;border-top:1px solid var(--border);min-height:0;overflow:hidden;transition:min-height 0.3s ease;">
+
+      <!-- spotify row -->
+      <div id="spotify-row" style="display:none;padding:10px 0 0;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:#1db954;flex-shrink:0;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+          <div style="min-width:0;">
+            <div id="spotify-song" style="font-family:var(--mono);font-size:0.65rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="spotify-artist" style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          </div>
         </div>
       </div>
+
+      <!-- game row -->
+      <div id="game-row" style="display:none;padding:10px 0 0;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:var(--accent2);flex-shrink:0;"><path d="M21 6H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+          <div style="min-width:0;">
+            <div id="game-name" style="font-family:var(--mono);font-size:0.65rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);">playing</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="activity-spacer" style="height:0;transition:height 0.3s ease;"></div>
     </div>
 
   </div>
@@ -300,6 +317,18 @@ body::after{
   const spotifyRow = document.getElementById('spotify-row');
   const spotifySong = document.getElementById('spotify-song');
   const spotifyArtist = document.getElementById('spotify-artist');
+  const gameRow = document.getElementById('game-row');
+  const gameName = document.getElementById('game-name');
+  const activityRows = document.getElementById('activity-rows');
+  const activitySpacer = document.getElementById('activity-spacer');
+
+  function updateActivitySpacing(hasAny){
+    if(hasAny){
+      activityRows.style.paddingBottom = '12px';
+    } else {
+      activityRows.style.paddingBottom = '0';
+    }
+  }
 
   const STATUS = {
     online:  { color: '#00ff88', label: 'online' },
@@ -333,14 +362,28 @@ body::after{
       cardLabel.textContent = label;
       cardLabel.style.color = s !== 'offline' ? color : 'var(--dim)';
 
-      // status text / spotify
+      // spotify
+      let hasActivity = false;
       if(data.listening_to_spotify && data.spotify){
         spotifySong.textContent = data.spotify.song;
         spotifyArtist.textContent = data.spotify.artist;
         spotifyRow.style.display = 'block';
+        hasActivity = true;
       } else {
         spotifyRow.style.display = 'none';
       }
+
+      // game activity
+      const game = data.activities && data.activities.find(a => a.type === 0);
+      if(game){
+        gameName.textContent = game.name;
+        gameRow.style.display = 'block';
+        hasActivity = true;
+      } else {
+        gameRow.style.display = 'none';
+      }
+
+      updateActivitySpacing(hasActivity);
 
       // username
       const user = data.discord_user;
