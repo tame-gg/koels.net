@@ -5,152 +5,489 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>koels.site — Links</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2303030a'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%236c5ce7'/%3E%3Cstop offset='100%25' stop-color='%23a29bfe'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cline x1='7' y1='25' x2='22' y2='10' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpolyline points='13,8 24,8 24,19' fill='none' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --bg:#03030a;--bg2:#08080f;--surface:#0f0f1a;--surface2:#141420;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
-  --text:#f0eeff;--muted:rgba(240,238,255,0.68);--dim:rgba(240,238,255,0.4);
-  --accent:#6c5ce7;--accent2:#a29bfe;--lime:#00ff88;--red:#ff4757;
-  --white:#ffffff;
-  --sans:"Inter",system-ui,sans-serif;--mono:"JetBrains Mono",monospace;
-  --ease:cubic-bezier(0.16,1,0.3,1);
+/* =====================================================
+   DARK THEME
+   ===================================================== */
+:root, [data-theme="dark"] {
+  --ease: cubic-bezier(0.16,1,0.3,1);
+  --avatar-ring: conic-gradient(from 0deg,#6c5ce7,transparent 30%,transparent 70%,#a29bfe);
+  --toggle-bg: #141420;
+  --toggle-border: rgba(255,255,255,0.12);
+  --toggle-inactive: rgba(240,238,255,0.35);
+  --toggle-inactive-hover: rgba(240,238,255,0.7);
 }
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;font-size:17px}
-body{
-  font-family:var(--sans);background:var(--bg);color:var(--text);
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:40px 20px;
+[data-theme="aero"] {
+  --ease: cubic-bezier(0.16,1,0.3,1);
+  --avatar-ring: conic-gradient(from 0deg,#7dd3fc,#fff 30%,#bae6fd 70%,#38bdf8);
+  --toggle-bg: rgba(255,255,255,0.6);
+  --toggle-border: rgba(255,255,255,0.95);
+  --toggle-inactive: #64a8c8;
+  --toggle-inactive-hover: #1a5a8a;
 }
 
-/* subtle grid background */
-body::before{
-  content:'';position:fixed;inset:0;
+/* =====================================================
+   RESET
+   ===================================================== */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:17px; }
+
+/* =====================================================
+   BODY
+   ===================================================== */
+body {
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:40px 20px;
+}
+
+[data-theme="dark"] body {
+  font-family:"Inter",system-ui,sans-serif;
+  background:#03030a; color:#f0eeff;
+}
+[data-theme="dark"] body::before {
+  content:''; position:fixed; inset:0;
   background-image:
     linear-gradient(rgba(108,92,231,0.04) 1px,transparent 1px),
     linear-gradient(90deg,rgba(108,92,231,0.04) 1px,transparent 1px);
-  background-size:48px 48px;pointer-events:none;z-index:0;
+  background-size:48px 48px; pointer-events:none; z-index:0;
 }
-
-/* glow blob */
-body::after{
-  content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50%);
-  width:600px;height:400px;
+[data-theme="dark"] body::after {
+  content:''; position:fixed; top:-20%; left:50%; transform:translateX(-50%);
+  width:600px; height:400px;
   background:radial-gradient(ellipse,rgba(108,92,231,0.12) 0%,transparent 70%);
-  pointer-events:none;z-index:0;
+  pointer-events:none; z-index:0;
 }
 
-.container{
-  position:relative;z-index:1;
-  width:100%;max-width:420px;
-  display:flex;flex-direction:column;align-items:center;gap:32px;
+[data-theme="aero"] body {
+  font-family:"Nunito",system-ui,sans-serif;
+  /* classic Frutiger Aero sky */
+  background: linear-gradient(180deg,
+    #dff2ff 0%, #b8e2fb 20%,
+    #9dd6f8 45%, #b6e8fd 70%,
+    #d8f4ff 100%
+  );
+  color:#0d4a80;
+}
+/* large soft light blooms */
+[data-theme="aero"] body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 55% at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 65% at 90% 85%, rgba(160,220,255,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 40% at 65% 8%,  rgba(255,255,255,0.4) 0%, transparent 50%);
+}
+/* bubble orb glows */
+[data-theme="aero"] body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(circle 100px at 7%  68%, rgba(255,255,255,0.5) 0%, rgba(180,225,255,0.1) 55%, transparent 70%),
+    radial-gradient(circle  65px at 93% 22%, rgba(255,255,255,0.45) 0%, rgba(150,210,255,0.1) 55%, transparent 72%),
+    radial-gradient(circle 120px at 52% 92%, rgba(200,240,255,0.3) 0%, transparent 65%),
+    radial-gradient(circle  55px at 78% 52%, rgba(255,255,255,0.3) 0%, transparent 60%);
 }
 
-/* avatar */
-.avatar{
-  width:80px;height:80px;border-radius:50%;
-  border:1px solid var(--border2);
-  background:linear-gradient(135deg,var(--surface2),var(--surface));
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:1.4rem;font-weight:700;
-  color:var(--accent2);letter-spacing:-0.02em;
-  position:relative;overflow:hidden;
+/* =====================================================
+   LAYOUT
+   ===================================================== */
+.container {
+  position:relative; z-index:1;
+  width:100%; max-width:420px;
+  display:flex; flex-direction:column; align-items:center;
 }
-.avatar::before{
-  content:'';position:absolute;inset:-1px;border-radius:50%;
-  background:conic-gradient(from 0deg,var(--accent),transparent 30%,transparent 70%,var(--accent2));
-  z-index:-1;animation:spin 6s linear infinite;
+[data-theme="dark"] .container { gap:24px; }
+[data-theme="aero"] .container { gap:14px; }
+
+/* =====================================================
+   THEME TOGGLE
+   ===================================================== */
+.theme-toggle {
+  position:fixed; top:14px; right:14px; z-index:200;
+  display:flex; align-items:center;
+  background:var(--toggle-bg);
+  border:1px solid var(--toggle-border);
+  border-radius:999px; padding:3px; gap:2px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
 }
-.avatar-inner{
-  width:76px;height:76px;border-radius:50%;
-  background:var(--surface);display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:1.2rem;font-weight:700;color:var(--accent2);
+[data-theme="dark"] .theme-toggle { box-shadow:0 2px 14px rgba(0,0,0,0.45); }
+[data-theme="aero"] .theme-toggle { box-shadow:0 4px 20px rgba(80,160,230,0.2), inset 0 1px 0 #fff; }
+
+.theme-btn {
+  display:flex; align-items:center; gap:5px;
+  padding:5px 13px; border-radius:999px;
+  font-size:0.58rem; letter-spacing:0.07em; text-transform:uppercase; font-weight:700;
+  border:none; cursor:pointer; background:transparent;
+  color:var(--toggle-inactive);
+  transition:all 0.2s ease;
+  font-family:inherit;
+}
+.theme-btn:hover { color:var(--toggle-inactive-hover); }
+.theme-btn svg { width:10px; height:10px; fill:currentColor; flex-shrink:0; }
+[data-theme="dark"] .theme-btn.active { background:#6c5ce7; color:#fff; box-shadow:0 1px 8px rgba(108,92,231,0.5); }
+[data-theme="aero"] .theme-btn.active {
+  background:linear-gradient(160deg,#4ab8f7 0%,#1a7fd4 100%);
+  color:#fff;
+  box-shadow:0 3px 12px rgba(30,100,210,0.35), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,80,160,0.2);
 }
 
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* profile */
-.profile{text-align:center;display:flex;flex-direction:column;gap:8px}
-.name{
-  font-family:var(--mono);font-size:1.1rem;font-weight:700;
-  letter-spacing:0.05em;color:var(--white);
+/* =====================================================
+   AVATAR — DARK
+   ===================================================== */
+[data-theme="dark"] .avatar {
+  width:80px; height:80px; border-radius:50%;
+  background:#141420; border:1px solid rgba(255,255,255,0.12);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
 }
-.handle{
-  font-family:var(--mono);font-size:0.72rem;
-  color:var(--dim);letter-spacing:0.12em;text-transform:uppercase;
+[data-theme="dark"] .avatar::before {
+  content:''; position:absolute; inset:-1px; border-radius:50%;
+  background:var(--avatar-ring); z-index:-1; animation:spin 6s linear infinite;
+}
+[data-theme="dark"] .avatar-inner {
+  width:76px; height:76px; border-radius:50%;
+  background:#0f0f1a;
+  display:flex; align-items:center; justify-content:center;
+  font-family:"JetBrains Mono",monospace; font-size:1.2rem; font-weight:700; color:#a29bfe;
 }
 
-/* links */
-.links{width:100%;display:flex;flex-direction:column;gap:10px}
+/* =====================================================
+   AVATAR — AERO
+   ===================================================== */
+[data-theme="aero"] .avatar {
+  width:90px; height:90px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  background:linear-gradient(145deg,#fff 0%,#b8e4f9 100%);
+  border:2.5px solid rgba(255,255,255,0.92);
+  box-shadow:0 6px 26px rgba(30,120,220,0.28), 0 2px 6px rgba(30,120,220,0.14), inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 6px rgba(100,180,240,0.3);
+}
+[data-theme="aero"] .avatar::before {
+  content:''; position:absolute; inset:-2px; border-radius:50%;
+  background:var(--avatar-ring); z-index:-1; animation:spin 8s linear infinite;
+}
+[data-theme="aero"] .avatar::after {
+  content:''; position:absolute;
+  top:5px; left:14px; right:14px; height:36%;
+  border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.75) 0%,transparent 100%);
+  pointer-events:none;
+}
+[data-theme="aero"] .avatar-inner {
+  width:84px; height:84px; border-radius:50%;
+  background:linear-gradient(145deg,#e8f6ff,#cce8fa);
+  display:flex; align-items:center; justify-content:center;
+  font-family:"Nunito",sans-serif; font-size:1.3rem; font-weight:800; color:#1a6baa;
+}
 
-.link-btn{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 18px;border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--surface);
-  color:var(--muted);
-  font-family:var(--mono);font-size:0.78rem;
-  letter-spacing:0.08em;text-transform:uppercase;
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* =====================================================
+   PROFILE
+   ===================================================== */
+.profile { text-align:center; display:flex; flex-direction:column; }
+[data-theme="dark"] .profile { gap:6px; }
+[data-theme="aero"] .profile { gap:3px; }
+
+[data-theme="dark"] .name {
+  font-family:"JetBrains Mono",monospace; font-size:1.1rem; font-weight:700;
+  letter-spacing:0.05em; color:#fff;
+}
+[data-theme="aero"] .name {
+  font-family:"Nunito",sans-serif; font-size:1.35rem; font-weight:900;
+  letter-spacing:-0.01em; color:#0d4a80;
+  text-shadow:0 1px 3px rgba(255,255,255,0.8);
+}
+[data-theme="dark"] .handle {
+  font-family:"JetBrains Mono",monospace; font-size:0.72rem;
+  color:rgba(240,238,255,0.4); letter-spacing:0.12em; text-transform:uppercase;
+}
+[data-theme="aero"] .handle {
+  font-family:"Nunito",sans-serif; font-size:0.75rem; font-weight:600;
+  color:#4a90c0; letter-spacing:0.06em; text-transform:uppercase;
+}
+
+/* =====================================================
+   DISCORD CARD — DARK
+   ===================================================== */
+[data-theme="dark"] #discord-card {
+  width:100%; border-radius:12px;
+  border:1px solid rgba(255,255,255,0.07);
+  background:#0f0f1a; overflow:hidden;
+}
+[data-theme="dark"] .card-label {
+  padding:14px 14px 12px;
+  font-family:"JetBrains Mono",monospace; font-size:0.6rem;
+  letter-spacing:0.14em; color:rgba(240,238,255,0.4); text-transform:uppercase;
+}
+[data-theme="dark"] .card-body { padding:0 14px 14px; }
+[data-theme="dark"] .card-name-text {
+  font-family:"JetBrains Mono",monospace; font-size:0.85rem; font-weight:700; color:#fff;
+}
+[data-theme="dark"] .card-username-text {
+  font-family:"JetBrains Mono",monospace; font-size:0.65rem;
+  color:rgba(240,238,255,0.4); letter-spacing:0.05em; margin-bottom:6px;
+}
+[data-theme="dark"] .card-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:20px;
+  border:1px solid rgba(255,255,255,0.1); background:#141420;
+}
+[data-theme="dark"] .card-badge-label {
+  font-family:"JetBrains Mono",monospace; font-size:0.58rem;
+  letter-spacing:0.1em; text-transform:uppercase;
+}
+[data-theme="dark"] #activity-rows { margin:0 14px; border-top:1px solid rgba(255,255,255,0.07); }
+[data-theme="dark"] #spotify-song { font-family:"JetBrains Mono",monospace; font-size:0.65rem; color:#fff; }
+[data-theme="dark"] #spotify-artist { font-family:"JetBrains Mono",monospace; font-size:0.6rem; color:rgba(240,238,255,0.4); }
+[data-theme="dark"] .time-txt { font-family:"JetBrains Mono",monospace; font-size:0.55rem; color:rgba(240,238,255,0.4); }
+[data-theme="dark"] #game-name { font-family:"JetBrains Mono",monospace; font-size:0.65rem; color:#fff; }
+[data-theme="dark"] .game-sub { font-family:"JetBrains Mono",monospace; font-size:0.6rem; color:rgba(240,238,255,0.4); }
+
+/* =====================================================
+   DISCORD CARD — AERO
+   ===================================================== */
+[data-theme="aero"] #discord-card {
+  width:100%; border-radius:22px;
+  border:1.5px solid rgba(255,255,255,0.92);
+  background:linear-gradient(155deg,rgba(255,255,255,0.84) 0%,rgba(215,240,255,0.72) 100%);
+  overflow:hidden;
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 8px 32px rgba(30,100,200,0.13), 0 2px 8px rgba(30,100,200,0.08), inset 0 1.5px 0 #fff, inset 0 -1px 0 rgba(100,180,240,0.15);
+  position:relative;
+}
+[data-theme="aero"] #discord-card::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:44%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.5) 0%,transparent 100%);
+  border-radius:22px 22px 60% 60% / 22px 22px 28px 28px;
+  pointer-events:none;
+}
+[data-theme="aero"] .card-label {
+  padding:14px 16px 10px;
+  font-family:"Nunito",sans-serif; font-size:0.63rem; font-weight:700;
+  letter-spacing:0.1em; color:#4a90c0; text-transform:uppercase;
+}
+[data-theme="aero"] .card-body { padding:0 16px 14px; }
+[data-theme="aero"] .card-name-text {
+  font-family:"Nunito",sans-serif; font-size:0.9rem; font-weight:800; color:#0d4a80;
+}
+[data-theme="aero"] .card-username-text {
+  font-family:"Nunito",sans-serif; font-size:0.68rem; font-weight:600;
+  color:#5a9dc0; letter-spacing:0.04em; margin-bottom:6px;
+}
+[data-theme="aero"] .card-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 12px; border-radius:999px;
+  border:1.5px solid rgba(255,255,255,0.9);
+  background:linear-gradient(180deg,rgba(255,255,255,0.7) 0%,rgba(210,236,255,0.5) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);
+}
+[data-theme="aero"] .card-badge-label {
+  font-family:"Nunito",sans-serif; font-size:0.6rem; font-weight:700;
+  letter-spacing:0.06em; text-transform:uppercase; color:#4a90c0;
+}
+[data-theme="aero"] #activity-rows { margin:0 16px; border-top:1px solid rgba(100,180,240,0.2); }
+[data-theme="aero"] #spotify-song { font-family:"Nunito",sans-serif; font-size:0.68rem; font-weight:700; color:#0d4a80; }
+[data-theme="aero"] #spotify-artist { font-family:"Nunito",sans-serif; font-size:0.62rem; font-weight:600; color:#5a9dc0; }
+[data-theme="aero"] .time-txt { font-family:"Nunito",sans-serif; font-size:0.55rem; font-weight:600; color:#5a9dc0; }
+[data-theme="aero"] #game-name { font-family:"Nunito",sans-serif; font-size:0.68rem; font-weight:700; color:#0d4a80; }
+[data-theme="aero"] .game-sub { font-family:"Nunito",sans-serif; font-size:0.62rem; font-weight:600; color:#5a9dc0; }
+
+/* =====================================================
+   LINK BUTTONS — DARK
+   ===================================================== */
+.links { width:100%; display:flex; flex-direction:column; }
+[data-theme="dark"] .links { gap:10px; }
+[data-theme="aero"] .links { gap:9px; }
+
+[data-theme="dark"] .link-btn {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 18px; border-radius:10px;
+  border:1px solid rgba(255,255,255,0.07);
+  background:#0f0f1a; color:rgba(240,238,255,0.68);
+  font-family:"JetBrains Mono",monospace; font-size:0.78rem;
+  letter-spacing:0.08em; text-transform:uppercase;
   text-decoration:none;
   transition:all 0.2s var(--ease);
-  cursor:pointer;
-  position:relative;overflow:hidden;
+  cursor:pointer; position:relative; overflow:hidden;
 }
-.link-btn::before{
-  content:'';position:absolute;inset:0;
+[data-theme="dark"] .link-btn::before {
+  content:''; position:absolute; inset:0;
   background:linear-gradient(90deg,transparent,rgba(108,92,231,0.06),transparent);
-  transform:translateX(-100%);transition:transform 0.4s var(--ease);
+  transform:translateX(-100%); transition:transform 0.4s var(--ease);
 }
-.link-btn:hover{
-  border-color:var(--border2);color:var(--white);
-  background:var(--surface2);transform:translateY(-1px);
-}
-.link-btn:hover::before{transform:translateX(100%)}
-.link-btn:active{transform:translateY(0)}
+[data-theme="dark"] .link-btn:hover { border-color:rgba(255,255,255,0.12); color:#fff; background:#141420; transform:translateY(-1px); }
+[data-theme="dark"] .link-btn:hover::before { transform:translateX(100%); }
+[data-theme="dark"] .link-btn:active { transform:translateY(0); }
+[data-theme="dark"] .link-arrow { font-size:0.65rem; color:rgba(240,238,255,0.4); transition:transform 0.2s,color 0.2s; }
+[data-theme="dark"] .link-btn:hover .link-arrow { transform:translateX(2px); color:rgba(240,238,255,0.68); }
 
-.link-icon{
-  width:20px;height:20px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
+/* =====================================================
+   LINK BUTTONS — AERO (glossy pill)
+   ===================================================== */
+[data-theme="aero"] .link-btn {
+  display:flex; align-items:center; gap:14px;
+  padding:13px 20px; border-radius:999px;
+  border:1.5px solid rgba(255,255,255,0.92);
+  background:linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(210,236,255,0.74) 52%, rgba(182,222,252,0.65) 100%);
+  color:#1a5a90;
+  font-family:"Nunito",sans-serif; font-size:0.82rem; font-weight:700;
+  letter-spacing:0.02em; text-transform:none;
+  text-decoration:none;
+  transition:all 0.18s var(--ease);
+  cursor:pointer; position:relative; overflow:hidden;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  box-shadow:0 3px 10px rgba(30,100,200,0.12), 0 1px 3px rgba(30,100,200,0.1), inset 0 1.5px 0 #fff, inset 0 -1px 0 rgba(100,160,220,0.2);
 }
-.link-icon svg{width:18px;height:18px;fill:currentColor}
-
-.link-label{flex:1}
-.link-arrow{
-  font-size:0.65rem;color:var(--dim);
-  transition:transform 0.2s var(--ease),color 0.2s;
+/* top gloss shine */
+[data-theme="aero"] .link-btn::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:52%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.58) 0%,transparent 100%);
+  border-radius:999px 999px 0 0; pointer-events:none;
 }
-.link-btn:hover .link-arrow{transform:translateX(2px);color:var(--muted)}
+/* hover shimmer sweep */
+[data-theme="aero"] .link-btn::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.38),transparent);
+  transform:translateX(-100%); transition:transform 0.38s ease;
+}
+[data-theme="aero"] .link-btn:hover {
+  transform:translateY(-2px);
+  background:linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(220,242,255,0.9) 52%,rgba(192,228,255,0.82) 100%);
+  color:#0d3d6e;
+  box-shadow:0 6px 22px rgba(30,100,200,0.2), 0 2px 6px rgba(30,100,200,0.14), inset 0 1.5px 0 #fff, inset 0 -1px 0 rgba(100,160,220,0.25);
+}
+[data-theme="aero"] .link-btn:hover::after { transform:translateX(100%); }
+[data-theme="aero"] .link-btn:active { transform:translateY(0); }
+[data-theme="aero"] .link-arrow { font-size:0.72rem; color:#5ba8d8; transition:transform 0.18s,color 0.18s; }
+[data-theme="aero"] .link-btn:hover .link-arrow { transform:translateX(3px); color:#1a6baa; }
 
-/* footer */
-.footer{
-  font-family:var(--mono);font-size:0.6rem;
-  letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;
-  opacity:0.5;
+/* shared icon */
+.link-icon { width:20px; height:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.link-icon svg { width:18px; height:18px; fill:currentColor; }
+.link-label { flex:1; }
+
+/* =====================================================
+   MUSIC PLAYER (Aero only)
+   ===================================================== */
+#music-player { display:none; width:100%; }
+[data-theme="aero"] #music-player { display:block; }
+
+.music-wrap {
+  border-radius:22px;
+  border:1.5px solid rgba(255,255,255,0.92);
+  background:linear-gradient(155deg,rgba(255,255,255,0.84) 0%,rgba(210,238,255,0.74) 100%);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  padding:15px 18px; display:flex; flex-direction:column; gap:12px;
+  box-shadow:0 8px 28px rgba(30,100,200,0.13), inset 0 1.5px 0 #fff, inset 0 -1px 0 rgba(100,180,240,0.15);
+  position:relative; overflow:hidden;
+}
+.music-wrap::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:42%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.52) 0%,transparent 100%);
+  border-radius:22px 22px 60% 60% / 22px 22px 28px 28px; pointer-events:none;
+}
+.music-top { display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
+
+/* shiny CD disc */
+.music-disc {
+  width:46px; height:46px; border-radius:50%; flex-shrink:0;
+  background:conic-gradient(from 0deg,
+    #b8e0ff 0deg,#fff 30deg,#7ec8f4 80deg,
+    #38a8e8 140deg,#fff 180deg,
+    #90d4f8 240deg,#4ab8f7 300deg,#b8e0ff 360deg
+  );
+  display:flex; align-items:center; justify-content:center;
+  animation:disc-spin 3s linear infinite; animation-play-state:paused;
+  box-shadow:0 3px 12px rgba(30,100,220,0.3), inset 0 1px 2px rgba(255,255,255,0.8);
+}
+.music-disc.playing { animation-play-state:running; }
+.music-disc-hole {
+  width:13px; height:13px; border-radius:50%;
+  background:linear-gradient(145deg,#cce8fa,#e8f5ff);
+  border:1px solid rgba(255,255,255,0.8);
+  box-shadow:inset 0 1px 2px rgba(30,100,200,0.2);
+}
+@keyframes disc-spin { to { transform:rotate(360deg); } }
+
+.music-meta { flex:1; min-width:0; }
+.music-title-text {
+  font-family:"Nunito",sans-serif; font-size:0.78rem; font-weight:800;
+  color:#0d4a80; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.music-sub-text {
+  font-family:"Nunito",sans-serif; font-size:0.62rem; font-weight:600; color:#4a90c0; margin-top:2px;
+}
+.music-controls { display:flex; align-items:center; gap:10px; position:relative; z-index:1; }
+
+/* Wii-style glossy play button */
+.music-play-btn {
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  border:none; cursor:pointer;
+  background:linear-gradient(160deg,#5cc8ff 0%,#1a85d4 60%,#0f6ab8 100%);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 14px rgba(20,100,220,0.4), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,60,140,0.3);
+  transition:all 0.15s ease; position:relative; overflow:hidden;
+}
+.music-play-btn::before {
+  content:''; position:absolute;
+  top:2px; left:6px; right:6px; height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0.45) 0%,transparent 100%);
+  border-radius:50%;
+}
+.music-play-btn:hover { transform:scale(1.08); box-shadow:0 6px 20px rgba(20,100,220,0.5), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,60,140,0.3); }
+.music-play-btn:active { transform:scale(0.96); }
+.music-play-btn svg { width:13px; height:13px; fill:#fff; position:relative; z-index:1; }
+
+.music-progress { flex:1; display:flex; flex-direction:column; gap:5px; }
+.music-track {
+  height:5px; border-radius:999px;
+  background:rgba(100,160,220,0.2); cursor:pointer;
+  border:1px solid rgba(255,255,255,0.6);
+  box-shadow:inset 0 1px 2px rgba(30,100,200,0.12); overflow:hidden;
+}
+.music-track-fill {
+  height:100%; border-radius:999px;
+  background:linear-gradient(90deg,#5db8fe,#1a7fd4);
+  width:0%; transition:width 0.9s linear;
+  box-shadow:0 0 6px rgba(30,120,220,0.4);
+}
+.music-times {
+  display:flex; justify-content:space-between;
+  font-family:"Nunito",sans-serif; font-size:0.55rem; font-weight:700; color:#5a9dc0;
 }
 
-
-/* entrance animation */
-.container > *{
-  opacity:0;animation:fadeUp 0.5s var(--ease) forwards;
+/* =====================================================
+   FOOTER
+   ===================================================== */
+[data-theme="dark"] .footer {
+  font-family:"JetBrains Mono",monospace; font-size:0.6rem;
+  letter-spacing:0.15em; color:rgba(240,238,255,0.4); text-transform:uppercase; opacity:0.5;
 }
+[data-theme="aero"] .footer {
+  font-family:"Nunito",sans-serif; font-size:0.65rem; font-weight:600;
+  letter-spacing:0.04em; color:#5a9dc0; opacity:0.9;
+}
+
+/* =====================================================
+   ENTRANCE ANIMATIONS
+   ===================================================== */
+.container > * { opacity:0; animation:fadeUp 0.5s var(--ease) forwards; }
 .container > *:nth-child(1){animation-delay:0.05s}
 .container > *:nth-child(2){animation-delay:0.12s}
 .container > *:nth-child(3){animation-delay:0.2s}
-.container > *:nth-child(4){animation-delay:0.4s}
+.container > *:nth-child(4){animation-delay:0.28s}
+.container > *:nth-child(5){animation-delay:0.36s}
+.container > *:nth-child(6){animation-delay:0.44s}
+.container > *:nth-child(7){animation-delay:0.52s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(16px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-/* stagger link btns */
-.links .link-btn{
-  opacity:0;animation:fadeUp 0.4s var(--ease) forwards;
-}
+.links .link-btn { opacity:0; animation:fadeUp 0.4s var(--ease) forwards; }
 .links .link-btn:nth-child(1){animation-delay:0.22s}
 .links .link-btn:nth-child(2){animation-delay:0.28s}
 .links .link-btn:nth-child(3){animation-delay:0.34s}
@@ -162,289 +499,260 @@ body::after{
 </head>
 <body>
 
+<!-- THEME TOGGLE -->
+<div class="theme-toggle" id="theme-toggle">
+  <button class="theme-btn active" id="btn-dark" onclick="setTheme('dark')">
+    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    Dark
+  </button>
+  <button class="theme-btn" id="btn-aero" onclick="setTheme('aero')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    Aero
+  </button>
+</div>
+
 <div class="container">
 
+  <!-- AVATAR -->
   <div class="avatar">
     <div class="avatar-inner" id="avatar-inner">
-      <img id="avatar-img" src="" alt="" style="width:76px;height:76px;border-radius:50%;object-fit:cover;display:none;">
+      <img id="avatar-img" src="" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:none;">
       <span id="avatar-fallback">K</span>
     </div>
   </div>
 
+  <!-- PROFILE -->
   <div class="profile">
     <div class="name">Kyle</div>
     <div class="handle">koels.site</div>
-
   </div>
 
-  <!-- discord card -->
-  <div id="discord-card" style="
-    width:100%;border-radius:12px;
-    border:1px solid var(--border);
-    background:var(--surface);
-    overflow:hidden;
-    opacity:0;animation:fadeUp 0.5s var(--ease) 0.35s forwards;
-  ">
-    <!-- label -->
-    <div style="padding:14px 14px 12px;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;color:var(--dim);text-transform:uppercase;">What I'm Doing</div>
-
-    <!-- card body -->
-    <div style="padding:0 14px 14px;display:flex;align-items:center;gap:12px;">
-      <!-- avatar -->
-      <div style="width:56px;height:56px;border-radius:50%;flex-shrink:0;background:var(--surface2);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+  <!-- DISCORD CARD -->
+  <div id="discord-card" style="opacity:0;animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.32s forwards;">
+    <div class="card-label">What I'm Doing</div>
+    <div class="card-body" style="display:flex;align-items:center;gap:12px;">
+      <div style="width:56px;height:56px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.06);">
         <img id="card-avatar-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
-        <span id="card-avatar-fallback" style="font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--accent2);">K</span>
+        <span id="card-avatar-fallback" style="font-size:1rem;font-weight:800;color:#a29bfe;">K</span>
       </div>
-
-      <!-- right: name + status -->
       <div style="flex:1;min-width:0;">
-        <div style="font-family:var(--mono);font-size:0.85rem;font-weight:700;color:var(--white);" id="card-displayname">koels</div>
-        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--dim);letter-spacing:0.05em;margin-bottom:6px;" id="card-username">@koels</div>
-        <div id="card-status-badge" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);">
-          <span id="card-status-dot" style="width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0;"></span>
-          <span id="card-status-label" style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--dim);text-transform:uppercase;">offline</span>
+        <div class="card-name-text" id="card-displayname">koels</div>
+        <div class="card-username-text" id="card-username">@koels</div>
+        <div class="card-badge" id="card-status-badge">
+          <span id="card-status-dot" style="width:7px;height:7px;border-radius:50%;background:#747f8d;flex-shrink:0;"></span>
+          <span class="card-badge-label" id="card-status-label">offline</span>
         </div>
       </div>
     </div>
 
-    <!-- activity rows: always reserve space to prevent jitter -->
-    <div id="activity-rows" style="margin:0 14px;border-top:1px solid var(--border);min-height:0;overflow:hidden;transition:min-height 0.3s ease;">
-
-      <!-- spotify row -->
-      <div id="spotify-row" style="display:none;padding:10px 0 0;">
+    <div id="activity-rows" style="overflow:hidden;">
+      <!-- spotify -->
+      <div id="spotify-row" style="display:none;padding:10px 0;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:#1db954;flex-shrink:0;"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-          <div style="min-width:0;flex:1;">
-            <div id="spotify-song" style="font-family:var(--mono);font-size:0.65rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-            <div id="spotify-artist" style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div style="flex:1;min-width:0;">
+            <div id="spotify-song" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="spotify-artist" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span id="spotify-elapsed" style="font-family:var(--mono);font-size:0.55rem;color:var(--dim);flex-shrink:0;min-width:28px;">0:00</span>
-          <div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);">
+          <span id="spotify-elapsed" class="time-txt" style="flex-shrink:0;min-width:28px;">0:00</span>
+          <div style="flex:1;height:3px;border-radius:2px;background:rgba(128,128,128,0.15);">
             <div id="spotify-bar" style="height:100%;border-radius:2px;background:#1db954;width:0%;transition:width 1s linear;"></div>
           </div>
-          <span id="spotify-duration" style="font-family:var(--mono);font-size:0.55rem;color:var(--dim);flex-shrink:0;min-width:28px;text-align:right;">0:00</span>
+          <span id="spotify-duration" class="time-txt" style="flex-shrink:0;min-width:28px;text-align:right;">0:00</span>
         </div>
       </div>
-
-      <!-- game row -->
+      <!-- game -->
       <div id="game-row" style="display:none;padding:10px 0 0;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:var(--accent2);flex-shrink:0;"><path d="M21 6H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-          <div style="min-width:0;">
-            <div id="game-name" style="font-family:var(--mono);font-size:0.65rem;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-            <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);">playing</div>
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:#a29bfe;flex-shrink:0;"><path d="M21 6H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+          <div>
+            <div id="game-name"></div>
+            <div class="game-sub">playing</div>
           </div>
         </div>
       </div>
-
-      <div id="activity-spacer" style="height:0;transition:height 0.3s ease;"></div>
     </div>
-
   </div>
 
+  <!-- MUSIC PLAYER — Aero only -->
+  <div id="music-player">
+    <div class="music-wrap">
+      <div class="music-top">
+        <div class="music-disc" id="music-disc">
+          <div class="music-disc-hole"></div>
+        </div>
+        <div class="music-meta">
+          <div class="music-title-text">Frutiger Aero Playlist</div>
+          <div class="music-sub-text">Iris Flowers · ambient</div>
+        </div>
+      </div>
+      <div class="music-controls">
+        <button class="music-play-btn" onclick="toggleMusic()" aria-label="Play/pause">
+          <svg id="icon-play"  viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <div class="music-progress">
+          <div class="music-track" id="music-track" onclick="seekMusic(event)">
+            <div class="music-track-fill" id="music-track-fill"></div>
+          </div>
+          <div class="music-times">
+            <span id="music-elapsed">0:00</span>
+            <span id="music-duration">--:--</span>
+          </div>
+        </div>
+      </div>
+      <audio id="music-audio" src="./music/frutiger.mp3" preload="metadata" loop></audio>
+    </div>
+  </div>
+
+  <!-- LINKS -->
   <div class="links">
-
     <a class="link-btn" href="https://koels.site" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="currentColor"/></svg>
-      </span>
-      <span class="link-label">Website</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="currentColor"/></svg></span>
+      <span class="link-label">Website</span><span class="link-arrow">→</span>
     </a>
-
     <a class="link-btn" href="https://youtube.com/@koels" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-      </span>
-      <span class="link-label">YouTube</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
+      <span class="link-label">YouTube</span><span class="link-arrow">→</span>
     </a>
-
     <a class="link-btn" href="https://open.spotify.com/user/31ebewr5xpear5jnzoocdi6jrmbm?si=97f0682d24884434" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-      </span>
-      <span class="link-label">Spotify</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg></span>
+      <span class="link-label">Spotify</span><span class="link-arrow">→</span>
     </a>
-
     <a class="link-btn" href="https://tiktok.com/@.koels" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
-      </span>
-      <span class="link-label">TikTok</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></span>
+      <span class="link-label">TikTok</span><span class="link-arrow">→</span>
     </a>
-
     <a class="link-btn" href="https://instagram.com/kooelss" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-      </span>
-      <span class="link-label">Instagram</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></span>
+      <span class="link-label">Instagram</span><span class="link-arrow">→</span>
     </a>
-
     <a class="link-btn" href="https://x.com/kooelss" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
-      </span>
-      <span class="link-label">X / Twitter</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></span>
+      <span class="link-label">X / Twitter</span><span class="link-arrow">→</span>
     </a>
-
     <a class="link-btn" href="https://github.com/koelss" target="_blank" rel="noopener">
-      <span class="link-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-      </span>
-      <span class="link-label">GitHub</span>
-      <span class="link-arrow">→</span>
+      <span class="link-icon"><svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>
+      <span class="link-label">GitHub</span><span class="link-arrow">→</span>
     </a>
-
   </div>
 
-  <div class="footer" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+  <div class="footer" style="display:flex;flex-direction:column;align-items:center;gap:5px;">
     <span>© 2026 koels.site</span>
-    <span>hosted on <a href="https://github.com/koelss" target="_blank" rel="noopener" style="color:var(--dim);text-decoration:underline;text-underline-offset:3px;">github</a></span>
+    <span>hosted on <a href="https://github.com/koelss" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">github</a></span>
   </div>
 
 </div>
 
 <script>
+/* ── THEME ─────────────────────────────────── */
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('koels-theme', t);
+  document.getElementById('btn-dark').classList.toggle('active', t === 'dark');
+  document.getElementById('btn-aero').classList.toggle('active', t === 'aero');
+  if (t === 'dark') {
+    const a = document.getElementById('music-audio');
+    if (a && !a.paused) {
+      a.pause();
+      document.getElementById('icon-play').style.display = '';
+      document.getElementById('icon-pause').style.display = 'none';
+      document.getElementById('music-disc').classList.remove('playing');
+    }
+  }
+}
+// Apply before first paint
 (function(){
-  const DISCORD_ID = '1135328814394785903';
-  const cardDot = document.getElementById('card-status-dot');
-  const cardLabel = document.getElementById('card-status-label');
-  const avatarImg = document.getElementById('avatar-img');
-  const avatarFallback = document.getElementById('avatar-fallback');
-  const cardAvatarImg = document.getElementById('card-avatar-img');
-  const cardAvatarFallback = document.getElementById('card-avatar-fallback');
-  const cardDisplayname = document.getElementById('card-displayname');
-  const cardUsername = document.getElementById('card-username');
-  const spotifyRow = document.getElementById('spotify-row');
-  const spotifySong = document.getElementById('spotify-song');
-  const spotifyArtist = document.getElementById('spotify-artist');
-  const spotifyBar = document.getElementById('spotify-bar');
-  const spotifyElapsed = document.getElementById('spotify-elapsed');
-  const spotifyDuration = document.getElementById('spotify-duration');
-  let progressInterval = null;
+  const s = localStorage.getItem('koels-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', s);
+})();
+window.addEventListener('DOMContentLoaded', function(){
+  const s = localStorage.getItem('koels-theme') || 'dark';
+  document.getElementById('btn-dark').classList.toggle('active', s === 'dark');
+  document.getElementById('btn-aero').classList.toggle('active', s === 'aero');
+});
 
-  function fmtMs(ms){
-    const s = Math.floor(ms/1000), m = Math.floor(s/60);
-    return m+':'+(s%60).toString().padStart(2,'0');
-  }
+/* ── MUSIC ──────────────────────────────────── */
+const audio     = document.getElementById('music-audio');
+const iconPlay  = document.getElementById('icon-play');
+const iconPause = document.getElementById('icon-pause');
+const disc      = document.getElementById('music-disc');
+const trackFill = document.getElementById('music-track-fill');
+const elapsedEl = document.getElementById('music-elapsed');
+const durEl     = document.getElementById('music-duration');
+const trackEl   = document.getElementById('music-track');
 
-  function startProgress(timestamps){
-    if(progressInterval) clearInterval(progressInterval);
-    const start = timestamps.start, end = timestamps.end;
-    const total = end - start;
-    spotifyDuration.textContent = fmtMs(total);
-    function tick(){
-      const now = Date.now();
-      const elapsed = Math.min(now - start, total);
-      spotifyBar.style.width = ((elapsed/total)*100)+'%';
-      spotifyElapsed.textContent = fmtMs(elapsed);
-    }
-    tick();
-    progressInterval = setInterval(tick, 1000);
-  }
+function fmt(s){ const m=Math.floor(s/60); return m+':'+String(Math.floor(s%60)).padStart(2,'0'); }
+audio.addEventListener('loadedmetadata', ()=>{ durEl.textContent=fmt(audio.duration); });
+audio.addEventListener('timeupdate', ()=>{
+  if(!audio.duration) return;
+  trackFill.style.width = (audio.currentTime/audio.duration*100)+'%';
+  elapsedEl.textContent = fmt(audio.currentTime);
+});
+function toggleMusic(){
+  if(audio.paused){ audio.play(); iconPlay.style.display='none'; iconPause.style.display=''; disc.classList.add('playing'); }
+  else { audio.pause(); iconPlay.style.display=''; iconPause.style.display='none'; disc.classList.remove('playing'); }
+}
+function seekMusic(e){
+  if(!audio.duration) return;
+  const r=trackEl.getBoundingClientRect();
+  audio.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*audio.duration;
+}
 
-  function stopProgress(){
-    if(progressInterval){ clearInterval(progressInterval); progressInterval = null; }
-    spotifyBar.style.width = '0%';
-    spotifyElapsed.textContent = '0:00';
-    spotifyDuration.textContent = '0:00';
-  }
-  const gameRow = document.getElementById('game-row');
-  const gameName = document.getElementById('game-name');
-  const activityRows = document.getElementById('activity-rows');
-  const activitySpacer = document.getElementById('activity-spacer');
-
-  function updateActivitySpacing(hasAny){
-    if(hasAny){
-      activityRows.style.paddingBottom = '12px';
-    } else {
-      activityRows.style.paddingBottom = '0';
-    }
-  }
-
-  const STATUS = {
-    online:  { color: '#00ff88', label: 'online' },
-    idle:    { color: '#ffa500', label: 'idle' },
-    dnd:     { color: '#ff4757', label: 'do not disturb' },
-    offline: { color: '#747f8d', label: 'offline' },
+/* ── DISCORD / LANYARD ───────────────────────── */
+(function(){
+  const ID='1135328814394785903';
+  const els={
+    dot:       document.getElementById('card-status-dot'),
+    label:     document.getElementById('card-status-label'),
+    avatarImg: document.getElementById('avatar-img'),
+    avatarFb:  document.getElementById('avatar-fallback'),
+    cAvatarImg:document.getElementById('card-avatar-img'),
+    cAvatarFb: document.getElementById('card-avatar-fallback'),
+    name:      document.getElementById('card-displayname'),
+    user:      document.getElementById('card-username'),
+    spRow:     document.getElementById('spotify-row'),
+    spSong:    document.getElementById('spotify-song'),
+    spArtist:  document.getElementById('spotify-artist'),
+    spBar:     document.getElementById('spotify-bar'),
+    spEl:      document.getElementById('spotify-elapsed'),
+    spDur:     document.getElementById('spotify-duration'),
+    gameRow:   document.getElementById('game-row'),
+    gameName:  document.getElementById('game-name'),
+    actRows:   document.getElementById('activity-rows'),
   };
-
-  function setAvatar(url){
-    [avatarImg, cardAvatarImg].forEach(img => {
-      img.src = url;
-      img.style.display = 'block';
-    });
-    avatarFallback.style.display = 'none';
-    cardAvatarFallback.style.display = 'none';
+  let prog=null;
+  function fms(ms){ const s=Math.floor(ms/1000),m=Math.floor(s/60); return m+':'+(s%60).toString().padStart(2,'0'); }
+  function startP(ts){
+    if(prog)clearInterval(prog); const{start,end}=ts,tot=end-start; els.spDur.textContent=fms(tot);
+    function tk(){ const e=Math.min(Date.now()-start,tot); els.spBar.style.width=((e/tot)*100)+'%'; els.spEl.textContent=fms(e); }
+    tk(); prog=setInterval(tk,1000);
   }
-
-  async function fetchStatus(){
-    try {
-      const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
-      const json = await res.json();
-      if(!json.success) return;
-      const data = json.data;
-      const s = data.discord_status || 'offline';
-      const { color, label } = STATUS[s] || STATUS.offline;
-      const glow = s !== 'offline' ? `0 0 6px ${color}88` : 'none';
-
-      // card status
-      cardDot.style.background = color;
-      cardDot.style.boxShadow = glow;
-      cardLabel.textContent = label;
-      cardLabel.style.color = s !== 'offline' ? color : 'var(--dim)';
-
-      // spotify
-      let hasActivity = false;
-      if(data.listening_to_spotify && data.spotify){
-        spotifySong.textContent = data.spotify.song;
-        spotifyArtist.textContent = data.spotify.artist;
-        spotifyRow.style.display = 'block';
-        if(data.spotify.timestamps) startProgress(data.spotify.timestamps);
-        hasActivity = true;
-      } else {
-        spotifyRow.style.display = 'none';
-        stopProgress();
-      }
-
-      // game activity
-      const game = data.activities && data.activities.find(a => a.type === 0);
-      if(game){
-        gameName.textContent = game.name;
-        gameRow.style.display = 'block';
-        hasActivity = true;
-      } else {
-        gameRow.style.display = 'none';
-      }
-
-      updateActivitySpacing(hasActivity);
-
-      // username
-      const user = data.discord_user;
-      if(user.global_name || user.display_name){
-        cardDisplayname.textContent = user.global_name || user.display_name;
-      }
-      cardUsername.textContent = '@' + user.username;
-
-      // avatar
-      if(user.avatar){
-        const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
-        setAvatar(`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=128`);
-      }
-    } catch(e){}
+  function stopP(){ if(prog){clearInterval(prog);prog=null;} els.spBar.style.width='0%'; els.spEl.textContent='0:00'; els.spDur.textContent='0:00'; }
+  const S={online:{c:'#00ff88',l:'online'},idle:{c:'#ffa500',l:'idle'},dnd:{c:'#ff4757',l:'do not disturb'},offline:{c:'#747f8d',l:'offline'}};
+  function setAv(url){ [els.avatarImg,els.cAvatarImg].forEach(i=>{i.src=url;i.style.display='block';}); els.avatarFb.style.display='none'; els.cAvatarFb.style.display='none'; }
+  async function go(){
+    try{
+      const d=(await(await fetch(`https://api.lanyard.rest/v1/users/${ID}`)).json()).data;
+      if(!d)return;
+      const st=d.discord_status||'offline',{c,l}=S[st]||S.offline;
+      els.dot.style.background=c; els.dot.style.boxShadow=st!=='offline'?`0 0 6px ${c}88`:'none';
+      els.label.textContent=l; els.label.style.color=st!=='offline'?c:'';
+      let any=false;
+      if(d.listening_to_spotify&&d.spotify){ els.spSong.textContent=d.spotify.song; els.spArtist.textContent=d.spotify.artist; els.spRow.style.display='block'; if(d.spotify.timestamps)startP(d.spotify.timestamps); any=true; } else { els.spRow.style.display='none'; stopP(); }
+      const gm=d.activities&&d.activities.find(a=>a.type===0);
+      if(gm){ els.gameName.textContent=gm.name; els.gameRow.style.display='block'; any=true; } else { els.gameRow.style.display='none'; }
+      els.actRows.style.paddingBottom=any?'12px':'0';
+      const u=d.discord_user;
+      if(u.global_name||u.display_name)els.name.textContent=u.global_name||u.display_name;
+      els.user.textContent='@'+u.username;
+      if(u.avatar)setAv(`https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith('a_')?'gif':'png'}?size=128`);
+    }catch(e){}
   }
-
-  fetchStatus();
-  setInterval(fetchStatus, 3000);
+  go(); setInterval(go,3000);
 })();
 </script>
-
 </body>
 </html>
