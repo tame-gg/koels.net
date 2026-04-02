@@ -29,7 +29,7 @@
 /* =====================================================
    DARK THEME
    ===================================================== */
-:root, html[data-theme="dark"] {
+:root, :is(html, html[data-theme="dark"]) {
   --ease: cubic-bezier(0.16,1,0.3,1);
   --avatar-ring: conic-gradient(from 0deg,#6c5ce7,transparent 30%,transparent 70%,#a29bfe);
   --toggle-bg: #141420;
@@ -59,20 +59,23 @@ body {
   min-height:100vh;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:40px 20px;
+  font-family:"Inter",system-ui,sans-serif;
+  background:#03030a;
+  color:#f0eeff;
 }
 
-html[data-theme="dark"] body {
+:is(html, html[data-theme="dark"]) body {
   font-family:"Inter",system-ui,sans-serif;
   background:#03030a; color:#f0eeff;
 }
-html[data-theme="dark"] body::before {
+:is(html, html[data-theme="dark"]) body::before {
   content:''; position:fixed; inset:0;
   background-image:
     linear-gradient(rgba(108,92,231,0.04) 1px,transparent 1px),
     linear-gradient(90deg,rgba(108,92,231,0.04) 1px,transparent 1px);
   background-size:48px 48px; pointer-events:none; z-index:0;
 }
-html[data-theme="dark"] body::after {
+:is(html, html[data-theme="dark"]) body::after {
   content:''; position:fixed; top:-20%; left:50%; transform:translateX(-50%);
   width:600px; height:400px;
   background:radial-gradient(ellipse,rgba(108,92,231,0.12) 0%,transparent 70%);
@@ -115,7 +118,7 @@ html[data-theme="aero"] body::after {
   width:100%; max-width:420px;
   display:flex; flex-direction:column; align-items:center;
 }
-html[data-theme="dark"] .container { gap:24px; }
+:is(html, html[data-theme="dark"]) .container { gap:24px; }
 html[data-theme="aero"] .container { gap:14px; }
 
 /* =====================================================
@@ -129,7 +132,7 @@ html[data-theme="aero"] .container { gap:14px; }
   border-radius:999px; padding:3px; gap:2px;
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
 }
-html[data-theme="dark"] .theme-toggle { box-shadow:0 2px 14px rgba(0,0,0,0.45); }
+:is(html, html[data-theme="dark"]) .theme-toggle { box-shadow:0 2px 14px rgba(0,0,0,0.45); }
 html[data-theme="aero"] .theme-toggle { box-shadow:0 4px 20px rgba(80,160,230,0.2), inset 0 1px 0 #fff; }
 
 .theme-btn {
@@ -143,7 +146,7 @@ html[data-theme="aero"] .theme-toggle { box-shadow:0 4px 20px rgba(80,160,230,0.
 }
 .theme-btn:hover { color:var(--toggle-inactive-hover); }
 .theme-btn svg { width:10px; height:10px; fill:currentColor; flex-shrink:0; }
-html[data-theme="dark"] .theme-btn.active { background:#6c5ce7; color:#fff; box-shadow:0 1px 8px rgba(108,92,231,0.5); }
+:is(html, html[data-theme="dark"]) .theme-btn.active { background:#6c5ce7; color:#fff; box-shadow:0 1px 8px rgba(108,92,231,0.5); }
 html[data-theme="aero"] .theme-btn.active {
   background:linear-gradient(160deg,#4ab8f7 0%,#1a7fd4 100%);
   color:#fff;
@@ -153,17 +156,17 @@ html[data-theme="aero"] .theme-btn.active {
 /* =====================================================
    AVATAR — DARK
    ===================================================== */
-html[data-theme="dark"] .avatar {
+:is(html, html[data-theme="dark"]) .avatar {
   width:80px; height:80px; border-radius:50%;
   background:#141420; border:1px solid rgba(255,255,255,0.12);
   display:flex; align-items:center; justify-content:center;
   position:relative; overflow:hidden;
 }
-html[data-theme="dark"] .avatar::before {
+:is(html, html[data-theme="dark"]) .avatar::before {
   content:''; position:absolute; inset:-1px; border-radius:50%;
   background:var(--avatar-ring); z-index:-1; animation:spin 6s linear infinite;
 }
-html[data-theme="dark"] .avatar-inner {
+:is(html, html[data-theme="dark"]) .avatar-inner {
   width:76px; height:76px; border-radius:50%;
   background:#0f0f1a;
   display:flex; align-items:center; justify-content:center;
@@ -205,10 +208,10 @@ html[data-theme="aero"] .avatar-inner {
    PROFILE
    ===================================================== */
 .profile { text-align:center; display:flex; flex-direction:column; }
-html[data-theme="dark"] .profile { gap:6px; }
+:is(html, html[data-theme="dark"]) .profile { gap:6px; }
 html[data-theme="aero"] .profile { gap:3px; }
 
-html[data-theme="dark"] .name {
+:is(html, html[data-theme="dark"]) .name {
   font-family:"JetBrains Mono",monospace; font-size:1.1rem; font-weight:700;
   letter-spacing:0.05em; color:#fff;
 }
@@ -217,7 +220,7 @@ html[data-theme="aero"] .name {
   letter-spacing:-0.01em; color:#0d4a80;
   text-shadow:0 1px 3px rgba(255,255,255,0.8);
 }
-html[data-theme="dark"] .handle {
+:is(html, html[data-theme="dark"]) .handle {
   font-family:"JetBrains Mono",monospace; font-size:0.72rem;
   color:rgba(240,238,255,0.4); letter-spacing:0.12em; text-transform:uppercase;
 }
@@ -229,39 +232,39 @@ html[data-theme="aero"] .handle {
 /* =====================================================
    DISCORD CARD — DARK
    ===================================================== */
-html[data-theme="dark"] #discord-card {
+:is(html, html[data-theme="dark"]) #discord-card {
   width:100%; border-radius:12px;
   border:1px solid rgba(255,255,255,0.07);
   background:#0f0f1a; overflow:hidden;
 }
-html[data-theme="dark"] .card-label {
+:is(html, html[data-theme="dark"]) .card-label {
   padding:14px 14px 12px;
   font-family:"JetBrains Mono",monospace; font-size:0.6rem;
   letter-spacing:0.14em; color:rgba(240,238,255,0.4); text-transform:uppercase;
 }
-html[data-theme="dark"] .card-body { padding:0 14px 14px; }
-html[data-theme="dark"] .card-name-text {
+:is(html, html[data-theme="dark"]) .card-body { padding:0 14px 14px; }
+:is(html, html[data-theme="dark"]) .card-name-text {
   font-family:"JetBrains Mono",monospace; font-size:0.85rem; font-weight:700; color:#fff;
 }
-html[data-theme="dark"] .card-username-text {
+:is(html, html[data-theme="dark"]) .card-username-text {
   font-family:"JetBrains Mono",monospace; font-size:0.65rem;
   color:rgba(240,238,255,0.4); letter-spacing:0.05em; margin-bottom:6px;
 }
-html[data-theme="dark"] .card-badge {
+:is(html, html[data-theme="dark"]) .card-badge {
   display:inline-flex; align-items:center; gap:5px;
   padding:3px 10px; border-radius:20px;
   border:1px solid rgba(255,255,255,0.1); background:#141420;
 }
-html[data-theme="dark"] .card-badge-label {
+:is(html, html[data-theme="dark"]) .card-badge-label {
   font-family:"JetBrains Mono",monospace; font-size:0.58rem;
   letter-spacing:0.1em; text-transform:uppercase;
 }
-html[data-theme="dark"] #activity-rows { margin:0 14px; border-top:1px solid rgba(255,255,255,0.07); }
-html[data-theme="dark"] #spotify-song { font-family:"JetBrains Mono",monospace; font-size:0.65rem; color:#fff; }
-html[data-theme="dark"] #spotify-artist { font-family:"JetBrains Mono",monospace; font-size:0.6rem; color:rgba(240,238,255,0.4); }
-html[data-theme="dark"] .time-txt { font-family:"JetBrains Mono",monospace; font-size:0.55rem; color:rgba(240,238,255,0.4); }
-html[data-theme="dark"] #game-name { font-family:"JetBrains Mono",monospace; font-size:0.65rem; color:#fff; }
-html[data-theme="dark"] .game-sub { font-family:"JetBrains Mono",monospace; font-size:0.6rem; color:rgba(240,238,255,0.4); }
+:is(html, html[data-theme="dark"]) #activity-rows { margin:0 14px; border-top:1px solid rgba(255,255,255,0.07); }
+:is(html, html[data-theme="dark"]) #spotify-song { font-family:"JetBrains Mono",monospace; font-size:0.65rem; color:#fff; }
+:is(html, html[data-theme="dark"]) #spotify-artist { font-family:"JetBrains Mono",monospace; font-size:0.6rem; color:rgba(240,238,255,0.4); }
+:is(html, html[data-theme="dark"]) .time-txt { font-family:"JetBrains Mono",monospace; font-size:0.55rem; color:rgba(240,238,255,0.4); }
+:is(html, html[data-theme="dark"]) #game-name { font-family:"JetBrains Mono",monospace; font-size:0.65rem; color:#fff; }
+:is(html, html[data-theme="dark"]) .game-sub { font-family:"JetBrains Mono",monospace; font-size:0.6rem; color:rgba(240,238,255,0.4); }
 
 /* =====================================================
    DISCORD CARD — AERO
@@ -317,10 +320,10 @@ html[data-theme="aero"] .game-sub { font-family:"Nunito",sans-serif; font-size:0
    LINK BUTTONS — DARK
    ===================================================== */
 .links { width:100%; display:flex; flex-direction:column; }
-html[data-theme="dark"] .links { gap:10px; }
+:is(html, html[data-theme="dark"]) .links { gap:10px; }
 html[data-theme="aero"] .links { gap:9px; }
 
-html[data-theme="dark"] .link-btn {
+:is(html, html[data-theme="dark"]) .link-btn {
   display:flex; align-items:center; gap:14px;
   padding:14px 18px; border-radius:10px;
   border:1px solid rgba(255,255,255,0.07);
@@ -331,16 +334,16 @@ html[data-theme="dark"] .link-btn {
   transition:all 0.2s var(--ease);
   cursor:pointer; position:relative; overflow:hidden;
 }
-html[data-theme="dark"] .link-btn::before {
+:is(html, html[data-theme="dark"]) .link-btn::before {
   content:''; position:absolute; inset:0;
   background:linear-gradient(90deg,transparent,rgba(108,92,231,0.06),transparent);
   transform:translateX(-100%); transition:transform 0.4s var(--ease);
 }
-html[data-theme="dark"] .link-btn:hover { border-color:rgba(255,255,255,0.12); color:#fff; background:#141420; transform:translateY(-1px); }
-html[data-theme="dark"] .link-btn:hover::before { transform:translateX(100%); }
-html[data-theme="dark"] .link-btn:active { transform:translateY(0); }
-html[data-theme="dark"] .link-arrow { font-size:0.65rem; color:rgba(240,238,255,0.4); transition:transform 0.2s,color 0.2s; }
-html[data-theme="dark"] .link-btn:hover .link-arrow { transform:translateX(2px); color:rgba(240,238,255,0.68); }
+:is(html, html[data-theme="dark"]) .link-btn:hover { border-color:rgba(255,255,255,0.12); color:#fff; background:#141420; transform:translateY(-1px); }
+:is(html, html[data-theme="dark"]) .link-btn:hover::before { transform:translateX(100%); }
+:is(html, html[data-theme="dark"]) .link-btn:active { transform:translateY(0); }
+:is(html, html[data-theme="dark"]) .link-arrow { font-size:0.65rem; color:rgba(240,238,255,0.4); transition:transform 0.2s,color 0.2s; }
+:is(html, html[data-theme="dark"]) .link-btn:hover .link-arrow { transform:translateX(2px); color:rgba(240,238,255,0.68); }
 
 /* =====================================================
    LINK BUTTONS — AERO (glossy pill)
@@ -482,7 +485,7 @@ html[data-theme="aero"] .link-btn:hover .link-arrow { transform:translateX(3px);
 /* =====================================================
    FOOTER
    ===================================================== */
-html[data-theme="dark"] .footer {
+:is(html, html[data-theme="dark"]) .footer {
   font-family:"JetBrains Mono",monospace; font-size:0.6rem;
   letter-spacing:0.15em; color:rgba(240,238,255,0.4); text-transform:uppercase; opacity:0.5;
 }
