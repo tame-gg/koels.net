@@ -8,278 +8,252 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>koels.site — Radar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { width:100%; height:100%; overflow:hidden; font-family:"JetBrains Mono",monospace; }
+body { background:#03030a; color:#f0eeff; }
+#map { position:fixed; inset:0; z-index:1; }
 
-body {
-  background:#03030a;
-  color:#f0eeff;
-}
-
-/* ── MAP ── */
-#map {
-  position:fixed; inset:0; z-index:1;
-}
-
-/* ── HEADER ── */
+/* HEADER */
 #header {
   position:fixed; top:0; left:0; right:0; z-index:1000;
-  height:52px;
-  display:flex; align-items:center; justify-content:space-between;
+  height:54px; display:flex; align-items:center; justify-content:space-between;
   padding:0 20px;
-  background:rgba(3,3,10,0.88);
-  border-bottom:1px solid rgba(255,255,255,0.07);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  background:rgba(3,3,10,0.9); border-bottom:1px solid rgba(255,255,255,0.07);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
 }
-.header-left {
-  display:flex; align-items:center; gap:16px;
-}
+.header-left { display:flex; align-items:center; gap:14px; }
 .back-btn {
-  display:flex; align-items:center; gap:6px;
-  font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase;
-  color:rgba(240,238,255,0.45); text-decoration:none;
-  transition:color 0.2s;
+  display:flex; align-items:center; gap:5px;
+  font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase;
+  color:rgba(240,238,255,0.4); text-decoration:none; transition:color 0.2s;
 }
 .back-btn:hover { color:#f0eeff; }
-.back-btn svg { width:14px; height:14px; fill:currentColor; }
-.header-divider { width:1px; height:18px; background:rgba(255,255,255,0.1); }
-.header-title {
-  display:flex; align-items:center; gap:8px;
-  font-size:0.7rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#f0eeff;
-}
-.live-dot {
-  width:6px; height:6px; border-radius:50%;
-  background:#00ff88; box-shadow:0 0 8px #00ff88;
-  animation:pulse 2s ease infinite;
-}
-@keyframes pulse { 0%,100%{box-shadow:0 0 6px #00ff88} 50%{box-shadow:0 0 18px #00ff88, 0 0 32px rgba(0,255,136,0.3)} }
+.back-btn svg { width:13px; height:13px; fill:currentColor; }
+.hdiv { width:1px; height:16px; background:rgba(255,255,255,0.1); }
 
-.header-right {
-  display:flex; align-items:center; gap:12px;
-}
-.alert-count {
-  display:flex; align-items:center; gap:6px;
-  padding:4px 12px; border-radius:999px;
-  font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase;
-  border:1px solid rgba(255,71,87,0.3); background:rgba(255,71,87,0.08);
-  color:#ff4757; transition:all 0.3s;
-}
-.alert-count.none { border-color:rgba(255,255,255,0.08); background:transparent; color:rgba(240,238,255,0.3); }
-.alert-count svg { width:10px; height:10px; fill:currentColor; }
-#last-updated {
-  font-size:0.58rem; color:rgba(240,238,255,0.3); letter-spacing:0.08em;
-}
+/* LOGO */
+.radar-logo { display:flex; align-items:center; gap:9px; }
+.radar-logo-icon { width:30px; height:30px; flex-shrink:0; }
+.radar-logo-icon svg { width:100%; height:100%; }
+.radar-logo-main { font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#f0eeff; line-height:1; }
+.radar-logo-sub  { font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(240,238,255,0.35); line-height:1; margin-top:2px; }
 
-/* ── SIDE PANEL ── */
+.header-right { display:flex; align-items:center; gap:12px; }
+.alert-pill {
+  display:flex; align-items:center; gap:5px; padding:4px 11px; border-radius:999px;
+  font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase;
+  border:1px solid rgba(255,71,87,0.3); background:rgba(255,71,87,0.08); color:#ff4757; transition:all 0.3s;
+}
+.alert-pill.none { border-color:rgba(255,255,255,0.08); background:transparent; color:rgba(240,238,255,0.3); }
+.alert-pill svg { width:9px; height:9px; fill:currentColor; }
+#last-updated { font-size:0.56rem; color:rgba(240,238,255,0.28); letter-spacing:0.08em; }
+
+/* SIDE PANEL */
 #panel {
-  position:fixed; top:52px; right:0; bottom:0; z-index:900;
-  width:300px;
-  background:rgba(3,3,10,0.92);
-  border-left:1px solid rgba(255,255,255,0.06);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  position:fixed; top:54px; right:0; bottom:0; z-index:900; width:290px;
+  background:rgba(3,3,10,0.93); border-left:1px solid rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
   display:flex; flex-direction:column;
-  transform:translateX(100%);
-  transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  transform:translateX(100%); transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
 }
 #panel.open { transform:translateX(0); }
-
 #panel-toggle {
-  position:fixed; top:50%; right:0; z-index:950;
-  transform:translateY(-50%);
-  width:24px; height:60px;
-  background:rgba(3,3,10,0.9);
-  border:1px solid rgba(255,255,255,0.08);
-  border-right:none;
-  border-radius:6px 0 0 6px;
-  display:flex; align-items:center; justify-content:center;
+  position:fixed; top:50%; right:0; z-index:950; transform:translateY(-50%);
+  width:22px; height:56px;
+  background:rgba(3,3,10,0.9); border:1px solid rgba(255,255,255,0.08); border-right:none;
+  border-radius:6px 0 0 6px; display:flex; align-items:center; justify-content:center;
   cursor:pointer; transition:background 0.2s;
 }
 #panel-toggle:hover { background:rgba(108,92,231,0.2); }
-#panel-toggle svg { width:12px; height:12px; fill:rgba(240,238,255,0.5); transition:transform 0.35s; }
-#panel.open ~ #panel-toggle { right:300px; }
+#panel-toggle svg { width:11px; height:11px; fill:rgba(240,238,255,0.5); transition:transform 0.35s; }
+#panel.open ~ #panel-toggle { right:290px; }
 #panel.open ~ #panel-toggle svg { transform:rotate(180deg); }
-
 .panel-header {
-  padding:16px 16px 12px;
-  border-bottom:1px solid rgba(255,255,255,0.06);
-  font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase;
-  color:rgba(240,238,255,0.4);
-  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 14px 10px; border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:0.58rem; letter-spacing:0.14em; text-transform:uppercase;
+  color:rgba(240,238,255,0.4); display:flex; align-items:center; justify-content:space-between;
 }
-.panel-header span { color:#ff4757; font-weight:700; }
-
+.panel-header b { color:#ff4757; }
 #alerts-list {
   flex:1; overflow-y:auto; padding:8px;
   scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent;
 }
 #alerts-list::-webkit-scrollbar { width:3px; }
 #alerts-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
-
 .alert-item {
-  padding:10px 12px; border-radius:8px; margin-bottom:6px;
-  border:1px solid transparent;
-  cursor:pointer; transition:all 0.2s;
+  padding:9px 12px; border-radius:7px; margin-bottom:5px;
+  border:1px solid transparent; cursor:pointer; transition:all 0.18s;
   position:relative; overflow:hidden;
 }
-.alert-item::before {
-  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
-}
-.alert-item:hover { background:rgba(255,255,255,0.04); }
-
-/* Severity colors */
-.sev-extreme  { border-color:rgba(255,0,60,0.25); background:rgba(255,0,60,0.06); }
+.alert-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; }
+.alert-item:hover { background:rgba(255,255,255,0.04) !important; }
+.sev-extreme  { border-color:rgba(255,0,60,0.25);   background:rgba(255,0,60,0.06); }
 .sev-extreme::before  { background:#ff003c; }
-.sev-severe   { border-color:rgba(255,71,87,0.2); background:rgba(255,71,87,0.05); }
+.sev-severe   { border-color:rgba(255,71,87,0.2);   background:rgba(255,71,87,0.05); }
 .sev-severe::before   { background:#ff4757; }
-.sev-moderate { border-color:rgba(255,165,0,0.2); background:rgba(255,165,0,0.05); }
+.sev-moderate { border-color:rgba(255,165,0,0.2);   background:rgba(255,165,0,0.05); }
 .sev-moderate::before { background:#ffa500; }
-.sev-minor    { border-color:rgba(255,214,0,0.2); background:rgba(255,214,0,0.04); }
+.sev-minor    { border-color:rgba(255,214,0,0.2);   background:rgba(255,214,0,0.04); }
 .sev-minor::before    { background:#ffd600; }
 .sev-unknown  { border-color:rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); }
 .sev-unknown::before  { background:rgba(255,255,255,0.2); }
+.alert-event { font-size:0.66rem; font-weight:700; color:#f0eeff; margin-bottom:2px; line-height:1.3; }
+.alert-area  { font-size:0.57rem; color:rgba(240,238,255,0.42); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.alert-time  { font-size:0.52rem; color:rgba(240,238,255,0.22); margin-top:3px; }
+.no-alerts   { padding:28px 14px; text-align:center; font-size:0.6rem; color:rgba(240,238,255,0.22); letter-spacing:0.08em; line-height:1.8; }
 
-.alert-event {
-  font-size:0.68rem; font-weight:700; color:#f0eeff;
-  letter-spacing:0.02em; margin-bottom:3px; line-height:1.3;
-}
-.alert-area {
-  font-size:0.58rem; color:rgba(240,238,255,0.45);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  letter-spacing:0.04em;
-}
-.alert-time {
-  font-size:0.54rem; color:rgba(240,238,255,0.25);
-  margin-top:4px; letter-spacing:0.04em;
-}
-.no-alerts {
-  padding:32px 16px; text-align:center;
-  font-size:0.62rem; color:rgba(240,238,255,0.25);
-  letter-spacing:0.08em; line-height:1.8;
-}
-
-/* ── LEGEND ── */
+/* LEGEND */
 #legend {
-  position:fixed; bottom:24px; left:20px; z-index:900;
-  background:rgba(3,3,10,0.88);
-  border:1px solid rgba(255,255,255,0.07);
-  border-radius:10px; padding:12px 14px;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
+  position:fixed; bottom:120px; left:16px; z-index:900;
+  background:rgba(3,3,10,0.88); border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px; padding:10px 12px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
 }
-.legend-title {
-  font-size:0.55rem; letter-spacing:0.14em; text-transform:uppercase;
-  color:rgba(240,238,255,0.35); margin-bottom:8px;
-}
+.legend-title { font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(240,238,255,0.3); margin-bottom:7px; }
 .legend-items { display:flex; flex-direction:column; gap:4px; }
-.legend-item { display:flex; align-items:center; gap:8px; }
-.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.legend-label { font-size:0.58rem; color:rgba(240,238,255,0.5); letter-spacing:0.04em; }
+.legend-item { display:flex; align-items:center; gap:7px; }
+.legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.legend-label { font-size:0.56rem; color:rgba(240,238,255,0.45); }
 
-/* ── RADAR TIMELINE ── */
+/* TIMELINE */
 #timeline {
-  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
   z-index:900;
-  background:rgba(3,3,10,0.88);
-  border:1px solid rgba(255,255,255,0.07);
-  border-radius:999px; padding:8px 16px;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-  display:flex; align-items:center; gap:12px;
+  background:rgba(3,3,10,0.9); border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px; padding:10px 16px 20px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  width:min(520px, calc(100vw - 40px));
+  display:flex; flex-direction:column; gap:10px;
 }
+.tl-top { display:flex; align-items:center; gap:10px; }
 #play-btn {
-  width:28px; height:28px; border-radius:50%;
-  background:rgba(108,92,231,0.3); border:1px solid rgba(108,92,231,0.5);
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:rgba(108,92,231,0.25); border:1px solid rgba(108,92,231,0.5);
   display:flex; align-items:center; justify-content:center;
-  cursor:pointer; transition:all 0.2s; flex-shrink:0;
+  cursor:pointer; transition:all 0.18s;
 }
-#play-btn:hover { background:rgba(108,92,231,0.5); }
+#play-btn:hover { background:rgba(108,92,231,0.5); transform:scale(1.08); }
 #play-btn svg { width:11px; height:11px; fill:#a29bfe; }
-#timeline-label {
-  font-size:0.6rem; color:rgba(240,238,255,0.5);
-  letter-spacing:0.08em; min-width:42px; text-align:center;
+#time-display {
+  font-size:0.62rem; color:rgba(240,238,255,0.55); letter-spacing:0.06em; flex:1; text-align:center;
 }
-.timeline-frames {
-  display:flex; align-items:center; gap:3px;
-}
-.tframe {
-  width:6px; height:20px; border-radius:3px;
-  background:rgba(255,255,255,0.1); cursor:pointer;
-  transition:all 0.15s;
-}
-.tframe:hover { background:rgba(162,155,254,0.4); }
-.tframe.active { background:#a29bfe; }
+#time-display b { color:#f0eeff; }
 
-/* ── LEAFLET OVERRIDES ── */
+/* Scrubber */
+.scrubber-wrap { position:relative; padding-bottom:16px; cursor:pointer; user-select:none; }
+#scrubber-track {
+  width:100%; height:5px; border-radius:999px;
+  background:rgba(255,255,255,0.1); position:relative; overflow:visible;
+}
+#scrubber-fill {
+  height:100%; border-radius:999px;
+  background:linear-gradient(90deg,#6c5ce7,#a29bfe);
+  width:100%; pointer-events:none;
+}
+#scrubber-thumb {
+  position:absolute; top:50%;
+  width:15px; height:15px; border-radius:50%;
+  background:#a29bfe; border:2px solid #fff;
+  box-shadow:0 0 10px rgba(162,155,254,0.7);
+  transform:translate(-50%, -50%);
+  pointer-events:none; left:100%;
+  transition:left 0.05s;
+}
+.scrubber-ticks {
+  position:absolute; bottom:0; left:0; right:0; height:14px;
+}
+.stick {
+  position:absolute; bottom:0;
+  font-size:0.47rem; color:rgba(240,238,255,0.22);
+  letter-spacing:0.04em; transform:translateX(-50%);
+  white-space:nowrap;
+}
+
+/* Leaflet */
 .leaflet-container { background:#03030a !important; }
-.leaflet-tile-pane { filter:brightness(0.85) saturate(0.7) hue-rotate(200deg); }
-.leaflet-control-zoom { display:none; }
+.leaflet-tile-pane { filter:brightness(0.9) saturate(0.6) hue-rotate(195deg); }
+.leaflet-control-zoom a {
+  background:rgba(3,3,10,0.9) !important; color:rgba(240,238,255,0.7) !important;
+  border-color:rgba(255,255,255,0.1) !important; font-family:"JetBrains Mono",monospace !important;
+}
+.leaflet-control-zoom a:hover { background:rgba(108,92,231,0.3) !important; color:#fff !important; }
 .leaflet-control-attribution {
-  background:rgba(3,3,10,0.7) !important;
-  color:rgba(240,238,255,0.2) !important;
-  font-family:"JetBrains Mono",monospace !important;
-  font-size:9px !important;
+  background:rgba(3,3,10,0.7) !important; color:rgba(240,238,255,0.2) !important;
+  font-family:"JetBrains Mono",monospace !important; font-size:9px !important;
 }
 .leaflet-control-attribution a { color:rgba(162,155,254,0.5) !important; }
-
-/* NWS alert polygons tooltip */
 .alert-tooltip {
-  background:rgba(3,3,10,0.95) !important;
-  border:1px solid rgba(255,71,87,0.3) !important;
-  border-radius:6px !important;
-  color:#f0eeff !important;
-  font-family:"JetBrains Mono",monospace !important;
-  font-size:0.62rem !important;
-  padding:8px 12px !important;
-  box-shadow:0 4px 20px rgba(0,0,0,0.5) !important;
+  background:rgba(3,3,10,0.95) !important; border:1px solid rgba(255,71,87,0.3) !important;
+  border-radius:6px !important; color:#f0eeff !important;
+  font-family:"JetBrains Mono",monospace !important; font-size:0.6rem !important;
+  padding:7px 10px !important; box-shadow:0 4px 20px rgba(0,0,0,0.5) !important;
 }
 </style>
 </head>
 <body>
 
-<!-- MAP -->
 <div id="map"></div>
 
-<!-- HEADER -->
 <div id="header">
   <div class="header-left">
     <a class="back-btn" href="/">
       <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-      koels.site
+      Back
     </a>
-    <div class="header-divider"></div>
-    <div class="header-title">
-      <div class="live-dot"></div>
-      Live Radar
+    <div class="hdiv"></div>
+    <div class="radar-logo">
+      <div class="radar-logo-icon">
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#a29bfe" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#6c5ce7" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(108,92,231,0.2)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="10" fill="none" stroke="rgba(108,92,231,0.3)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="6"  fill="none" stroke="rgba(108,92,231,0.5)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="2"  fill="#a29bfe"/>
+          <line x1="16" y1="16" x2="28" y2="6" stroke="url(#rg)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M 26 7 A 13 13 0 0 1 29 16" fill="none" stroke="#a29bfe" stroke-width="1" opacity="0.35"/>
+          <line x1="16" y1="2"  x2="16" y2="5"  stroke="rgba(162,155,254,0.25)" stroke-width="1"/>
+          <line x1="16" y1="27" x2="16" y2="30" stroke="rgba(162,155,254,0.25)" stroke-width="1"/>
+          <line x1="2"  y1="16" x2="5"  y2="16" stroke="rgba(162,155,254,0.25)" stroke-width="1"/>
+          <line x1="27" y1="16" x2="30" y2="16" stroke="rgba(162,155,254,0.25)" stroke-width="1"/>
+          <circle cx="23" cy="9" r="1.8" fill="#00ff88" opacity="0.85">
+            <animate attributeName="opacity" values="0.85;0.1;0.85" dur="1.8s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="1.8;2.4;1.8" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      <div>
+        <div class="radar-logo-main">Radar</div>
+        <div class="radar-logo-sub">koels.site</div>
+      </div>
     </div>
   </div>
   <div class="header-right">
-    <div class="alert-count none" id="alert-count">
+    <div class="alert-pill none" id="alert-pill">
       <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.5L20.5 19h-17L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
-      <span id="alert-num">0</span> Active Alerts
+      <span id="alert-num">0</span>&nbsp;Alerts
     </div>
     <div id="last-updated">—</div>
   </div>
 </div>
 
-<!-- SIDE PANEL -->
 <div id="panel">
   <div class="panel-header">
-    NWS Alerts — USA <span id="panel-count">0</span>
+    NWS Active Alerts — US &nbsp;<b id="panel-count">0</b>
   </div>
-  <div id="alerts-list">
-    <div class="no-alerts">No active alerts.<br>All clear across the US.</div>
-  </div>
+  <div id="alerts-list"><div class="no-alerts">Loading alerts…</div></div>
 </div>
 <div id="panel-toggle" onclick="togglePanel()">
   <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
 </div>
 
-<!-- LEGEND -->
 <div id="legend">
   <div class="legend-title">Alert Severity</div>
   <div class="legend-items">
@@ -290,214 +264,193 @@ body {
   </div>
 </div>
 
-<!-- RADAR TIMELINE -->
 <div id="timeline">
-  <div id="play-btn" onclick="togglePlay()">
-    <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-    <svg id="pause-icon" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+  <div class="tl-top">
+    <div id="play-btn" onclick="togglePlay()">
+      <svg id="play-icon"  viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="pause-icon" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </div>
+    <div id="time-display"><b>Loading radar…</b></div>
   </div>
-  <div class="timeline-frames" id="timeline-frames"></div>
-  <div id="timeline-label">NOW</div>
+  <div class="scrubber-wrap" id="scrubber-wrap">
+    <div id="scrubber-track">
+      <div id="scrubber-fill"></div>
+      <div id="scrubber-thumb"></div>
+    </div>
+    <div class="scrubber-ticks" id="scrubber-ticks"></div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ── MAP INIT ── */
-const map = L.map('map', {
-  center: [35, -95],
-  zoom: 4,
-  zoomControl: false,
-  attributionControl: true,
-});
-
-// Dark base map
+/* MAP */
+const map = L.map('map', { center:[35,-95], zoom:4, zoomControl:true });
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '© OpenStreetMap © CARTO',
-  subdomains: 'abcd',
-  maxZoom: 19,
+  attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:19
 }).addTo(map);
 
-/* ── RAINVIEWER RADAR ── */
+/* RADAR */
 let radarFrames = [];
+let layers = {};       // index -> L.tileLayer (preloaded)
+let activeLayer = null;
 let currentFrame = 0;
-let radarLayers = [];
 let playing = false;
-let playInterval = null;
-const RADAR_OPACITY = 0.6;
+let playTimer = null;
+const OPACITY = 0.65;
 
 async function loadRadar() {
   try {
-    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-    const data = await res.json();
-    radarFrames = data.radar.past.concat(data.radar.nowcast || []);
+    const data = await (await fetch('https://api.rainviewer.com/public/weather-maps.json')).json();
+    radarFrames = [...(data.radar.past||[]), ...(data.radar.nowcast||[])];
+    if (!radarFrames.length) return;
 
-    // Build timeline UI
-    const framesEl = document.getElementById('timeline-frames');
-    framesEl.innerHTML = '';
+    // Preload all tile layers, add all to map at opacity 0
+    Object.values(layers).forEach(l => map.removeLayer(l));
+    layers = {};
     radarFrames.forEach((f, i) => {
-      const el = document.createElement('div');
-      el.className = 'tframe' + (i === radarFrames.length - 1 ? ' active' : '');
-      el.onclick = () => showFrame(i);
-      framesEl.appendChild(el);
+      layers[i] = L.tileLayer(
+        `https://tilecache.rainviewer.com${f.path}/256/{z}/{x}/{y}/2/1_1.png`,
+        { opacity:0, zIndex:10 }
+      ).addTo(map);
     });
 
+    buildScrubber();
     showFrame(radarFrames.length - 1);
-  } catch(e) { console.error('Radar load failed', e); }
+  } catch(e) { console.error('Radar error:', e); }
 }
 
 function showFrame(idx) {
+  idx = Math.max(0, Math.min(idx, radarFrames.length - 1));
+  // Hide old
+  if (activeLayer) activeLayer.setOpacity(0);
   currentFrame = idx;
-  const frame = radarFrames[idx];
-
-  // Remove old layers
-  radarLayers.forEach(l => map.removeLayer(l));
-  radarLayers = [];
-
-  const layer = L.tileLayer(
-    `https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`,
-    { opacity: RADAR_OPACITY, zIndex: 10 }
-  );
-  layer.addTo(map);
-  radarLayers.push(layer);
-
-  // Update timeline UI
-  document.querySelectorAll('.tframe').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
-  });
-
-  // Update label
-  const d = new Date(frame.time * 1000);
-  const now = new Date();
-  const diffMin = Math.round((now - d) / 60000);
-  document.getElementById('timeline-label').textContent =
-    idx === radarFrames.length - 1 ? 'NOW' :
-    diffMin < 60 ? `-${diffMin}m` :
-    `-${Math.round(diffMin/60)}h`;
+  activeLayer = layers[idx];
+  if (activeLayer) activeLayer.setOpacity(OPACITY);
+  updateUI();
 }
 
+function updateUI() {
+  if (!radarFrames[currentFrame]) return;
+  const f = radarFrames[currentFrame];
+  const d = new Date(f.time * 1000);
+  const isLast = currentFrame === radarFrames.length - 1;
+  const timeStr = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  const diff = Math.round((Date.now() - d) / 60000);
+  const ago = isLast ? 'Live · Now' : diff < 60 ? `${diff}m ago` : `${Math.round(diff/60)}h ago`;
+  document.getElementById('time-display').innerHTML = `<b>${timeStr}</b> · ${ago} · ${currentFrame+1}/${radarFrames.length}`;
+
+  const pct = radarFrames.length > 1 ? (currentFrame / (radarFrames.length - 1)) * 100 : 100;
+  document.getElementById('scrubber-fill').style.width = pct + '%';
+  document.getElementById('scrubber-thumb').style.left = pct + '%';
+}
+
+/* PLAY / PAUSE */
 function togglePlay() {
   playing = !playing;
-  document.getElementById('play-icon').style.display = playing ? 'none' : '';
+  document.getElementById('play-icon').style.display  = playing ? 'none' : '';
   document.getElementById('pause-icon').style.display = playing ? '' : 'none';
   if (playing) {
-    playInterval = setInterval(() => {
-      const next = (currentFrame + 1) % radarFrames.length;
-      showFrame(next);
-    }, 600);
+    playTimer = setInterval(() => showFrame((currentFrame + 1) % radarFrames.length), 500);
   } else {
-    clearInterval(playInterval);
+    clearInterval(playTimer); playTimer = null;
   }
 }
 
-/* ── NWS ALERTS ── */
+/* SCRUBBER DRAG */
+function buildScrubber() {
+  const ticks = document.getElementById('scrubber-ticks');
+  ticks.innerHTML = '';
+  const n = radarFrames.length;
+  const step = Math.max(1, Math.floor(n / 5));
+  radarFrames.forEach((f, i) => {
+    if (i % step === 0 || i === n - 1) {
+      const d = new Date(f.time * 1000);
+      const label = i === n - 1 ? 'NOW' : d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const pct = n > 1 ? (i / (n - 1)) * 100 : 100;
+      const t = document.createElement('span');
+      t.className = 'stick';
+      t.textContent = label;
+      t.style.left = pct + '%';
+      ticks.appendChild(t);
+    }
+  });
+}
+
+function scrubTo(clientX) {
+  const rect = document.getElementById('scrubber-track').getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  if (playing) togglePlay(); // pause on scrub
+  showFrame(Math.round(pct * (radarFrames.length - 1)));
+}
+
+let dragging = false;
+const sw = document.getElementById('scrubber-wrap');
+sw.addEventListener('mousedown',  e => { dragging = true;  scrubTo(e.clientX); });
+sw.addEventListener('touchstart', e => { dragging = true;  scrubTo(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('mousemove',  e => { if (dragging) scrubTo(e.clientX); });
+window.addEventListener('touchmove',  e => { if (dragging) scrubTo(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('mouseup',   () => dragging = false);
+window.addEventListener('touchend',  () => dragging = false);
+
+/* NWS ALERTS */
 let alertLayers = [];
-const SEV_COLORS = {
-  Extreme:  { fill:'#ff003c', stroke:'#ff003c' },
-  Severe:   { fill:'#ff4757', stroke:'#ff4757' },
-  Moderate: { fill:'#ffa500', stroke:'#ffa500' },
-  Minor:    { fill:'#ffd600', stroke:'#ffd600' },
-  Unknown:  { fill:'#ffffff', stroke:'#ffffff' },
-};
-
-function sevClass(sev) {
-  return 'sev-' + (sev || 'unknown').toLowerCase();
-}
-
-function timeAgo(iso) {
+const SEV = { Extreme:'#ff003c', Severe:'#ff4757', Moderate:'#ffa500', Minor:'#ffd600', Unknown:'rgba(255,255,255,0.3)' };
+const sevClass = s => 'sev-' + (s||'unknown').toLowerCase();
+const timeAgo = iso => {
   if (!iso) return '';
-  const d = new Date(iso);
-  const diff = Math.round((Date.now() - d) / 60000);
-  if (diff < 60) return `${diff}m ago`;
-  if (diff < 1440) return `${Math.round(diff/60)}h ago`;
-  return `${Math.round(diff/1440)}d ago`;
-}
+  const d = Math.round((Date.now() - new Date(iso)) / 60000);
+  return d < 60 ? `${d}m ago` : d < 1440 ? `${Math.round(d/60)}h ago` : `${Math.round(d/1440)}d ago`;
+};
 
 async function loadAlerts() {
   try {
-    const res = await fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert&limit=500');
-    const data = await res.json();
-    const features = data.features || [];
+    const data = await (await fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert&limit=500')).json();
+    const feats = (data.features||[]).sort((a,b)=>{
+      const o={Extreme:0,Severe:1,Moderate:2,Minor:3,Unknown:4};
+      return (o[a.properties.severity]||4)-(o[b.properties.severity]||4);
+    });
 
-    // Clear old alert layers
     alertLayers.forEach(l => map.removeLayer(l));
     alertLayers = [];
 
     const list = document.getElementById('alerts-list');
-    const countEl = document.getElementById('alert-count');
-    const numEl = document.getElementById('alert-num');
-    const panelCount = document.getElementById('panel-count');
+    const pill = document.getElementById('alert-pill');
+    document.getElementById('alert-num').textContent   = feats.length;
+    document.getElementById('panel-count').textContent = feats.length;
+    pill.className = feats.length ? 'alert-pill' : 'alert-pill none';
 
-    if (features.length === 0) {
+    if (!feats.length) {
       list.innerHTML = '<div class="no-alerts">No active alerts.<br>All clear across the US.</div>';
-      countEl.className = 'alert-count none';
-      numEl.textContent = '0';
-      panelCount.textContent = '0';
     } else {
-      countEl.className = 'alert-count';
-      numEl.textContent = features.length;
-      panelCount.textContent = features.length;
-
       list.innerHTML = '';
-      features.forEach(f => {
-        const p = f.properties;
-        const sev = p.severity || 'Unknown';
-        const colors = SEV_COLORS[sev] || SEV_COLORS.Unknown;
-
-        // Draw polygon on map if geometry exists
+      feats.forEach(f => {
+        const p = f.properties, sev = p.severity||'Unknown', col = SEV[sev]||SEV.Unknown;
         if (f.geometry) {
-          const layer = L.geoJSON(f.geometry, {
-            style: {
-              color: colors.stroke,
-              fillColor: colors.fill,
-              weight: 1.5,
-              opacity: 0.8,
-              fillOpacity: 0.15,
-            }
-          });
-          layer.bindTooltip(`<strong>${p.event}</strong><br>${p.areaDesc}`, {
-            className: 'alert-tooltip', sticky: true
-          });
-          layer.addTo(map);
-          alertLayers.push(layer);
+          const gl = L.geoJSON(f.geometry, { style:{ color:col, fillColor:col, weight:1.5, opacity:0.85, fillOpacity:0.15 } });
+          gl.bindTooltip(`<strong>${p.event}</strong><br>${p.areaDesc}`, { className:'alert-tooltip', sticky:true });
+          gl.addTo(map); alertLayers.push(gl);
         }
-
-        // Add to panel list
         const item = document.createElement('div');
         item.className = `alert-item ${sevClass(sev)}`;
-        item.innerHTML = `
-          <div class="alert-event">${p.event || 'Alert'}</div>
-          <div class="alert-area">${p.areaDesc || ''}</div>
-          <div class="alert-time">${timeAgo(p.sent)} · ${sev}</div>
-        `;
-        // Click to fly to area
-        if (f.geometry) {
-          item.onclick = () => {
-            const layer = L.geoJSON(f.geometry);
-            map.flyToBounds(layer.getBounds(), { padding: [60, 60], duration: 1.2 });
-          };
-        }
+        item.innerHTML = `<div class="alert-event">${p.event||'Alert'}</div><div class="alert-area">${p.areaDesc||''}</div><div class="alert-time">${timeAgo(p.sent)} · ${sev}</div>`;
+        if (f.geometry) item.onclick = () => map.flyToBounds(L.geoJSON(f.geometry).getBounds(), {padding:[60,60],duration:1.2});
         list.appendChild(item);
       });
     }
 
-    // Update last updated time
     const now = new Date();
     document.getElementById('last-updated').textContent =
-      `Updated ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-
-  } catch(e) { console.error('Alerts load failed', e); }
+      `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  } catch(e) { console.error('Alerts error:', e); }
 }
 
-/* ── PANEL TOGGLE ── */
-function togglePanel() {
-  document.getElementById('panel').classList.toggle('open');
-}
+function togglePanel() { document.getElementById('panel').classList.toggle('open'); }
 
-/* ── INIT ── */
+/* INIT */
 loadRadar();
 loadAlerts();
-setInterval(loadAlerts, 60000); // refresh alerts every minute
-setInterval(loadRadar, 300000); // refresh radar every 5 min
+setInterval(loadAlerts, 60000);
+setInterval(loadRadar, 300000);
 </script>
 </body>
 </html>
