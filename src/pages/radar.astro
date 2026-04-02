@@ -313,7 +313,6 @@ let frames      = [];   // { path, time (unix), layer }
 let currentIdx  = 0;
 let playing     = false;
 let playTimer   = null;
-let holdingLast = false;  // true while waiting on the end-of-loop hold
 let activeLayer = null;
 
 function setStatus(msg, show) {
@@ -326,25 +325,25 @@ async function loadRainViewer() {
   try {
     setStatus('Loading radar…', true);
     const data = await (await fetch('https://api.rainviewer.com/public/weather-maps.json')).json();
-    const newFrames = [...(data.radar?.past||[]), ...(data.radar?.nowcast||[])];
+    // Only use past frames — nowcast frames have future timestamps and cause wrong times
+    const newFrames = data.radar?.past || [];
+    if (!newFrames.length) { setStatus('No radar data', true); return; }
 
-    const wasPlaying = playing;
     stopPlay();
 
     // Remove old layers
     frames.forEach(f => { try { map.removeLayer(f.layer); } catch(e){} });
     activeLayer = null;
 
-    const sz = window.devicePixelRatio >= 2 ? 512 : 256;
     frames = newFrames.map(f => ({
       path:  f.path,
       time:  f.time,
       layer: L.tileLayer(
-        data.host + f.path + '/' + sz + '/{z}/{x}/{y}/2/1_1.png',
+        data.host + f.path + '/256/{z}/{x}/{y}/2/1_1.png',
         {
           opacity:       0,
           pane:          'radarPane',
-          maxNativeZoom: 6,   // RainViewer native max — Leaflet upscales beyond this
+          maxNativeZoom: 8,
           maxZoom:       19
         }
       )
@@ -354,19 +353,17 @@ async function loadRainViewer() {
     frames.forEach(f => f.layer.addTo(map));
     buildTicks();
 
-    // Show latest frame, then auto-play
+    // Show latest frame, then always autoplay
     let shown = false;
-    const last = frames[frames.length - 1];
     const go = () => {
       if (shown) return;
       shown = true;
-      currentIdx = frames.length - 1;
-      showFrame(currentIdx);
+      showFrame(frames.length - 1);
       setStatus('', false);
-      if (wasPlaying !== false) startPlay();
+      startPlay();
     };
-    last.layer.once('load', go);
-    setTimeout(go, 5000);
+    frames[frames.length - 1].layer.once('load', go);
+    setTimeout(go, 4000);
 
   } catch(e) {
     console.error('RainViewer load error:', e);
@@ -386,16 +383,12 @@ function showFrame(idx) {
 function updateUI() {
   if (!frames.length) return;
   const f       = frames[currentIdx];
-  const t       = new Date(f.time * 1000);
-  const h       = t.getHours(), m = t.getMinutes();
-  const hh      = ((h % 12) || 12);
-  const mm      = m.toString().padStart(2, '0');
-  const ap      = h < 12 ? 'AM' : 'PM';
-  const diffMin = Math.round((Date.now() - t) / 60000);
-  const ago     = diffMin <= 1 ? 'LIVE · NOW' : `${diffMin}m ago`;
+  const isLast  = currentIdx === frames.length - 1;
+  const diffMin = Math.round((Date.now() / 1000 - f.time) / 60);
+  const ago     = isLast ? 'LIVE · NOW' : `${diffMin}m ago`;
 
   document.getElementById('time-display').innerHTML =
-    `<span class="t-time">${hh}:${mm} ${ap}</span>` +
+    `<span class="t-time">${fmtTime(f.time)}</span>` +
     `<span class="t-sep"> · </span>` +
     `<span class="t-ago">${ago}</span>` +
     `<span class="t-sep"> · </span>` +
@@ -406,6 +399,15 @@ function updateUI() {
   document.getElementById('scrubber-thumb').style.left  = pct + '%';
 }
 
+function fmtTime(unixSec) {
+  const t  = new Date(unixSec * 1000);
+  const h  = t.getHours(), m = t.getMinutes();
+  const hh = ((h % 12) || 12);
+  const mm = m.toString().padStart(2, '0');
+  const ap = h < 12 ? 'AM' : 'PM';
+  return `${hh}:${mm} ${ap}`;
+}
+
 function buildTicks() {
   if (!frames.length) return;
   const total = frames.length;
@@ -413,54 +415,49 @@ function buildTicks() {
                  Math.floor(total * 0.75), total - 1];
   document.getElementById('scrubber-ticks').innerHTML =
     [...new Set(picks)].map(i => {
-      const diffMin = Math.round((Date.now() - frames[i].time * 1000) / 60000);
-      const label   = diffMin <= 1 ? 'NOW' : `-${diffMin}m`;
-      return `<span class="tick-label${diffMin <= 1 ? ' is-now' : ''}">${label}</span>`;
+      const isLast = i === total - 1;
+      const label  = isLast ? 'NOW' : fmtTime(frames[i].time);
+      return `<span class="tick-label${isLast ? ' is-now' : ''}">${label}</span>`;
     }).join('');
 }
 
 // ── PLAY / PAUSE ──────────────────────────────────────────────────────────
+// Generation counter: incremented on every stopPlay so any
+// in-flight setTimeout from a previous play session self-cancels.
+let playGen = 0;
+
 function setPlayIcon(on) {
   document.getElementById('play-icon').style.display  = on ? 'none' : '';
   document.getElementById('pause-icon').style.display = on ? ''     : 'none';
 }
 
-// Single flat ticker — advances one frame then re-arms itself
-function tick() {
-  if (!playing) return;
-
-  if (holdingLast) {
-    // Finished holding the last frame — jump to start and resume normal pace
-    holdingLast = false;
-    showFrame(0);
-    playTimer = setTimeout(tick, FRAME_MS);
-    return;
-  }
-
-  const next = currentIdx + 1;
-  if (next >= frames.length) {
-    // Reached the end — hold before looping
-    holdingLast = true;
-    playTimer = setTimeout(tick, HOLD_MS);
-  } else {
-    showFrame(next);
-    playTimer = setTimeout(tick, FRAME_MS);
-  }
+function _tick(gen, nextIdx, delay) {
+  clearTimeout(playTimer);
+  playTimer = setTimeout(() => {
+    if (gen !== playGen) return;   // stale — a stopPlay happened after this was scheduled
+    if (nextIdx >= frames.length) {
+      // Hold on last frame, then loop back to 0
+      showFrame(frames.length - 1);
+      _tick(gen, 0, HOLD_MS);
+    } else {
+      showFrame(nextIdx);
+      _tick(gen, nextIdx + 1, FRAME_MS);
+    }
+  }, delay);
 }
 
 function startPlay() {
   if (playing || !frames.length) return;
-  playing     = true;
-  holdingLast = false;
+  playing = true;
   setPlayIcon(true);
-  // If sitting on the last frame already, restart from the beginning
-  if (currentIdx >= frames.length - 1) showFrame(0);
-  playTimer = setTimeout(tick, FRAME_MS);
+  // Resume from current position; if at the end, restart from 0
+  const next = currentIdx >= frames.length - 1 ? 0 : currentIdx + 1;
+  _tick(playGen, next, FRAME_MS);
 }
 
 function stopPlay() {
-  playing     = false;
-  holdingLast = false;
+  playing = false;
+  playGen++;                  // invalidate any scheduled _tick
   clearTimeout(playTimer);
   playTimer = null;
   setPlayIcon(false);
@@ -470,7 +467,6 @@ function togglePlay() {
   if (playing) stopPlay();
   else         startPlay();
 }
-
 loadRainViewer();
 setInterval(loadRainViewer, 300000);
 
