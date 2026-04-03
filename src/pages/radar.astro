@@ -370,6 +370,15 @@ body { background:#03030a; color:#f0eeff; }
 .leaflet-container { background:#03030a !important; }
 .leaflet-tile-pane { filter:brightness(0.88) saturate(0.5); }
 .leaflet-pane.radar-pane { filter:none !important; }
+/* GPU-accelerated opacity transitions on radar tile layers */
+.leaflet-tile-pane.radar-pane,
+.leaflet-tile-pane.radar-pane img,
+.leaflet-tile-pane.radar-pane .leaflet-tile {
+  will-change: opacity;
+  transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
 .leaflet-control-zoom a {
   background:rgba(3,3,10,0.9) !important; color:rgba(240,238,255,0.7) !important;
   border-color:rgba(255,255,255,0.1) !important; font-family:"JetBrains Mono",monospace !important;
@@ -649,8 +658,9 @@ map.getPane('radarPane').classList.add('radar-pane');
 // IEM/MSC/DWD are synced to the same timestamps.
 // All layers coexist — each covers its region and returns transparent elsewhere.
 
-const FRAME_MS = 600;
-const HOLD_MS  = 1800;
+const FRAME_MS = 400;   // time between frame advances (includes fade time)
+const HOLD_MS  = 1500;  // pause on last frame before looping
+const FADE_MS  = 250;   // crossfade duration between frames (ms)
 
 // IEM time slots matching approx 10-min intervals to align with RainViewer
 const IEM_SLOTS = [
@@ -670,8 +680,34 @@ let playTimer  = null;
 let seqId      = 0;
 let activeRV   = null;
 let activeIEM  = null;
+let fadeAnim   = null;  // tracks running crossfade animation
 const loadedFrames = new Set(); // tracks which frame indices have layers on the map
-const MAX_LOADED   = 5;         // max frames kept in memory at once (iOS memory limit)
+const MAX_LOADED   = 8;         // more frames preloaded for smoother looping
+
+/**
+ * Smooth crossfade between radar frames using requestAnimationFrame.
+ * Fades `fromLayer` → 0 and `toLayer` → targetOpacity over FADE_MS ms.
+ */
+function crossfade(fromLayer, toLayer, targetOpacity) {
+  if (fadeAnim) { cancelAnimationFrame(fadeAnim); fadeAnim = null; }
+  const t0 = performance.now();
+  const fromStart = fromLayer ? fromLayer.options.opacity : 0;
+  const toStart   = toLayer   ? toLayer.options.opacity   : 0;
+  const ease = t => 1 - Math.pow(1 - t, 3);  // ease-out cubic
+  function step(now) {
+    const t = Math.min(1, (now - t0) / FADE_MS);
+    const e = ease(t);
+    if (fromLayer) fromLayer.setOpacity(fromStart + (0 - fromStart) * e);
+    if (toLayer)   toLayer.setOpacity(toStart + (targetOpacity - toStart) * e);
+    if (t < 1) { fadeAnim = requestAnimationFrame(step); }
+    else {
+      if (fromLayer) fromLayer.setOpacity(0);
+      if (toLayer)   toLayer.setOpacity(targetOpacity);
+      fadeAnim = null;
+    }
+  }
+  fadeAnim = requestAnimationFrame(step);
+}
 
 // WMS overlays (static, update TIME param each frame)
 let wmsCanada = null;
@@ -897,37 +933,52 @@ function ensureLayer(layer) {
 
 function showFrame(idx) {
   if (!frames.length) return;
-  if (activeRV)  activeRV.setOpacity(0);
-  if (activeIEM) activeIEM.setOpacity(0);
   currentIdx = Math.max(0, Math.min(idx, frames.length - 1));
-
-  // Add this frame's layers if not already on the map
   const f = frames[currentIdx];
-  ensureLayer(f.rvLayer);
-  ensureLayer(f.iemLayer);
-  loadedFrames.add(currentIdx);
+  const targetOpacity = getRadarOpacity();
 
-  // Preload adjacent frame (next one) quietly
-  const nextIdx = (currentIdx + 1) % frames.length;
-  const nf = frames[nextIdx];
-  ensureLayer(nf.rvLayer);
-  ensureLayer(nf.iemLayer);
-  loadedFrames.add(nextIdx);
+  // Ensure current + adjacent frames are loaded
+  const preloadRange = 2;  // preload 2 frames ahead and behind
+  for (let d = -preloadRange; d <= preloadRange; d++) {
+    const pi = ((currentIdx + d) % frames.length + frames.length) % frames.length;
+    const pf = frames[pi];
+    ensureLayer(pf.rvLayer);
+    ensureLayer(pf.iemLayer);
+    loadedFrames.add(pi);
+  }
 
-  // Evict frames that are far away to free memory
+  // Evict frames far from current to free memory
   if (loadedFrames.size > MAX_LOADED) {
+    const keep = new Set();
+    for (let d = -preloadRange; d <= preloadRange; d++) {
+      const pi = ((currentIdx + d) % frames.length + frames.length) % frames.length;
+      keep.add(pi);
+    }
     for (const li of loadedFrames) {
-      if (li !== currentIdx && li !== nextIdx) {
+      if (!keep.has(li)) {
         try { map.removeLayer(frames[li].rvLayer);  } catch(e){}
         try { map.removeLayer(frames[li].iemLayer); } catch(e){}
         loadedFrames.delete(li);
-        if (loadedFrames.size <= MAX_LOADED) break;
       }
     }
   }
 
-  activeRV  = f.rvLayer;  activeRV.setOpacity(getRadarOpacity());
-  activeIEM = f.iemLayer; activeIEM.setOpacity(0.9);
+  // Crossfade RainViewer from old → new
+  if (activeRV && activeRV !== f.rvLayer) {
+    crossfade(activeRV, f.rvLayer, targetOpacity);
+  } else if (!activeRV) {
+    f.rvLayer.setOpacity(targetOpacity);
+  }
+
+  // IEM crossfade (same pattern)
+  if (activeIEM && activeIEM !== f.iemLayer) {
+    crossfade(activeIEM, f.iemLayer, 0.9);
+  } else if (!activeIEM) {
+    f.iemLayer.setOpacity(0.9);
+  }
+
+  activeRV  = f.rvLayer;
+  activeIEM = f.iemLayer;
   updateWMSTime(frames[currentIdx].minsAgo);
   updateUI();
 }
@@ -946,30 +997,32 @@ function getRadarOpacity() {
 function updateUSHighResLayers() {
   const z = map.getZoom();
   const center = map.getCenter();
-  // US bounds roughly: lat 24-50, lng -125 to -66
   const inUS = center.lat >= 20 && center.lat <= 55 && center.lng >= -130 && center.lng <= -60;
   const zoomedIn = z >= 9;
 
   if (inUS && zoomedIn) {
-    // Activate high-detail US radar
     if (wmsUSHighRes && !map.hasLayer(wmsUSHighRes)) {
       wmsUSHighRes.addTo(map);
     }
     if (wmsUSMRMS && !map.hasLayer(wmsUSMRMS)) {
       wmsUSMRMS.addTo(map);
     }
-    // Lower opacity on base RainViewer since high-res layers handle detail
-    if (activeRV) activeRV.setOpacity(0.4);
+    // Adjust base layer opacity during crossfade if one is running
+    if (fadeAnim && activeRV) {
+      // Let the crossfade finish naturally, just note that US hi-res is active
+    } else if (activeRV) {
+      activeRV.setOpacity(0.4);
+    }
   } else {
-    // Remove high-detail US layers when not over US or zoomed out
     if (wmsUSHighRes && map.hasLayer(wmsUSHighRes)) {
       try { map.removeLayer(wmsUSHighRes); } catch(e){}
     }
     if (wmsUSMRMS && map.hasLayer(wmsUSMRMS)) {
       try { map.removeLayer(wmsUSMRMS); } catch(e){}
     }
-    // Restore base RainViewer opacity
-    if (activeRV) activeRV.setOpacity(getRadarOpacity());
+    if (!fadeAnim && activeRV) {
+      activeRV.setOpacity(getRadarOpacity());
+    }
   }
 }
 
