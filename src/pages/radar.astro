@@ -878,7 +878,21 @@ async function fetchAustraliaAlerts() {
         geometry: null,
         region:   'AU',
         source:   'BOM',
-        url:      w.id ? 'https://www.bom.gov.au/products/' + w.id + '.shtml' : 'https://www.bom.gov.au/warnings/'
+        url:      (function() {
+          // Map BOM state to their state-specific warnings page
+          const statePages = {
+            'qld': 'https://www.bom.gov.au/qld/warnings/',
+            'nsw': 'https://www.bom.gov.au/nsw/warnings/',
+            'vic': 'https://www.bom.gov.au/vic/warnings/',
+            'wa':  'https://www.bom.gov.au/wa/warnings/',
+            'sa':  'https://www.bom.gov.au/sa/warnings/',
+            'tas': 'https://www.bom.gov.au/tas/warnings/',
+            'nt':  'https://www.bom.gov.au/nt/warnings/',
+            'act': 'https://www.bom.gov.au/act/warnings/',
+          };
+          const st = (w.state || '').toLowerCase();
+          return statePages[st] || 'https://www.bom.gov.au/warnings/';
+        })()
       };
     }).filter(a => a.event && !/cancel|terminated/i.test(a.event));
   } catch(e) { return []; }
