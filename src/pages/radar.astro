@@ -384,12 +384,7 @@ body { background:#03030a; color:#f0eeff; }
       You may encounter bugs or incomplete behavior.
     </div>
     <div class="beta-modal-footer">
-      <button class="beta-dismiss-btn" onclick="
-        if(document.getElementById('beta-no-show').checked){
-          try{localStorage.setItem('beta_dismissed','1')}catch(e){}
-        }
-        document.getElementById('beta-overlay').style.display='none';
-      ">Got it</button>
+      <button class="beta-dismiss-btn" onclick="acknowledgeBeta()">Got it</button>
       <label class="beta-dont-show">
         <input type="checkbox" id="beta-no-show"> Don’t show again
       </label>
@@ -397,7 +392,13 @@ body { background:#03030a; color:#f0eeff; }
   </div>
 </div>
 <script>
-  try{if(localStorage.getItem('beta_dismissed')==='1')document.getElementById('beta-overlay').style.display='none';}catch(e){}
+  try{
+    if(localStorage.getItem('beta_dismissed')==='1'){
+      document.getElementById('beta-overlay').style.display='none';
+      // Will be picked up by DOMContentLoaded — set flag so main script knows to auto-start
+      window._betaAlreadyAcknowledged = true;
+    }
+  }catch(e){}
 </script>
 <div id="map"></div>
 <div id="radar-status" id="radar-status">Loading radar…</div>
@@ -1130,8 +1131,21 @@ async function fetchEUAlerts() {
 function togglePanel() { document.getElementById('panel').classList.toggle('open'); }
 window.togglePanel = togglePanel;
 
-loadAlerts();
-setInterval(loadAlerts, 60000);
+// Only auto-start if beta was already acknowledged (returning user)
+if(window._betaAlreadyAcknowledged){
+  loadAlerts();
+  setInterval(loadAlerts, 60000);
+}
+
+// Called by the "Got it" button
+window.acknowledgeBeta = function() {
+  if(document.getElementById('beta-no-show').checked){
+    try{localStorage.setItem('beta_dismissed','1')}catch(e){}
+  }
+  document.getElementById('beta-overlay').style.display='none';
+  loadAlerts();
+  setInterval(loadAlerts, 60000);
+};
 
 // ── BETA DISCLAIMER handled inline on the modal button ───────────────────
 
