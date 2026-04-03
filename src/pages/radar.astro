@@ -625,6 +625,8 @@ function togglePlay() {
   if (playing) stopPlay();
   else         startPlay();
 }
+// Expose to global scope so the inline onclick="togglePlay()" can reach it
+window.togglePlay = togglePlay;
 
 loadRadar();
 setInterval(loadRadar, 300000);
@@ -779,6 +781,7 @@ async function fetchEUAlerts() {
 }
 
 function togglePanel() { document.getElementById('panel').classList.toggle('open'); }
+window.togglePanel = togglePanel;
 
 loadAlerts();
 setInterval(loadAlerts, 60000);
