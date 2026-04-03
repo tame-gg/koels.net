@@ -371,12 +371,6 @@ body { background:#03030a; color:#f0eeff; }
 .leaflet-tile-pane { filter:brightness(0.88) saturate(0.5); }
 .leaflet-pane.radar-pane { filter:none !important; }
 
-/* Smooth opacity transitions on radar tile layers (Leaflet sets inline opacity on the layer container div) */
-.leaflet-pane.radar-pane > div {
-  transition: opacity 0.2s ease-out;
-  will-change: opacity;
-}
-
 /* Hide broken/missing tile images silently */
 .leaflet-tile .leaflet-tile-loaded { visibility: visible !important; }
 .leaflet-control-zoom a {
@@ -659,6 +653,8 @@ map.getPane('radarPane').classList.add('radar-pane');
 // All layers coexist — each covers its region and returns transparent elsewhere.
 
 // Silence a tile layer completely — no console errors, no "zoom level not supported"
+const FADE_DURATION = 200;  // ms for smooth opacity crossfade between frames
+
 function suppressTileErrors(layer) {
   layer._tileOnError = function() {};
   layer.on('tileerror', function(evt) {
@@ -667,14 +663,22 @@ function suppressTileErrors(layer) {
       evt.tile.style.visibility = 'hidden';
     }
   });
+  // When the layer is added to the map, set a CSS transition on its container
+  // for smooth opacity crossfades
+  layer.on('add', function() {
+    const el = layer.getContainer && layer.getContainer();
+    if (el) {
+      el.style.transition = `opacity ${FADE_DURATION}ms ease-out`;
+    }
+  });
   return layer;
 }
 
 // Also kill it on the prototype — catches any layer that didn't get suppressTileErrors
 L.TileLayer.prototype._tileOnError = function() {};
 
-const FRAME_MS = 500;   // time between frame advances
-const HOLD_MS  = 1500;  // pause on last frame before looping
+const FRAME_INTERVAL = 500;  // ms between frame advances
+const HOLD_INTERVAL  = 1500; // ms pause on last frame before looping
 
 // IEM time slots matching approx 10-min intervals to align with RainViewer
 const IEM_SLOTS = [
@@ -695,7 +699,6 @@ let seqId      = 0;
 let activeRV   = null;
 let activeIEM  = null;
 const loadedFrames = new Set();
-const MAX_LOADED   = 22;   // keep ALL frames in memory (modern browsers handle this fine)
 
 // WMS overlays (static, update TIME param each frame)
 let wmsCanada = null;
@@ -859,18 +862,20 @@ async function loadRadar() {
       };
     });
 
-    // Only add the last frame's layers immediately (NOT all 22 at once)
-    // Additional frames are added on-demand in showFrame() to keep memory low
-    const lastFrame = frames[frames.length - 1];
-    lastFrame.rvLayer.addTo(map);
-    lastFrame.iemLayer.addTo(map);
-    lastFrame.iemLayer.on('tileerror', evt => { evt.tile.style.display = 'none'; });
-
     // Build/update WMS overlays
     buildWMSOverlays();
     buildTicks();
 
-    // Show latest frame then autoplay
+    // ── PRELOAD ALL frames at opacity 0 before starting playback ──────────
+    // This ensures every frame has its tiles loaded before we start animating,
+    // so crossfades are smooth with no blank flashes.
+    frames.forEach((f, i) => {
+      f.rvLayer.addTo(map);
+      f.iemLayer.addTo(map);
+      loadedFrames.add(i);
+    });
+
+    // Show latest frame then autoplay — wait for tiles to actually load
     let shown = false;
     const go = () => {
       if (shown) return;
@@ -879,8 +884,12 @@ async function loadRadar() {
       setStatus('', false);
       startPlay();
     };
+
+    // Wait for the last frame's RainViewer tiles to load (they load fastest)
+    const lastFrame = frames[frames.length - 1];
     lastFrame.rvLayer.once('load', go);
-    setTimeout(go, 3000);
+    // Fallback: start after 5 seconds even if not all tiles loaded
+    setTimeout(go, 5000);
 
   } catch(e) {
     console.error('Radar load error:', e);
@@ -907,31 +916,14 @@ function showFrame(idx) {
   currentIdx = Math.max(0, Math.min(idx, frames.length - 1));
   const f = frames[currentIdx];
   const targetOpacity = getRadarOpacity();
+  const prevRV = activeRV;
+  const prevIEM = activeIEM;
 
-  // Ensure this frame's layers are loaded and on the map
-  ensureLayer(f.rvLayer);
-  ensureLayer(f.iemLayer);
-  loadedFrames.add(currentIdx);
-
-  // Keep adjacent frames loaded for smooth looping
-  const nextIdx = (currentIdx + 1) % frames.length;
-  const prevIdx = (currentIdx - 1 + frames.length) % frames.length;
-  ensureLayer(frames[nextIdx].rvLayer);
-  ensureLayer(frames[nextIdx].iemLayer);
-  ensureLayer(frames[prevIdx].rvLayer);
-  ensureLayer(frames[prevIdx].iemLayer);
-  loadedFrames.add(nextIdx);
-  loadedFrames.add(prevIdx);
-
-  // Direct opacity swap — CSS transition on the pane smooths it automatically
-  if (activeRV && activeRV !== f.rvLayer) {
-    activeRV.setOpacity(0);
-  }
+  // Crossfade: set new layer to target, old layer to 0
+  // CSS transitions on the container handle the smooth blend
+  if (prevRV && prevRV !== f.rvLayer) prevRV.setOpacity(0);
+  if (prevIEM && prevIEM !== f.iemLayer) prevIEM.setOpacity(0);
   f.rvLayer.setOpacity(targetOpacity);
-
-  if (activeIEM && activeIEM !== f.iemLayer) {
-    activeIEM.setOpacity(0);
-  }
   f.iemLayer.setOpacity(0.9);
 
   activeRV  = f.rvLayer;
@@ -1019,12 +1011,11 @@ function _next(id, idx, delay) {
   playTimer = setTimeout(() => {
     if (id !== seqId) return;
     if (idx >= frames.length) {
-      // Hold on last frame then loop
       showFrame(frames.length - 1);
-      _next(id, 0, HOLD_MS);
+      _next(id, 0, HOLD_INTERVAL);
     } else {
       showFrame(idx);
-      _next(id, idx + 1, FRAME_MS);
+      _next(id, idx + 1, FRAME_INTERVAL);
     }
   }, delay);
 }
@@ -1036,7 +1027,7 @@ function startPlay() {
   setPlayIcon(true);
   const next = currentIdx >= frames.length - 1 ? 0 : currentIdx + 1;
   if (next === 0) showFrame(0);
-  _next(seqId, next, FRAME_MS);
+  _next(seqId, next, FRAME_INTERVAL);
 }
 
 function stopPlay() {
