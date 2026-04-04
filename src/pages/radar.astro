@@ -281,7 +281,7 @@ body { background:#03030a; color:#f0eeff; }
 
 /* LEGEND — bottom left corner, horizontal pill */
 #legend {
-  position:fixed; bottom:20px; left:20px; z-index:900;
+  position:fixed; bottom:130px; left:20px; z-index:900;
   background:rgba(5,4,18,0.94); border:1px solid rgba(108,92,231,0.2);
   border-radius:12px; padding:11px 20px;
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
@@ -466,6 +466,25 @@ body { background:#03030a; color:#f0eeff; }
 .ww-forecast-temps .high { color:#f0eeff; font-weight:600; }
 .ww-forecast-temps .low { color:rgba(240,238,255,0.3); }
 
+/* RADAR PRODUCT TOGGLE */
+#radar-product-toggle {
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+  z-index:950; display:flex; gap:4px;
+  background:rgba(3,3,10,0.92); border:1px solid rgba(108,92,231,0.25);
+  border-radius:10px; padding:6px 8px;
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.rp-btn {
+  font-size:0.52rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+  padding:5px 12px; border-radius:6px; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.08); background:transparent;
+  color:rgba(240,238,255,0.35); font-family:"JetBrains Mono",monospace;
+  transition:all 0.15s; white-space:nowrap;
+}
+.rp-btn:hover { color:rgba(240,238,255,0.7); border-color:rgba(255,255,255,0.15); }
+.rp-btn.active { color:#a29bfe; border-color:rgba(108,92,231,0.5); background:rgba(108,92,231,0.18); }
+
 /* Hide broken/missing tile images silently */
 .leaflet-tile .leaflet-tile-loaded { visibility: visible !important; }
 .leaflet-control-zoom a {
@@ -524,6 +543,12 @@ body { background:#03030a; color:#f0eeff; }
   .ww-temp { font-size:1.8rem; }
   .ww-icon { font-size:2rem; }
 
+  /* Radar product toggle */
+  #radar-product-toggle {
+    bottom:100px; padding:4px 6px; gap:3px; border-radius:8px;
+  }
+  .rp-btn { font-size:0.44rem; padding:4px 8px; }
+
   /* Panel — slides up from bottom, full width */
   #panel {
     top:auto; bottom:0; left:0; right:0; width:100%;
@@ -563,9 +588,9 @@ body { background:#03030a; color:#f0eeff; }
   #time-display { font-size:0.58rem; }
   .tick-label { font-size:0.42rem; }
 
-  /* Legend — sits above timeline (timeline ~80px tall) */
+  /* Legend — sits above product toggle */
   #legend {
-    bottom:108px; left:12px; right:auto;
+    bottom:160px; left:12px; right:auto;
     padding:7px 12px; gap:8px; border-radius:8px;
   }
   .legend-title { font-size:0.52rem; }
@@ -746,6 +771,14 @@ body { background:#03030a; color:#f0eeff; }
   </div>
 </div>
 
+<!-- RADAR PRODUCT TOGGLE -->
+<div id="radar-product-toggle">
+  <button class="rp-btn active" data-product="0" onclick="switchRadarProduct(0)">Reflectivity</button>
+  <button class="rp-btn" data-product="1" onclick="switchRadarProduct(1)">Precipitation</button>
+  <button class="rp-btn" data-product="2" onclick="switchRadarProduct(2)">Accumulated</button>
+  <button class="rp-btn" data-product="3" onclick="switchRadarProduct(3)">Enhanced</button>
+</div>
+
 <div id="timeline">
   <div class="tl-row1">
     <div id="play-btn" onclick="togglePlay()">
@@ -804,35 +837,40 @@ map.getPane('radarPane').classList.add('radar-pane');
 // 2. IEM NEXRAD  — US/CONUS overlay, animated XYZ, zoom 10, high detail
 // 3. MSC GeoMet  — Canada WMS overlay, free, no key
 // 4. DWD         — Germany/Europe WMS overlay, free, no key
+// 5. Buienradar  — Netherlands/Belgium, free
+// 6. MET Norway  — Scandinavia, free
 //
 // RainViewer drives the master frame count (~12 past frames, 10-min steps).
-// IEM/MSC/DWD are synced to the same timestamps.
-// All layers coexist — each covers its region and returns transparent elsewhere.
+// Regional WMS overlays are synced to the same timestamps.
+// Only ONE layer type is active per region at a time to avoid duplicates.
 
-// Silence a tile layer completely — no console errors, no "zoom level not supported"
-const FADE_DURATION = 200;  // ms for smooth opacity crossfade between frames
+const FADE_DURATION = 250;  // ms for smooth opacity crossfade between frames
 
+// ── TILE ERROR SUPPRESSION (Bulletproof) ──────────────────────────────
 function suppressTileErrors(layer) {
-  layer._tileOnError = function() {};
+  // Override internal tile error handler — no console spam, no "zoom not supported"
+  if (layer.createTile) {
+    const origCreate = layer.createTile.bind(layer);
+    layer.createTile = function(coords, done) {
+      const tile = origCreate(coords, done);
+      tile.onerror = null; // swallow all errors silently
+      tile.style.opacity = '0';
+      tile.onload = () => { tile.style.opacity = ''; };
+      return tile;
+    };
+  }
   layer.on('tileerror', function(evt) {
-    if (evt.tile) {
-      evt.tile.style.display = 'none';
-      evt.tile.style.visibility = 'hidden';
-    }
+    if (evt.tile) { evt.tile.style.display = 'none'; }
   });
-  // When the layer is added to the map, set a CSS transition on its container
-  // for smooth opacity crossfades
   layer.on('add', function() {
     const el = layer.getContainer && layer.getContainer();
-    if (el) {
-      el.style.transition = `opacity ${FADE_DURATION}ms ease-out`;
-    }
+    if (el) el.style.transition = `opacity ${FADE_DURATION}ms ease-out`;
   });
   return layer;
 }
 
-// Also kill it on the prototype — catches any layer that didn't get suppressTileErrors
-L.TileLayer.prototype._tileOnError = function() {};
+// Override Leaflet's internal tile error handling globally
+L.GridLayer.prototype._tileOnError = function() {};
 
 const FRAME_INTERVAL = 500;  // ms between frame advances
 const HOLD_INTERVAL  = 1500; // ms pause on last frame before looping
@@ -847,7 +885,7 @@ const IEM_SLOTS = [
   { ts:'900913',      minsAgo: 0 },
 ];
 
-// frames[i] = { minsAgo, time, rvLayer, iemLayer }
+// frames[i] = { minsAgo, time, rvPath, rvColor, rvLayer, iemLayer }
 let frames     = [];
 let currentIdx = 0;
 let playing    = false;
@@ -855,17 +893,26 @@ let playTimer  = null;
 let seqId      = 0;
 let activeRV   = null;
 let activeIEM  = null;
+let rvHost     = '';  // store RainViewer host for product switching
 const loadedFrames = new Set();
 
-// WMS overlays (static, update TIME param each frame)
+// ── RADAR PRODUCT TYPE ──────────────────────────────────────────────────
+// RainViewer color maps: 1=classic (default), 2=temperature, 3=accumulation, 4=CMY, 5=enhanced
+const RADAR_PRODUCTS = [
+  { id: 'reflectivity',  label: 'Reflectivity', rvColor: 2, desc: 'Standard dBZ' },
+  { id: 'precipitation', label: 'Precipitation', rvColor: 1, desc: 'Rain intensity' },
+  { id: 'accumulated',   label: 'Accumulated',  rvColor: 3, desc: 'Total accumulation' },
+  { id: 'enhanced',      label: 'Enhanced',     rvColor: 5, desc: 'Enhanced contrast' },
+];
+let activeProduct = 0;  // index into RADAR_PRODUCTS
+
+// ── REGIONAL WMS OVERLAYS ───────────────────────────────────────────────
 let wmsCanada = null;
 let wmsDWD    = null;
 let wmsNorway = null;
-let wmsINMIND = null;  // Netherlands
-
-// High-detail US radar overlays (these support deep zoom)
-let wmsUSHighRes = null;   // IEM GeoServer NEXRAD WMS (zoom 14+)
-let wmsUSMRMS    = null;   // NOAA MRMS composite (very high res)
+let wmsINMIND = null;   // Netherlands (Buienradar)
+let wmsUK     = null;   // UK Met Office
+let wmsSpain  = null;   // AEMET Spain
 
 function setStatus(msg, show) {
   const el = document.getElementById('radar-status');
@@ -881,82 +928,109 @@ function floorMins(d, n) {
   return new Date(Math.floor(d.getTime() / (n * 60000)) * (n * 60000));
 }
 
-function buildWMSOverlays() {
-  if (wmsCanada)  { try { map.removeLayer(wmsCanada);  } catch(e){} }
-  if (wmsDWD)     { try { map.removeLayer(wmsDWD);     } catch(e){} }
-  if (wmsNorway)  { try { map.removeLayer(wmsNorway);  } catch(e){} }
-  if (wmsINMIND)  { try { map.removeLayer(wmsINMIND);  } catch(e){} }
-  if (wmsUSHighRes) { try { map.removeLayer(wmsUSHighRes); } catch(e){} }
-  if (wmsUSMRMS)    { try { map.removeLayer(wmsUSMRMS);    } catch(e){} }
+// ── REGION DETECTION ────────────────────────────────────────────────────
+function detectRegion(lat, lng) {
+  if (lat >= 20 && lat <= 55 && lng >= -130 && lng <= -60) return 'US';
+  if (lat >= 41 && lat <= 84 && lng >= -141 && lng <= -52) return 'CA';
+  if (lat >= 45 && lat <= 55 && lng >= -11 && lng <= 2)   return 'UK';
+  if (lat >= 47 && lat <= 55 && lng >= 5 && lng <= 15)    return 'DE';
+  if (lat >= 36 && lat <= 44 && lng >= -9 && lng <= 4)    return 'ES';
+  if (lat >= 50 && lat <= 54 && lng >= 3 && lng <= 8)     return 'NL';
+  if (lat >= 57 && lat <= 71 && lng >= 4 && lng <= 31)    return 'NO';
+  if (lat >= 35 && lat <= 72 && lng >= -11 && lng <= 40)  return 'EU';
+  if (lat >= -44 && lat <= -10 && lng >= 140 && lng <= 180) return 'AU';
+  if (lat >= -48 && lat <= -34 && lng >= 165 && lng <= 179) return 'NZ';
+  if (lat >= 24 && lat <= 46 && lng >= 122 && lng <= 146) return 'JP';
+  if (lat >= 6 && lat <= 36 && lng >= 68 && lng <= 97)    return 'IN';
+  if (lat >= -56 && lat <= 13 && lng >= -82 && lng <= -34) return 'SA';
+  return 'OTHER';
+}
+
+// Track which regional overlays are currently active
+let activeRegionalLayers = [];
+
+function clearRegionalLayers() {
+  activeRegionalLayers.forEach(l => { try { map.removeLayer(l); } catch(e){} });
+  activeRegionalLayers = [];
+  wmsCanada = null; wmsDWD = null; wmsNorway = null;
+  wmsINMIND = null; wmsUK = null; wmsSpain = null;
+}
+
+function buildRegionalOverlays(center) {
+  clearRegionalLayers();
+  const region = detectRegion(center.lat, center.lng);
 
   try {
-    wmsCanada = suppressTileErrors(L.tileLayer.wms('https://geo.weather.gc.ca/geomet?', {
-      layers: 'RADAR_1KM_RRAI', version: '1.3.0',
-      format: 'image/png', transparent: true,
-      opacity: 0.85, pane: 'radarPane', maxZoom: 19,
-      crossOrigin: '', attribution: 'MSC/ECCC'
-    })).addTo(map);
-  } catch(e) { wmsCanada = null; }
+    switch(region) {
+      case 'CA':
+        wmsCanada = suppressTileErrors(L.tileLayer.wms('https://geo.weather.gc.ca/geomet?', {
+          layers: 'RADAR_1KM_RRAI', version: '1.3.0',
+          format: 'image/png', transparent: true,
+          opacity: 0.85, pane: 'radarPane', maxNativeZoom: 10, maxZoom: 19,
+          crossOrigin: '', attribution: 'MSC/ECCC'
+        }));
+        break;
+      case 'DE': case 'EU':
+        wmsDWD = suppressTileErrors(L.tileLayer.wms('https://maps.dwd.de/geoserver/dwd/wms?', {
+          layers: 'dwd:RX-Produkt', version: '1.3.0',
+          format: 'image/png', transparent: true,
+          opacity: 0.85, pane: 'radarPane', maxNativeZoom: 10, maxZoom: 19,
+          crossOrigin: '', attribution: 'DWD'
+        }));
+        break;
+      case 'NO': case 'EU':
+        wmsNorway = suppressTileErrors(L.tileLayer.wms('https://shyrd.met.no/radar?', {
+          layers: 'composite,se', version: '1.1.1',
+          format: 'image/png', transparent: true,
+          opacity: 0.8, pane: 'radarPane', maxNativeZoom: 10, maxZoom: 19,
+          attribution: 'MET Norway'
+        }));
+        break;
+      case 'NL': case 'EU':
+        wmsINMIND = suppressTileErrors(L.tileLayer(
+          'https://api.buienradar.nl/image/1.0/{z}/{x}/{y}.png',
+          { opacity: 0.85, pane: 'radarPane', maxNativeZoom: 9, maxZoom: 19, attribution: 'Buienradar' }
+        ));
+        break;
+      case 'UK':
+        wmsUK = suppressTileErrors(L.tileLayer.wms('https://opendata-gw.metoffice.gov.uk/wms/layer/radar_composite?', {
+          layers: 'composite_uk', version: '1.1.1',
+          format: 'image/png', transparent: true,
+          opacity: 0.85, pane: 'radarPane', maxNativeZoom: 9, maxZoom: 19,
+          attribution: 'Met Office'
+        }));
+        break;
+      case 'ES':
+        wmsSpain = suppressTileErrors(L.tileLayer.wms('https://www.aemet.es/wms/mapas/precipitation?', {
+          layers: 'radar', version: '1.3.0',
+          format: 'image/png', transparent: true,
+          opacity: 0.85, pane: 'radarPane', maxNativeZoom: 9, maxZoom: 19,
+          attribution: 'AEMET'
+        }));
+        break;
+    }
+  } catch(e) { console.warn('Regional overlay failed:', e); }
 
-  try {
-    wmsDWD = suppressTileErrors(L.tileLayer.wms('https://maps.dwd.de/geoserver/dwd/wms?', {
-      layers: 'dwd:RX-Produkt', version: '1.3.0',
-      format: 'image/png', transparent: true,
-      opacity: 0.85, pane: 'radarPane', maxZoom: 19,
-      crossOrigin: '', attribution: 'DWD'
-    })).addTo(map);
-  } catch(e) { wmsDWD = null; }
-
-  try {
-    wmsNorway = suppressTileErrors(L.tileLayer.wms('https://shyrd.met.no/radar?', {
-      layers: 'composite,se', version: '1.1.1',
-      format: 'image/png', transparent: true,
-      opacity: 0.8, pane: 'radarPane', maxZoom: 19,
-      attribution: 'MET Norway'
-    })).addTo(map);
-  } catch(e) { wmsNorway = null; }
-
-  try {
-    wmsINMIND = suppressTileErrors(L.tileLayer(
-      'https://api.buienradar.nl/image/1.0/{z}/{x}/{y}.png',
-      { opacity: 0.85, pane: 'radarPane', maxNativeZoom: 9, maxZoom: 19, attribution: 'Buienradar' }
-    )).addTo(map);
-  } catch(e) { wmsINMIND = null; }
-
-  // ── HIGH-DETAIL US RADAR ─────────────────────────────────────────
-  try {
-    wmsUSHighRes = suppressTileErrors(L.tileLayer.wms('https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi?', {
-      layers: 'nexrad-n0r', version: '1.1.1',
-      format: 'image/png', transparent: true,
-      opacity: 0.9, pane: 'radarPane', maxZoom: 19,
-      attribution: 'IEM/NWS'
-    })).addTo(map);
-  } catch(e) { wmsUSHighRes = null; }
-
-  try {
-    wmsUSMRMS = suppressTileErrors(L.tileLayer.wms('https://mesonet.agron.iastate.edu/cgi-bin/wms/mrms/n1p_base_reflectivity.cgi?', {
-      layers: 'mrms-n1p-base-reflectivity', version: '1.1.1',
-      format: 'image/png', transparent: true,
-      opacity: 0.9, pane: 'radarPane', maxZoom: 19,
-      attribution: 'NOAA MRMS/IEM'
-    })).addTo(map);
-  } catch(e) { wmsUSMRMS = null; }
+  // Add whichever layers were created
+  [wmsCanada, wmsDWD, wmsNorway, wmsINMIND, wmsUK, wmsSpain].forEach(l => {
+    if (l) {
+      try { l.addTo(map); activeRegionalLayers.push(l); } catch(e){}
+    }
+  });
 }
 
 function updateWMSTime(minsAgo) {
   const t = floorMins(new Date(Date.now() - minsAgo * 60000), 5);
   const ts = isoUTC(t);
-  if (wmsCanada)  { try { wmsCanada.setParams({ TIME: ts }, false);  } catch(e){} }
-  if (wmsDWD)     { try { wmsDWD.setParams({ TIME: ts }, false);     } catch(e){} }
-  if (wmsUSHighRes) { try { wmsUSHighRes.setParams({ TIME: ts }, false); } catch(e){} }
-  if (wmsUSMRMS)    { try { wmsUSMRMS.setParams({ TIME: ts }, false);    } catch(e){} }
+  [wmsCanada, wmsDWD, wmsNorway, wmsUK, wmsSpain].forEach(wms => {
+    if (wms) { try { wms.setParams({ TIME: ts }, false); } catch(e){} }
+  });
 }
 
 async function loadRadar() {
   try {
     setStatus('Loading radar\u2026', true);
 
-    // Fetch RainViewer manifest — explicit error handling for Safari
     let rv;
     try {
       const res = await fetch('https://api.rainviewer.com/public/weather-maps.json', {
@@ -966,27 +1040,16 @@ async function loadRadar() {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       rv = await res.json();
     } catch(fetchErr) {
-      console.warn('RainViewer fetch failed, trying fallback:', fetchErr);
-      // Fallback: try the RainViewer CDN directly to test connectivity
-      try {
-        const res2 = await fetch('https://tilecache.rainviewer.com/v2/radar/nowcast/past.json', { cache: 'no-store' });
-        if (res2.ok) {
-          rv = await res2.json();
-        } else {
-          throw new Error('Fallback also failed');
-        }
-      } catch(e2) {
-        console.warn('All radar fetch attempts failed:', e2);
-        setStatus('Radar unavailable', true);
-        return;
-      }
+      console.warn('RainViewer fetch failed:', fetchErr);
+      setStatus('Radar unavailable', true);
+      return;
     }
     const rvPast = (rv.radar && rv.radar.past) || [];
     if (!rvPast.length) { setStatus('No radar data', true); return; }
 
-    stopPlay();  // stop before touching layers
+    stopPlay();
 
-    // Tear down old layers and clear memory
+    // Tear down old layers
     frames.forEach(f => {
       try { map.removeLayer(f.rvLayer);  } catch(e){}
       try { map.removeLayer(f.iemLayer); } catch(e){}
@@ -996,22 +1059,26 @@ async function loadRadar() {
 
     const nowSec = Math.floor(Date.now() / 1000);
     const sz = 256;
+    const product = RADAR_PRODUCTS[activeProduct];
 
-    // Use IEM_SLOTS as master timeline; find closest RainViewer frame per slot
+    // Build frames with RainViewer global + IEM US overlay
     frames = IEM_SLOTS.map((slot, i) => {
       const frameTime = nowSec - slot.minsAgo * 60;
       const closest   = rvPast.reduce((b, r) =>
         Math.abs(r.time - frameTime) < Math.abs(b.time - frameTime) ? r : b
       );
+      const rvPath = rv.host + closest.path + '/' + sz;
       return {
         minsAgo:  slot.minsAgo,
         time:     frameTime,
-        // RainViewer — global base (entire world)
+        rvPath:   rvPath,
+        rvColor:  product.rvColor,
+        // RainViewer — global base, use current product color map
         rvLayer:  suppressTileErrors(L.tileLayer(
-          rv.host + closest.path + '/' + sz + '/{z}/{x}/{y}/2/1_1.png',
+          rvPath + '/' + product.rvColor + '/1_1.png',
           { opacity: 0, pane: 'radarPane', maxNativeZoom: 8, maxZoom: 19 }
         )),
-        // IEM NEXRAD — US high-res overlay (transparent outside CONUS)
+        // IEM NEXRAD — US only, returns transparent outside CONUS
         iemLayer: suppressTileErrors(L.tileLayer(
           `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-${slot.ts}/{z}/{x}/{y}.png`,
           { opacity: 0, pane: 'radarPane', maxNativeZoom: 10, maxZoom: 19 }
@@ -1019,20 +1086,20 @@ async function loadRadar() {
       };
     });
 
-    // Build/update WMS overlays
-    buildWMSOverlays();
+    rvHost = rv.host;
+
+    // Build regional overlays based on current map center
+    buildRegionalOverlays(map.getCenter());
     buildTicks();
 
-    // ── PRELOAD ALL frames at opacity 0 before starting playback ──────────
-    // This ensures every frame has its tiles loaded before we start animating,
-    // so crossfades are smooth with no blank flashes.
+    // Preload ALL frames
     frames.forEach((f, i) => {
       f.rvLayer.addTo(map);
       f.iemLayer.addTo(map);
       loadedFrames.add(i);
     });
 
-    // Show latest frame then autoplay — wait for tiles to actually load
+    // Show latest frame then autoplay
     let shown = false;
     const go = () => {
       if (shown) return;
@@ -1042,29 +1109,13 @@ async function loadRadar() {
       startPlay();
     };
 
-    // Wait for the last frame's RainViewer tiles to load (they load fastest)
     const lastFrame = frames[frames.length - 1];
     lastFrame.rvLayer.once('load', go);
-    // Fallback: start after 5 seconds even if not all tiles loaded
     setTimeout(go, 5000);
 
   } catch(e) {
     console.error('Radar load error:', e);
     setStatus('Radar unavailable', true);
-  }
-}
-
-function ensureLayer(layer) {
-  if (!map.hasLayer(layer)) {
-    suppressTileErrors(layer);
-    layer.on('tileload', evt => {
-      if (evt.tile) {
-        evt.tile.style.display = '';
-        evt.tile.style.visibility = 'visible';
-        evt.tile.onerror = null;
-      }
-    });
-    layer.addTo(map);
   }
 }
 
@@ -1076,12 +1127,11 @@ function showFrame(idx) {
   const prevRV = activeRV;
   const prevIEM = activeIEM;
 
-  // Crossfade: set new layer to target, old layer to 0
-  // CSS transitions on the container handle the smooth blend
+  // Crossfade
   if (prevRV && prevRV !== f.rvLayer) prevRV.setOpacity(0);
   if (prevIEM && prevIEM !== f.iemLayer) prevIEM.setOpacity(0);
   f.rvLayer.setOpacity(targetOpacity);
-  f.iemLayer.setOpacity(0.9);
+  f.iemLayer.setOpacity(0.85);
 
   activeRV  = f.rvLayer;
   activeIEM = f.iemLayer;
@@ -1089,38 +1139,51 @@ function showFrame(idx) {
   updateUI();
 }
 
-// Radar tile opacity scales with zoom — subtle at low zoom, vivid at high zoom
+// Radar opacity: clear and visible at all zooms
 function getRadarOpacity() {
   const z = map.getZoom();
-  if (z <= 3) return 0.3;
-  if (z <= 5) return 0.5;
-  if (z <= 7) return 0.65;
-  if (z <= 9) return 0.75;
+  if (z <= 3) return 0.35;
+  if (z <= 5) return 0.55;
+  if (z <= 7) return 0.7;
   return 0.85;
 }
 
-// Toggle high-detail US layers when zoomed in over the US
-function updateUSHighResLayers() {
-  const z = map.getZoom();
-  const center = map.getCenter();
-  const inUS = center.lat >= 20 && center.lat <= 55 && center.lng >= -130 && center.lng <= -60;
-  const zoomedIn = z >= 9;
+// Switch radar product type
+function switchRadarProduct(index) {
+  if (index === activeProduct || !frames.length) return;
+  activeProduct = index;
 
-  if (inUS && zoomedIn) {
-    // Add US high-res layers
-    if (wmsUSHighRes && !map.hasLayer(wmsUSHighRes)) wmsUSHighRes.addTo(map);
-    if (wmsUSMRMS && !map.hasLayer(wmsUSMRMS)) wmsUSMRMS.addTo(map);
-    // HIDE the base RainViewer and IEM tiles completely — only use high-res data
-    if (activeRV)  activeRV.setOpacity(0);
-    if (activeIEM) activeIEM.setOpacity(0);
-  } else {
-    // Remove US high-res layers
-    if (wmsUSHighRes && map.hasLayer(wmsUSHighRes)) { try { map.removeLayer(wmsUSHighRes); } catch(e){} }
-    if (wmsUSMRMS && map.hasLayer(wmsUSMRMS)) { try { map.removeLayer(wmsUSMRMS); } catch(e){} }
-    // Restore base RainViewer/IEM tiles
-    if (activeRV)  activeRV.setOpacity(getRadarOpacity());
-    if (activeIEM) activeIEM.setOpacity(0.9);
-  }
+  // Update button states
+  document.querySelectorAll('.rp-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.product) === index)
+  );
+
+  const product = RADAR_PRODUCTS[index];
+
+  // Rebuild all RainViewer layers with the new color map
+  frames.forEach((f, i) => {
+    try { map.removeLayer(f.rvLayer); } catch(e){}
+    f.rvColor = product.rvColor;
+    f.rvLayer = suppressTileErrors(L.tileLayer(
+      f.rvPath + '/{z}/{x}/{y}/' + product.rvColor + '/1_1.png',
+      { opacity: 0, pane: 'radarPane', maxNativeZoom: 8, maxZoom: 19 }
+    ));
+    f.rvLayer.addTo(map);
+    loadedFrames.add(i);
+  });
+
+  // Show current frame with new product
+  showFrame(currentIdx);
+  setStatus('Switched to ' + product.label, true);
+  setTimeout(() => setStatus('', false), 1500);
+}
+window.switchRadarProduct = switchRadarProduct;
+
+// Rebuild radar when search/locate moves the map to a new region
+function refreshRadarForRegion() {
+  buildRegionalOverlays(map.getCenter());
+  // Update WMS time for regional overlays
+  if (frames.length) updateWMSTime(frames[currentIdx].minsAgo);
 }
 
 function updateUI() {
@@ -1789,17 +1852,24 @@ function renderAlertLayers() {
   });
 }
 
-// Re-render alert polygons AND adjust radar opacity whenever the user zooms or pans (throttled)
+// Re-render alert polygons AND refresh regional overlays when the user zooms or pans (throttled)
 let _zoomTimer = null;
+let _lastRegionCheck = '';
 map.on('zoomend moveend', () => {
   clearTimeout(_zoomTimer);
   _zoomTimer = setTimeout(() => {
     renderAlertLayers();
-    updateUSHighResLayers();
+    // Check if we moved to a new region (debounced)
+    const c = map.getCenter();
+    const key = detectRegion(c.lat, c.lng);
+    if (key !== _lastRegionCheck) {
+      _lastRegionCheck = key;
+      refreshRadarForRegion();
+    }
     // Force tiles to redraw at new zoom
     if (activeRV && map.hasLayer(activeRV)) activeRV.redraw();
     if (activeIEM && map.hasLayer(activeIEM)) activeIEM.redraw();
-  }, 100);
+  }, 200);
 });
 
 async function fetchEUAlerts() {
@@ -1897,6 +1967,10 @@ window.locateMe = function() {
       btn.classList.remove('locating');
       const { latitude, longitude } = pos.coords;
       map.flyTo([latitude, longitude], 10, { duration: 1.5 });
+      setTimeout(() => {
+        map.invalidateSize();
+        refreshRadarForRegion();
+      }, 1600);
       fetchWeather(latitude, longitude, 'My Location');
     },
     (err) => {
@@ -1959,7 +2033,11 @@ async function doSearch(query) {
         searchResults.classList.remove('show');
         searchInput.value = r.name;
         map.flyTo([r.latitude, r.longitude], 10, { duration: 1.5 });
-        setTimeout(() => map.invalidateSize(), 1600);
+        // invalidateSize after flyTo completes to prevent blank map
+        setTimeout(() => {
+          map.invalidateSize();
+          refreshRadarForRegion();
+        }, 1600);
         fetchWeather(r.latitude, r.longitude, r.name);
       });
       searchResults.appendChild(item);
