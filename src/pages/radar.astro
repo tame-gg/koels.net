@@ -281,7 +281,7 @@ body { background:#03030a; color:#f0eeff; }
 
 /* LEGEND — bottom left corner, horizontal pill */
 #legend {
-  position:fixed; bottom:130px; left:20px; z-index:900;
+  position:fixed; bottom:20px; left:20px; z-index:900;
   background:rgba(5,4,18,0.94); border:1px solid rgba(108,92,231,0.2);
   border-radius:12px; padding:11px 20px;
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
@@ -466,25 +466,6 @@ body { background:#03030a; color:#f0eeff; }
 .ww-forecast-temps .high { color:#f0eeff; font-weight:600; }
 .ww-forecast-temps .low { color:rgba(240,238,255,0.3); }
 
-/* RADAR PRODUCT TOGGLE */
-#radar-product-toggle {
-  position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
-  z-index:950; display:flex; gap:4px;
-  background:rgba(3,3,10,0.92); border:1px solid rgba(108,92,231,0.25);
-  border-radius:10px; padding:6px 8px;
-  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
-  box-shadow:0 4px 20px rgba(0,0,0,0.4);
-}
-.rp-btn {
-  font-size:0.52rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
-  padding:5px 12px; border-radius:6px; cursor:pointer;
-  border:1px solid rgba(255,255,255,0.08); background:transparent;
-  color:rgba(240,238,255,0.35); font-family:"JetBrains Mono",monospace;
-  transition:all 0.15s; white-space:nowrap;
-}
-.rp-btn:hover { color:rgba(240,238,255,0.7); border-color:rgba(255,255,255,0.15); }
-.rp-btn.active { color:#a29bfe; border-color:rgba(108,92,231,0.5); background:rgba(108,92,231,0.18); }
-
 /* Hide broken/missing tile images silently */
 .leaflet-tile .leaflet-tile-loaded { visibility: visible !important; }
 .leaflet-control-zoom a {
@@ -543,12 +524,6 @@ body { background:#03030a; color:#f0eeff; }
   .ww-temp { font-size:1.8rem; }
   .ww-icon { font-size:2rem; }
 
-  /* Radar product toggle */
-  #radar-product-toggle {
-    bottom:100px; padding:4px 6px; gap:3px; border-radius:8px;
-  }
-  .rp-btn { font-size:0.44rem; padding:4px 8px; }
-
   /* Panel — slides up from bottom, full width */
   #panel {
     top:auto; bottom:0; left:0; right:0; width:100%;
@@ -588,9 +563,9 @@ body { background:#03030a; color:#f0eeff; }
   #time-display { font-size:0.58rem; }
   .tick-label { font-size:0.42rem; }
 
-  /* Legend — sits above product toggle */
+  /* Legend — bottom left above timeline on mobile */
   #legend {
-    bottom:160px; left:12px; right:auto;
+    bottom:108px; left:12px; right:auto;
     padding:7px 12px; gap:8px; border-radius:8px;
   }
   .legend-title { font-size:0.52rem; }
@@ -771,14 +746,6 @@ body { background:#03030a; color:#f0eeff; }
   </div>
 </div>
 
-<!-- RADAR PRODUCT TOGGLE -->
-<div id="radar-product-toggle">
-  <button class="rp-btn active" data-product="0" onclick="switchRadarProduct(0)">Reflectivity</button>
-  <button class="rp-btn" data-product="1" onclick="switchRadarProduct(1)">Precipitation</button>
-  <button class="rp-btn" data-product="2" onclick="switchRadarProduct(2)">Accumulated</button>
-  <button class="rp-btn" data-product="3" onclick="switchRadarProduct(3)">Enhanced</button>
-</div>
-
 <div id="timeline">
   <div class="tl-row1">
     <div id="play-btn" onclick="togglePlay()">
@@ -885,7 +852,7 @@ const IEM_SLOTS = [
   { ts:'900913',      minsAgo: 0 },
 ];
 
-// frames[i] = { minsAgo, time, rvPath, rvColor, rvLayer, iemLayer }
+// frames[i] = { minsAgo, time, rvPath, rvLayer, iemLayer }
 let frames     = [];
 let currentIdx = 0;
 let playing    = false;
@@ -893,18 +860,8 @@ let playTimer  = null;
 let seqId      = 0;
 let activeRV   = null;
 let activeIEM  = null;
-let rvHost     = '';  // store RainViewer host for product switching
+let rvHost     = '';  // store RainViewer host for reloading
 const loadedFrames = new Set();
-
-// ── RADAR PRODUCT TYPE ──────────────────────────────────────────────────
-// RainViewer color maps: 1=classic (default), 2=temperature, 3=accumulation, 4=CMY, 5=enhanced
-const RADAR_PRODUCTS = [
-  { id: 'reflectivity',  label: 'Reflectivity', rvColor: 2, desc: 'Standard dBZ' },
-  { id: 'precipitation', label: 'Precipitation', rvColor: 1, desc: 'Rain intensity' },
-  { id: 'accumulated',   label: 'Accumulated',  rvColor: 3, desc: 'Total accumulation' },
-  { id: 'enhanced',      label: 'Enhanced',     rvColor: 5, desc: 'Enhanced contrast' },
-];
-let activeProduct = 0;  // index into RADAR_PRODUCTS
 
 // ── REGIONAL WMS OVERLAYS ───────────────────────────────────────────────
 let wmsCanada = null;
@@ -1059,7 +1016,6 @@ async function loadRadar() {
 
     const nowSec = Math.floor(Date.now() / 1000);
     const sz = 256;
-    const product = RADAR_PRODUCTS[activeProduct];
 
     // Build frames with RainViewer global + IEM US overlay
     frames = IEM_SLOTS.map((slot, i) => {
@@ -1072,10 +1028,9 @@ async function loadRadar() {
         minsAgo:  slot.minsAgo,
         time:     frameTime,
         rvPath:   rvPath,
-        rvColor:  product.rvColor,
-        // RainViewer — global base, use current product color map
+        // RainViewer — global base, color map 1 = classic radar
         rvLayer:  suppressTileErrors(L.tileLayer(
-          rvPath + '/' + product.rvColor + '/1_1.png',
+          rvPath + '/{z}/{x}/{y}/1/1_1.png',
           { opacity: 0, pane: 'radarPane', maxNativeZoom: 8, maxZoom: 19 }
         )),
         // IEM NEXRAD — US only, returns transparent outside CONUS
@@ -1147,37 +1102,6 @@ function getRadarOpacity() {
   if (z <= 7) return 0.7;
   return 0.85;
 }
-
-// Switch radar product type
-function switchRadarProduct(index) {
-  if (index === activeProduct || !frames.length) return;
-  activeProduct = index;
-
-  // Update button states
-  document.querySelectorAll('.rp-btn').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.product) === index)
-  );
-
-  const product = RADAR_PRODUCTS[index];
-
-  // Rebuild all RainViewer layers with the new color map
-  frames.forEach((f, i) => {
-    try { map.removeLayer(f.rvLayer); } catch(e){}
-    f.rvColor = product.rvColor;
-    f.rvLayer = suppressTileErrors(L.tileLayer(
-      f.rvPath + '/{z}/{x}/{y}/' + product.rvColor + '/1_1.png',
-      { opacity: 0, pane: 'radarPane', maxNativeZoom: 8, maxZoom: 19 }
-    ));
-    f.rvLayer.addTo(map);
-    loadedFrames.add(i);
-  });
-
-  // Show current frame with new product
-  showFrame(currentIdx);
-  setStatus('Switched to ' + product.label, true);
-  setTimeout(() => setStatus('', false), 1500);
-}
-window.switchRadarProduct = switchRadarProduct;
 
 // Rebuild radar when search/locate moves the map to a new region
 function refreshRadarForRegion() {
