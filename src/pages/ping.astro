@@ -377,12 +377,6 @@ footer {
       </div>
     </div>
 
-    <!-- Latency history bars -->
-    <div class="latency-bars">
-      <div class="latency-bars-title">Recent Pings</div>
-      <div id="bar-container"></div>
-    </div>
-
   </div>
 </div>
 
@@ -395,6 +389,8 @@ footer {
     <a href="/links">Links</a>
     <span>·</span>
     <a href="/radar">Radar</a>
+    <span>·</span>
+    <a href="/speedtest">Speedtest</a>
   </div>
 </footer>
 
@@ -444,26 +440,6 @@ function updateGrid(ms) {
     const jitter = Math.round(diffs.reduce((a,b)=>a+b,0) / diffs.length);
     document.getElementById('m-jitter').textContent = jitter + ' ms';
   }
-
-  /* Bars */
-  renderBars();
-}
-
-function renderBars() {
-  const container = document.getElementById('bar-container');
-  const max = Math.max(...history, 1);
-  container.innerHTML = '';
-  history.forEach((ms, i) => {
-    const pct = Math.max(4, (ms / max) * 100);
-    const row = document.createElement('div');
-    row.className = 'bar-row';
-    row.innerHTML = `
-      <div class="bar-label">#${history.length - MAX_HISTORY + i}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <div class="bar-ms">${ms}ms</div>
-    `;
-    container.appendChild(row);
-  });
 }
 
 /* Run pings */
