@@ -416,7 +416,7 @@ h1 .grad {
 </div>
 
 <div class="search-footer">
-  Powered by <a href="https://github.com/searxng/searxng" target="_blank">SearxNG</a> — results from a public instance. Rate limited.
+  Powered by <a href="https://github.com/searxng/searxng" target="_blank">SearxNG</a> — results proxied for CORS. Rate limited.
 </div>
 
 <script is:inline>
@@ -442,12 +442,12 @@ const btn   = document.getElementById('search-btn');
 const resultsSection = document.getElementById('results-section');
 const emptyState = document.getElementById('empty-state');
 
-/* ── SearxNG instance ──
-   Using a public instance. You can swap this for your own.
-   If the instance goes down, pick another from:
-   https://searx.space/
+/* ── SearxNG instance + CORS proxy ──
+   Proxy bypasses CORS so results render on-site.
+   Swap instance from https://searx.space/
 */
 const SEARX_URL = 'https://search.bus-hit.me';
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 let searchType = 'general';
 
@@ -469,31 +469,34 @@ async function doSearch() {
   const q = input.value.trim();
   if (!q) return;
 
-  /* Show loading */
+  const categoryMap = {
+    general: 'general',
+    images:  'images',
+    news:    'news',
+    science: 'science'
+  };
+  const cat = categoryMap[searchType] || 'general';
+
   resultsSection.innerHTML = `
     <div class="results-loading">
       <div class="spinner"></div>
       <p>Searching ${searchType}...</p>
     </div>
   `;
+  emptyState.style.display = 'none';
 
   try {
-    const format = searchType === 'images' ? 'json' : 'json';
-    const categories = searchType === 'images' ? 'images' : 'general';
-    const url = `${SEARX_URL}/search?q=${encodeURIComponent(q)}&format=${format}&categories=${categories}`;
+    const searxUrl = `${SEARX_URL}/search?q=${encodeURIComponent(q)}&format=json&categories=${cat}`;
+    const proxyUrl = CORS_PROXY + encodeURIComponent(searxUrl);
 
-    const resp = await fetch(url, {
-      headers: { 'Accept': 'application/json' }
-    });
-
+    const resp = await fetch(proxyUrl);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
-
     renderResults(data, q);
   } catch (err) {
     resultsSection.innerHTML = `
       <div class="empty-state">
-        <p>Search failed — the instance may be busy or rate-limited.<br>
+        <p>Search failed — the instance may be busy.<br>
         <span style="color:var(--dim);font-size:0.68rem;">${err.message}</span></p>
       </div>
     `;
@@ -506,7 +509,7 @@ function renderResults(data, q) {
   if (results.length === 0) {
     resultsSection.innerHTML = `
       <div class="empty-state">
-        <p>No results for "<strong style="color:var(--text);">${q}</strong>"<br>Try a different query.</p>
+        <p>No results for "<strong style="color:var(--text);">${q}"</strong><br>Try a different query.</p>
       </div>
     `;
     return;
@@ -529,6 +532,9 @@ function renderResults(data, q) {
   });
 
   resultsSection.innerHTML = html;
+
+  /* Scroll to results */
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 </script>
 </body>
