@@ -1,407 +1,1812 @@
 ---
-// src/pages/speedtest.astro
+// src/pages/radar.astro
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>koels.site — Speedtest</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2303030a'/%3E%3Ctext x='16' y='26' text-anchor='middle' font-family='Inter%2C system-ui%2C sans-serif' font-size='26' font-weight='900' fill='url(%23g)'%3EK%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a29bfe'/%3E%3Cstop offset='100%25' stop-color='%236c5ce7'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>koels.site — Radar</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2303030a'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236c5ce7' stroke-width='0.8' opacity='0.4'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%236c5ce7' stroke-width='0.8' opacity='0.5'/%3E%3Ccircle cx='16' cy='16' r='5' fill='none' stroke='%236c5ce7' stroke-width='0.8' opacity='0.7'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23a29bfe'/%3E%3Cline x1='16' y1='16' x2='27' y2='7' stroke='%23a29bfe' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='9' r='2' fill='%2300ff88'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style is:global>
-:root {
-  --bg:       #03030a;
-  --bg2:      #08080f;
-  --surface:  #0f0f1a;
-  --surface2: #141420;
-  --border:   rgba(255,255,255,0.07);
-  --border2:  rgba(255,255,255,0.12);
-  --text:     #f0eeff;
-  --muted:    rgba(240,238,255,0.68);
-  --dim:      rgba(240,238,255,0.4);
-  --accent:   #6c5ce7;
-  --accent2:  #a29bfe;
-  --lime:     #00ff88;
-  --white:    #ffffff;
-  --sans: "Inter", system-ui, sans-serif;
-  --mono: "JetBrains Mono", monospace;
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box }
-html { scroll-behavior:smooth; font-size:17px }
-body {
-  font-family: var(--sans);
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-a { color:inherit; text-decoration:none }
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; font-family:"JetBrains Mono",monospace; }
+body { background:#03030a; color:#f0eeff; }
+#map { position:fixed; inset:0; z-index:1; }
 
-body::after {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:9990;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+/* HEADER */
+#header {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  height:54px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px;
+  background:rgba(3,3,10,0.92); border-bottom:1px solid rgba(255,255,255,0.07);
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
 }
-
-/* ── CURTAIN ── */
-#curtain {
-  position:fixed; inset:0; background:var(--bg); z-index:9997;
+.header-left { display:flex; align-items:center; gap:14px; }
+.back-btn {
+  display:flex; align-items:center; gap:5px;
+  font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase;
+  color:rgba(240,238,255,0.4); text-decoration:none; transition:color 0.2s;
+}
+.back-btn:hover { color:#f0eeff; }
+.back-btn svg { width:13px; height:13px; fill:currentColor; }
+.hdiv { width:1px; height:16px; background:rgba(255,255,255,0.1); }
+.radar-logo { display:flex; align-items:center; gap:9px; }
+.radar-logo-icon { width:30px; height:30px; flex-shrink:0; }
+.radar-logo-icon svg { width:100%; height:100%; }
+.radar-logo-main { font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#f0eeff; line-height:1; }
+.radar-logo-sub  { font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(240,238,255,0.35); line-height:1; margin-top:2px; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.alert-pill {
+  display:flex; align-items:center; gap:5px; padding:4px 11px; border-radius:999px;
+  font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase;
+  border:1px solid rgba(255,71,87,0.3); background:rgba(255,71,87,0.08); color:#ff4757;
+}
+.alert-pill.none { border-color:rgba(255,255,255,0.08); background:transparent; color:rgba(240,238,255,0.3); }
+.alert-pill svg { width:9px; height:9px; fill:currentColor; }
+#last-updated { font-size:0.56rem; color:rgba(240,238,255,0.28); letter-spacing:0.08em; }
+.beta-badge {
+  font-size:0.48rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase;
+  color:#03030a; background:#a29bfe; border-radius:4px;
+  padding:2px 7px; align-self:center;
+}
+/* BETA DISCLAIMER MODAL */
+#beta-overlay {
+  position:fixed; inset:0; z-index:9999;
+  background:rgba(3,3,10,0.85); -webkit-backdrop-filter:blur(12px);
+  background:rgba(3,3,10,0.85); backdrop-filter:blur(12px);
   display:flex; align-items:center; justify-content:center;
-  transition:opacity 0.8s var(--ease), visibility 0.8s;
+  padding:20px;
 }
-#curtain.gone { opacity:0; visibility:hidden; pointer-events:none }
-.curtain-logo {
-  font-family:var(--mono); font-size:0.85rem; letter-spacing:0.25em;
-  color:var(--dim); text-transform:uppercase;
-  animation:curtain-pulse 1s ease infinite;
+#beta-overlay.hidden { display:none; }
+#beta-modal {
+  background:rgba(14,13,28,0.98); border:1px solid rgba(108,92,231,0.35);
+  border-radius:16px; padding:32px 28px; max-width:420px; width:100%;
+  box-shadow:0 24px 60px rgba(0,0,0,0.6);
 }
-@keyframes curtain-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+.beta-modal-icon { font-size:2rem; margin-bottom:14px; }
+.beta-modal-title {
+  font-size:1rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+  color:#f0eeff; margin-bottom:8px;
+}
+.beta-modal-sub {
+  font-size:0.62rem; letter-spacing:0.06em; color:rgba(240,238,255,0.5);
+  text-transform:uppercase; margin-bottom:16px;
+}
+.beta-modal-body {
+  font-size:0.66rem; color:rgba(240,238,255,0.55); line-height:1.8;
+  margin-bottom:24px;
+}
+.beta-modal-body b { color:rgba(240,238,255,0.8); }
+.beta-modal-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.beta-dismiss-btn {
+  flex:1; padding:10px; border-radius:8px; cursor:pointer; font-family:"JetBrains Mono",monospace;
+  font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; font-weight:700;
+  background:rgba(108,92,231,0.25); border:1.5px solid rgba(108,92,231,0.5); color:#a29bfe;
+  transition:all 0.18s;
+}
+.beta-dismiss-btn:hover { background:rgba(108,92,231,0.45); }
+.beta-dont-show {
+  display:flex; align-items:center; gap:7px; cursor:pointer;
+  font-size:0.56rem; color:rgba(240,238,255,0.3); letter-spacing:0.06em;
+  white-space:nowrap; user-select:none;
+}
+.beta-dont-show input { accent-color:#6c5ce7; width:13px; height:13px; cursor:pointer; }
+.beta-dont-show:hover { color:rgba(240,238,255,0.55); }
 
-/* ── HEADER ── */
-header {
-  position:fixed; top:0; left:0; right:0; z-index:500;
-  height:60px;
+/* ALERTS PANEL */
+#panel {
+  position:fixed; top:54px; right:0; bottom:0; z-index:900; width:360px;
+  background:rgba(5,4,18,0.99); border-left:1px solid rgba(108,92,231,0.12);
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  box-shadow:-8px 0 40px rgba(0,0,0,0.4);
+}
+#panel.open { transform:translateX(0); }
+#panel-toggle {
+  position:fixed; top:50%; right:0; z-index:950; transform:translateY(-50%);
+  width:22px; height:56px;
+  background:rgba(5,4,18,0.95); border:1px solid rgba(108,92,231,0.2); border-right:none;
+  border-radius:6px 0 0 6px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s; opacity:0; pointer-events:none;
+}
+#panel-toggle.has-alerts { opacity:0.6; pointer-events:auto; }
+#panel-toggle.has-alerts:hover { background:rgba(108,92,231,0.25); opacity:1; }
+#panel-toggle svg { width:11px; height:11px; fill:rgba(162,155,254,0.7); transition:transform 0.3s; }
+#panel.open ~ #panel-toggle { right:360px; opacity:1 !important; pointer-events:auto; }
+#panel.open ~ #panel-toggle svg { transform:rotate(180deg); }
+
+/* Panel header */
+.panel-header {
+  padding:16px 18px 14px; border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+  background:rgba(108,92,231,0.04);
+}
+.panel-header-title {
+  font-size:0.58rem; letter-spacing:0.22em; text-transform:uppercase; color:rgba(240,238,255,0.4);
+  display:flex; align-items:center; gap:8px;
+}
+.panel-header-title::before {
+  content:''; display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:#ff4757; box-shadow:0 0 6px rgba(255,71,87,0.8);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.panel-header-count {
+  font-size:0.72rem; font-weight:700; color:#ff4757;
+  background:rgba(255,71,87,0.12); border:1px solid rgba(255,71,87,0.3);
+  border-radius:6px; padding:3px 10px; min-width:32px; text-align:center;
+  letter-spacing:0.04em;
+}
+
+/* Region tabs */
+#region-tabs {
+  display:flex; gap:4px; padding:10px 12px 9px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  overflow-x:auto; scrollbar-width:none; flex-shrink:0;
+}
+#region-tabs::-webkit-scrollbar { display:none; }
+.rtab {
+  flex-shrink:0; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase;
+  padding:4px 11px; border-radius:5px; cursor:pointer; transition:all 0.15s;
+  border:1px solid rgba(255,255,255,0.08); color:rgba(240,238,255,0.32);
+  background:transparent; font-family:"JetBrains Mono",monospace;
+}
+.rtab:hover { color:rgba(240,238,255,0.65); border-color:rgba(255,255,255,0.18); background:rgba(255,255,255,0.04); }
+.rtab.active { background:rgba(108,92,231,0.18); border-color:rgba(108,92,231,0.5); color:#a29bfe; }
+
+/* Alert list scroll area */
+#alerts-list {
+  flex:1; overflow-y:auto; padding:8px 10px 16px;
+  scrollbar-width:thin; scrollbar-color:rgba(108,92,231,0.15) transparent;
+}
+#alerts-list::-webkit-scrollbar { width:3px; }
+#alerts-list::-webkit-scrollbar-thumb { background:rgba(108,92,231,0.2); border-radius:3px; }
+
+/* Severity group dividers */
+.alert-group-header {
+  display:flex; align-items:center; gap:10px; padding:14px 4px 6px; margin-top:2px;
+}
+.alert-group-label {
+  font-size:0.48rem; letter-spacing:0.22em; text-transform:uppercase; color:rgba(240,238,255,0.25); flex-shrink:0;
+}
+.alert-group-line { flex:1; height:1px; background:rgba(255,255,255,0.05); }
+.alert-group-n {
+  font-size:0.48rem; color:rgba(240,238,255,0.2); flex-shrink:0;
+  background:rgba(255,255,255,0.05); border-radius:3px; padding:1px 6px;
+}
+
+/* Alert cards */
+.alert-item {
+  display:flex; flex-direction:column;
+  border-radius:8px; margin-bottom:6px;
+  border:1px solid rgba(255,255,255,0.08);
+  overflow:hidden; transition:border-color 0.15s, box-shadow 0.15s;
+  background:rgba(14,12,32,0.8);
+}
+.alert-item:hover { box-shadow:0 4px 20px rgba(0,0,0,0.4); }
+
+/* Top accent bar */
+.alert-bar { height:3px; width:100%; display:block; }
+.sev-extreme .alert-bar  { background:linear-gradient(90deg,#ff55dd,#ff00cc); }
+.sev-severe  .alert-bar  { background:linear-gradient(90deg,#ff6b6b,#ff3737); }
+.sev-moderate .alert-bar { background:linear-gradient(90deg,#ffb84d,#ff9500); }
+.sev-minor   .alert-bar  { background:linear-gradient(90deg,#ffe566,#ffd60a); }
+.sev-unknown .alert-bar  { background:rgba(255,255,255,0.12); }
+
+/* Severity border tints */
+.sev-extreme  { border-color:rgba(255,0,200,0.2); }
+.sev-severe   { border-color:rgba(255,55,55,0.2); }
+.sev-moderate { border-color:rgba(255,149,0,0.18); }
+.sev-minor    { border-color:rgba(255,214,10,0.14); }
+
+/* Card body */
+.alert-body { padding:10px 12px 10px; display:flex; flex-direction:column; gap:5px; }
+
+/* Top row: severity + time */
+.alert-top-row {
   display:flex; align-items:center; justify-content:space-between;
-  padding:0 40px;
-  border-bottom:1px solid var(--border);
-  background:rgba(3,3,10,0.85);
-  backdrop-filter:blur(24px) saturate(1.8);
-  -webkit-backdrop-filter:blur(24px) saturate(1.8);
 }
-.logo {
-  font-family:var(--mono); font-size:0.7rem; font-weight:700;
-  letter-spacing:0.2em; text-transform:uppercase; color:var(--white);
-  display:flex; align-items:center; gap:10px;
+.alert-sev-badge { display:flex; align-items:center; gap:5px; }
+.alert-sev-dot {
+  width:7px; height:7px; border-radius:50%; flex-shrink:0; display:inline-block;
 }
-.logo-pulse {
-  width:6px; height:6px; border-radius:50%;
-  background:var(--lime); box-shadow:0 0 10px var(--lime);
-  animation:lg-pulse 2s ease infinite;
+.alert-sev-text {
+  font-size:10px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700;
 }
-@keyframes lg-pulse { 0%,100%{box-shadow:0 0 6px var(--lime)} 50%{box-shadow:0 0 20px var(--lime),0 0 40px rgba(0,255,136,0.25)} }
+.alert-time-chip {
+  font-size:10px; color:rgba(240,238,255,0.3); white-space:nowrap;
+}
 
-.nav { display:flex; align-items:center; gap:32px }
-.nav a {
-  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em;
-  color:var(--muted); text-transform:uppercase; transition:color 0.2s;
+/* Event title */
+.alert-event {
+  font-size:12px; font-weight:600; color:rgba(240,238,255,0.92);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4;
 }
-.nav a:hover { color:var(--white) }
 
-/* ── HERO ── */
-.hero {
-  min-height:100vh;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:120px 20px 60px;
-  position:relative;
+/* Alert tag (e.g. TORNADO, SEVERE TSTM, FLOOD) */
+.alert-tag-row {
+  display:flex; align-items:center; gap:4px; flex-wrap:wrap;
+  margin-bottom:2px;
 }
-.hero::before {
-  content:''; position:absolute; inset:0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size:64px 64px;
-  mask-image:radial-gradient(ellipse 90% 90% at 50% 40%, black 0%, transparent 100%);
-  -webkit-mask-image:radial-gradient(ellipse 90% 90% at 50% 40%, black 0%, transparent 100%);
-  opacity:0.5; pointer-events:none; z-index:0;
+.alert-tag-chip {
+  font-size:8.5px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  padding:2px 6px; border-radius:3px;
+  border:1px solid;
+  background:rgba(255,255,255,0.05);
+  white-space:nowrap;
+  font-family:"JetBrains Mono",monospace;
 }
-.hero-glow {
-  position:absolute; top:40%; left:50%;
+
+/* Area */
+.alert-area {
+  font-size:11px; color:rgba(240,238,255,0.4); line-height:1.5;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* Footer: source + link */
+.alert-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding-top:8px; margin-top:2px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.alert-source-chip {
+  font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+  padding:3px 8px; border-radius:4px;
+  border:1px solid rgba(108,92,231,0.3); color:rgba(162,155,254,0.6);
+  background:rgba(108,92,231,0.08);
+}
+.alert-gov-link,
+.alert-gov-link:link,
+.alert-gov-link:visited {
+  font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+  color:rgba(240,238,255,0.45); text-decoration:none;
+  padding:3px 8px; border-radius:4px;
+  border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
+  transition:color 0.14s, border-color 0.14s, background 0.14s;
+}
+.alert-gov-link:hover {
+  color:#f0eeff; border-color:rgba(255,255,255,0.25); background:rgba(255,255,255,0.08);
+}
+
+.no-alerts {
+  padding:48px 20px; text-align:center; font-size:11px;
+  color:rgba(240,238,255,0.2); letter-spacing:0.08em; line-height:2.4;
+}
+
+/* LEGEND — bottom left corner, horizontal pill */
+#legend {
+  position:fixed; bottom:20px; left:20px; z-index:900;
+  background:rgba(5,4,18,0.94); border:1px solid rgba(108,92,231,0.2);
+  border-radius:12px; padding:11px 20px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  display:flex; align-items:center; gap:16px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.35);
+}
+.legend-title {
+  font-size:0.65rem; letter-spacing:0.18em; text-transform:uppercase;
+  color:rgba(240,238,255,0.35); white-space:nowrap; margin-right:2px;
+}
+.legend-items { display:flex; align-items:center; gap:14px; }
+.legend-item { display:flex; align-items:center; gap:7px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.legend-label { font-size:0.68rem; color:rgba(240,238,255,0.55); white-space:nowrap; font-weight:500; }
+
+/* TIMELINE */
+#timeline {
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  z-index:900;
+  background:rgba(3,3,10,0.92); border:1px solid rgba(255,255,255,0.09);
+  border-radius:16px; padding:12px 18px 14px;
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
+  width:min(540px, calc(100vw - 32px));
+}
+.tl-row1 {
+  display:flex; align-items:center; gap:12px; margin-bottom:10px;
+}
+#play-btn {
+  width:30px; height:30px; border-radius:50%; flex-shrink:0;
+  background:rgba(108,92,231,0.2); border:1.5px solid rgba(108,92,231,0.5);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.18s;
+}
+#play-btn:hover { background:rgba(108,92,231,0.45); transform:scale(1.06); }
+#play-btn svg { width:12px; height:12px; fill:#a29bfe; }
+#time-display {
+  flex:1; text-align:center;
+  font-size:0.65rem; color:rgba(240,238,255,0.5); letter-spacing:0.05em;
+}
+#time-display .t-time { color:#f0eeff; font-weight:700; }
+#time-display .t-sep  { color:rgba(240,238,255,0.2); margin:0 5px; }
+#time-display .t-ago  { color:rgba(162,155,254,0.8); }
+#time-display .t-pos  { color:rgba(240,238,255,0.25); font-size:0.55rem; }
+
+/* Scrubber */
+#scrubber-outer { position:relative; }
+#scrubber-track {
+  width:100%; height:5px; border-radius:999px;
+  background:rgba(255,255,255,0.1); position:relative; cursor:pointer;
+}
+#scrubber-fill {
+  height:100%; border-radius:999px;
+  background:linear-gradient(90deg,#6c5ce7,#a29bfe);
+  width:0%; pointer-events:none; transition:width 0.05s;
+}
+#scrubber-thumb {
+  position:absolute; top:50%; left:0%;
+  width:14px; height:14px; border-radius:50%;
+  background:#a29bfe; border:2px solid #fff;
+  box-shadow:0 0 8px rgba(162,155,254,0.7);
   transform:translate(-50%,-50%);
-  width:700px; height:700px;
-  background:radial-gradient(circle, rgba(108,92,231,0.12) 0%, transparent 60%);
-  pointer-events:none; z-index:0;
+  pointer-events:none;
 }
-.hero-content { position:relative; z-index:2; width:100%; max-width:680px; text-align:center; }
+#scrubber-ticks {
+  display:flex; justify-content:space-between;
+  margin-top:8px; padding:0 1px;
+}
+.tick-label {
+  font-size:0.5rem; color:rgba(240,238,255,0.3);
+  font-family:"JetBrains Mono",monospace; letter-spacing:0;
+  line-height:1;
+}
+.tick-label.is-now { color:#a29bfe; font-weight:700; }
 
-.eyebrow {
-  display:inline-flex; align-items:center; gap:10px;
-  font-family:var(--mono); font-size:0.72rem; font-weight:500;
-  letter-spacing:0.2em; text-transform:uppercase; color:var(--accent2);
-  margin-bottom:32px;
-  animation:fade-up 0.9s var(--ease) both;
+/* status */
+#radar-status {
+  position:fixed; top:64px; left:50%; transform:translateX(-50%);
+  z-index:1100; background:rgba(3,3,10,0.9); border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px; padding:6px 14px; font-size:0.58rem; color:rgba(240,238,255,0.6);
+  letter-spacing:0.08em; pointer-events:none; opacity:0; transition:opacity 0.3s;
 }
-.eyebrow-line { width:28px; height:1px; background:var(--accent) }
+#radar-status.show { opacity:1; }
 
-h1 {
-  font-family:var(--sans);
-  font-size:clamp(2.4rem, 5vw, 4.5rem);
-  font-weight:900; line-height:0.9;
-  letter-spacing:-0.04em; color:var(--white);
-  animation:fade-up 0.9s 0.07s var(--ease) both; margin-bottom:12px;
+/* Leaflet overrides */
+.leaflet-container { background:#03030a !important; }
+.leaflet-tile-pane { filter:brightness(0.88) saturate(0.5); }
+.leaflet-pane.radar-pane { filter:none !important; }
+/* GPU-accelerated opacity transitions on radar tile layers */
+.leaflet-tile-pane.radar-pane,
+.leaflet-tile-pane.radar-pane img,
+.leaflet-tile-pane.radar-pane .leaflet-tile {
+  will-change: opacity;
+  transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
-h1 .grad {
-  background:linear-gradient(135deg, var(--accent2) 0%, #c084fc 50%, var(--accent2) 100%);
-  background-size:200% auto;
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  animation:shimmer 4s linear infinite;
+.leaflet-control-zoom a {
+  background:rgba(3,3,10,0.9) !important; color:rgba(240,238,255,0.7) !important;
+  border-color:rgba(255,255,255,0.1) !important; font-family:"JetBrains Mono",monospace !important;
 }
-@keyframes shimmer { to { background-position:200% center } }
-
-.hero-desc {
-  font-family:var(--mono); font-size:0.78rem; line-height:1.8;
-  color:var(--muted); letter-spacing:0.04em; margin-bottom:48px;
-  animation:fade-up 0.9s 0.14s var(--ease) both;
+.leaflet-control-zoom a:hover { background:rgba(108,92,231,0.3) !important; color:#fff !important; }
+.leaflet-control-attribution {
+  background:rgba(3,3,10,0.7) !important; color:rgba(240,238,255,0.2) !important;
+  font-family:"JetBrains Mono",monospace !important; font-size:9px !important;
 }
-
-/* ── GAUGE ── */
-.gauge-wrap {
-  position:relative; width:280px; height:140px; margin:0 auto 32px;
-  animation:fade-up 0.9s 0.2s var(--ease) both;
-}
-.gauge-svg { width:100%; height:100%; }
-.gauge-bg-arc {
-  fill:none; stroke:rgba(255,255,255,0.06); stroke-width:8;
-  stroke-linecap:round;
-}
-.gauge-fill-arc {
-  fill:none; stroke:url(#gaugeGrad); stroke-width:8;
-  stroke-linecap:round; transition:stroke-dashoffset 0.4s var(--ease);
-}
-.gauge-value {
-  font-family:var(--sans); font-size:2.8rem; font-weight:900;
-  fill:var(--white); text-anchor:middle; letter-spacing:-0.04em;
-}
-.gauge-unit {
-  font-family:var(--mono); font-size:0.7rem; fill:var(--dim);
-  text-anchor:middle; letter-spacing:0.1em; text-transform:uppercase;
+.leaflet-control-attribution a { color:rgba(162,155,254,0.5) !important; }
+.alert-tooltip {
+  background:rgba(3,3,10,0.95) !important; border:1px solid rgba(255,71,87,0.3) !important;
+  border-radius:6px !important; color:#f0eeff !important;
+  font-family:"JetBrains Mono",monospace !important; font-size:0.6rem !important;
+  padding:7px 10px !important; box-shadow:0 4px 20px rgba(0,0,0,0.5) !important;
 }
 
-/* ── START BUTTON ── */
-#start-btn {
-  padding:14px 44px; border-radius:8px; border:none;
-  background:var(--accent); color:var(--white);
-  font-family:var(--mono); font-size:0.72rem; font-weight:700;
-  letter-spacing:0.14em; text-transform:uppercase;
-  cursor:pointer; transition:background 0.2s, transform 0.15s;
-  animation:fade-up 0.9s 0.28s var(--ease) both;
-}
-#start-btn:hover { background:#5a4bd1; }
-#start-btn:active { transform:scale(0.96); }
-#start-btn:disabled { opacity:0.4; cursor:default; transform:none; }
+/* ── MOBILE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
 
-/* ── RESULTS ── */
-.results-section {
-  width:100%; max-width:680px; margin:0 auto;
-  padding:0 20px 80px;
-}
-.metric-row {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:12px; margin-bottom:24px;
-}
-.metric-card {
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:20px 24px;
-  text-align:center;
-  animation:fade-up 0.4s var(--ease) both;
-}
-.metric-label {
-  font-family:var(--mono); font-size:0.52rem; letter-spacing:0.16em;
-  text-transform:uppercase; color:var(--dim); margin-bottom:8px;
-}
-.metric-value {
-  font-family:var(--sans); font-size:1.8rem; font-weight:900;
-  letter-spacing:-0.04em; color:var(--lime);
-}
-.metric-unit {
-  font-family:var(--mono); font-size:0.6rem; color:var(--dim);
-  margin-top:2px; letter-spacing:0.06em;
+  /* Header — tighter, keep beta badge */
+  #header { height:48px; padding:0 12px; }
+  .hdiv { display:none; }
+  .radar-logo-sub { display:none; }
+  #last-updated { display:none; }
+  .radar-logo-main { font-size:0.78rem; }
+  .radar-logo-icon { width:24px; height:24px; }
+
+  /* Alert pill */
+  .alert-pill {
+    padding:6px 10px; font-size:0.58rem; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* Panel — slides up from bottom, full width */
+  #panel {
+    top:auto; bottom:0; left:0; right:0; width:100%;
+    height:68vh; border-left:none; border-top:1px solid rgba(108,92,231,0.2);
+    border-radius:16px 16px 0 0;
+    transform:translateY(100%);
+    transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+  }
+  #panel.open { transform:translateY(0); }
+
+  /* Drag handle */
+  .panel-header::before {
+    content:''; display:block; position:absolute; top:8px; left:50%;
+    transform:translateX(-50%);
+    width:36px; height:4px; border-radius:2px;
+    background:rgba(255,255,255,0.15);
+  }
+  .panel-header { position:relative; padding-top:20px; }
+
+  /* Smaller tags on mobile */
+  .alert-tag-chip { font-size:7.5px; padding:2px 5px; }
+
+  /* Hide side toggle tab */
+  #panel-toggle { display:none !important; }
+
+  /* Timeline — full width, above bottom edge, no left:50% */
+  #timeline {
+    left:12px; right:12px; width:auto;
+    transform:none;
+    bottom:12px;
+    padding:10px 14px 12px;
+    border-radius:12px;
+  }
+  .tl-row1 { margin-bottom:8px; gap:10px; }
+  #play-btn { width:28px; height:28px; }
+  #time-display { font-size:0.58rem; }
+  .tick-label { font-size:0.42rem; }
+
+  /* Legend — sits above timeline (timeline ~80px tall) */
+  #legend {
+    bottom:108px; left:12px; right:auto;
+    padding:7px 12px; gap:8px; border-radius:8px;
+  }
+  .legend-title { font-size:0.52rem; }
+  .legend-items { gap:8px; }
+  .legend-item { gap:4px; }
+  .legend-dot { width:7px; height:7px; }
+  .legend-label { font-size:0.52rem; }
+
+  /* Zoom controls above timeline */
+  .leaflet-control-zoom { margin-bottom:110px !important; margin-right:12px !important; }
+
+  /* Beta modal */
+  #beta-modal { padding:24px 20px; border-radius:12px; }
+  .beta-modal-title { font-size:0.85rem; }
+
+  /* Backdrop */
+  #panel-backdrop {
+    display:none; position:fixed; inset:0; z-index:899;
+    background:rgba(0,0,0,0.5);
+  }
+  #panel.open ~ #panel-backdrop { display:block; }
 }
 
-/* ── FOOTER ── */
-footer {
-  display:flex; align-items:center; justify-content:space-between; padding:22px 48px;
-}
-.foot-l, .foot-r { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; color:var(--dim); text-transform:uppercase }
-.foot-r { display:flex; gap:18px }
-
-/* ── UTILS ── */
-@keyframes fade-up { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-.reveal { opacity:0; transform:translateY(22px); transition:opacity 0.7s var(--ease), transform 0.7s var(--ease) }
-.reveal.visible { opacity:1; transform:translateY(0) }
-
-@media(max-width:860px){
-  header { padding:0 20px }
-  .nav { display:none }
-  .hero { padding:120px 16px 40px; min-height:auto; }
-  h1 { font-size:2rem; }
-  .gauge-wrap { width:220px; height:110px; }
-  .gauge-value { font-size:2rem; }
-  .metric-row { grid-template-columns:1fr; }
-  footer { flex-direction:column; gap:10px; text-align:center }
+/* iOS performance: disable backdrop-filter blur on mobile to prevent GPU crash */
+@media (max-width: 768px) {
+  #header, #panel, #timeline, #legend, #radar-status, #beta-overlay, #beta-modal {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  #header    { background: rgba(3,3,10,0.97) !important; }
+  #panel     { background: rgba(3,3,10,0.97) !important; }
+  #timeline  { background: rgba(3,3,10,0.97) !important; }
+  #legend    { background: rgba(3,3,10,0.95) !important; }
+  #beta-overlay { background: rgba(3,3,10,0.95) !important; }
 }
 </style>
 </head>
 <body>
 
-<div id="curtain"><div class="curtain-logo">koels.site</div></div>
-
-<!-- HEADER -->
-<header>
-  <div class="logo"><div class="logo-pulse"></div>Koels.site</div>
-  <nav class="nav">
-    <a href="/">Home</a>
-    <a href="/links">Links</a>
-    <a href="/radar">Radar</a>
-  </nav>
-</header>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-content">
-    <div class="eyebrow"><span class="eyebrow-line"></span>Speedtest</div>
-    <h1><span class="grad">Test Your</span><br>Speed.</h1>
-    <p class="hero-desc">
-      Download-based speed measurement using Cloudflare's edge network.<br>Real results, no fluff.
-    </p>
-
-    <!-- Gauge -->
-    <div class="gauge-wrap">
-      <svg class="gauge-svg" viewBox="0 0 280 150">
-        <defs>
-          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#6c5ce7"/>
-            <stop offset="50%" stop-color="#a29bfe"/>
-            <stop offset="100%" stop-color="#00ff88"/>
-          </linearGradient>
-        </defs>
-        <!-- Background arc (semi-circle) -->
-        <path class="gauge-bg-arc" id="gauge-bg" d="M 30 130 A 110 110 0 0 1 250 130"/>
-        <!-- Filled arc -->
-        <path class="gauge-fill-arc" id="gauge-fill" d="M 30 130 A 110 110 0 0 1 250 130"
-              stroke-dasharray="345.58" stroke-dashoffset="345.58"/>
-        <!-- Value text -->
-        <text class="gauge-value" x="140" y="115" id="gauge-num">0</text>
-        <text class="gauge-unit" x="140" y="138">Mbps</text>
-      </svg>
+<div id="beta-overlay">
+  <div id="beta-modal">
+    <div class="beta-modal-icon">🚧</div>
+    <div class="beta-modal-title">This site is in Beta</div>
+    <div class="beta-modal-sub">koels.site — Radar</div>
+    <div class="beta-modal-body">
+      Some features on this page are <b>not fully functional</b> yet.<br><br>
+      Radar playback, scrubbing, and global coverage are still being worked on.
+      You may encounter bugs or incomplete behavior.
     </div>
-
-    <button id="start-btn" onclick="runTest()">Start Test</button>
+    <div class="beta-modal-footer">
+      <button class="beta-dismiss-btn" onclick="acknowledgeBeta()">Got it</button>
+      <label class="beta-dont-show">
+        <input type="checkbox" id="beta-no-show"> Don’t show again
+      </label>
+    </div>
   </div>
-</section>
+</div>
+<script>
+  try{
+    if(localStorage.getItem('beta_dismissed')==='1'){
+      document.getElementById('beta-overlay').style.display='none';
+      // Will be picked up by DOMContentLoaded — set flag so main script knows to auto-start
+      window._betaAlreadyAcknowledged = true;
+    }
+  }catch(e){}
+</script>
+<div id="map"></div>
+<div id="radar-status" id="radar-status">Loading radar…</div>
 
-<!-- RESULTS -->
-<div class="results-section" id="results-section"></div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="foot-l">© 2026 Koels.site</div>
-  <div class="foot-r">
-    <a href="/">Home</a>
-    <span>·</span>
-    <a href="/links">Links</a>
-    <span>·</span>
-    <a href="/radar">Radar</a>
-    <span>·</span>
-    <a href="/ping">Ping</a>
+<div id="header">
+  <div class="header-left">
+    <div class="radar-logo">
+      <div class="radar-logo-icon">
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <defs><radialGradient id="rg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#a29bfe" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#6c5ce7" stop-opacity="0"/>
+          </radialGradient></defs>
+          <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(108,92,231,0.2)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="10" fill="none" stroke="rgba(108,92,231,0.3)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="6"  fill="none" stroke="rgba(108,92,231,0.5)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="2"  fill="#a29bfe"/>
+          <line x1="16" y1="16" x2="28" y2="6" stroke="url(#rg)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="23" cy="9" r="1.8" fill="#00ff88" opacity="0.85">
+            <animate attributeName="opacity" values="0.85;0.1;0.85" dur="1.8s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="1.8;2.4;1.8" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div class="radar-logo-main">Radar</div>
+          <span class="beta-badge">BETA</span>
+        </div>
+        <div class="radar-logo-sub">koels.site</div>
+      </div>
+    </div>
   </div>
-</footer>
+  <div class="header-right">
+    <div class="alert-pill none" id="alert-pill" onclick="togglePanel()" style="cursor:pointer">
+      <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.5L20.5 19h-17L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+      <span id="alert-num">0</span>&nbsp;Alerts
+    </div>
+    <div id="last-updated">—</div>
+  </div>
+</div>
 
-<script is:inline>
-/* Curtain */
-window.addEventListener('load',()=>setTimeout(()=>document.getElementById('curtain').classList.add('gone'),650))
+<div id="panel">
+  <div class="panel-header">
+    <span class="panel-header-title">Active Alerts</span>
+    <span class="panel-header-count" id="panel-count">0</span>
+  </div>
+  <div id="region-tabs">
+    <button class="rtab active" data-region="ALL" onclick="filterRegion(this)">All</button>
+    <button class="rtab" data-region="US"  onclick="filterRegion(this)">US</button>
+    <button class="rtab" data-region="EU"  onclick="filterRegion(this)">EU</button>
+    <button class="rtab" data-region="CA"  onclick="filterRegion(this)">CA</button>
+    <button class="rtab" data-region="AU"  onclick="filterRegion(this)">AU</button>
+    <button class="rtab" data-region="NZ"  onclick="filterRegion(this)">NZ</button>
+    <button class="rtab" data-region="JP"  onclick="filterRegion(this)">JP</button>
+    <button class="rtab" data-region="SA"  onclick="filterRegion(this)">SA</button>
+    <button class="rtab" data-region="IN"  onclick="filterRegion(this)">IN</button>
+  </div>
+  <div id="alerts-list"><div class="no-alerts">Loading alerts…</div></div>
+</div>
+<div id="panel-toggle" onclick="togglePanel()">
+  <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+</div>
+<div id="panel-backdrop" onclick="togglePanel()"></div>
 
-/* ── SPEEDTEST ── */
-const gaugeFill = document.getElementById('gauge-fill');
-const gaugeNum  = document.getElementById('gauge-num');
-const startBtn  = document.getElementById('start-btn');
-const resultsEl = document.getElementById('results-section');
-const ARC_LEN = 345.58;
+<div id="legend">
+  <div class="legend-title">Severity</div>
+  <div class="legend-items">
+    <div class="legend-item"><div class="legend-dot" style="background:#ff00cc"></div><div class="legend-label">Extreme</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff3737"></div><div class="legend-label">Severe</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff9500"></div><div class="legend-label">Moderate</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffd60a"></div><div class="legend-label">Minor</div></div>
+  </div>
+</div>
 
-let running = false;
+<div id="timeline">
+  <div class="tl-row1">
+    <div id="play-btn" onclick="togglePlay()">
+      <svg id="play-icon"  viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="pause-icon" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </div>
+    <div id="time-display">
+      <span class="t-time">--:-- --</span>
+      <span class="t-sep">·</span>
+      <span class="t-ago">Loading…</span>
+    </div>
+  </div>
+  <div id="scrubber-outer">
+    <div id="scrubber-track">
+      <div id="scrubber-fill"></div>
+      <div id="scrubber-thumb"></div>
+    </div>
+    <div id="scrubber-ticks"></div>
+  </div>
+</div>
 
-async function fetchWithProgress(url, onProgress) {
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const reader = resp.body.getReader();
-  let received = 0;
-  const startTime = performance.now();
-  const speeds = [];
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    received += value.length;
-    const elapsed = (performance.now() - startTime) / 1000;
-    const speedMbps = (received * 8) / (elapsed * 1_000_000);
-    speeds.push(speedMbps);
-    onProgress(speedMbps, received);
+// ── MAP SETUP ──────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [37, -95], zoom: 4,
+  zoomControl: true,
+  preferCanvas: false
+});
+
+// CartoDB Dark Matter — free, no API key
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap contributors © CARTO',
+  subdomains: 'abcd', maxZoom: 19, maxNativeZoom: 20
+}).addTo(map);
+
+// Force map to recalculate its size — fixes black map on mobile
+setTimeout(() => map.invalidateSize(), 100);
+// Use visualViewport on iOS to avoid resize firing on pinch zoom
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => map.invalidateSize());
+} else {
+  window.addEventListener('resize', () => map.invalidateSize());
+}
+
+// Custom pane for radar tiles so they are NOT affected by the base tile CSS filter
+map.createPane('radarPane');
+map.getPane('radarPane').style.zIndex = 300;
+map.getPane('radarPane').classList.add('radar-pane');
+
+// ── RADAR SOURCES ────────────────────────────────────────────────────────
+//
+// 1. RainViewer  — GLOBAL base, animated XYZ tiles, ~180 countries, zoom 8
+// 2. IEM NEXRAD  — US/CONUS overlay, animated XYZ, zoom 10, high detail
+// 3. MSC GeoMet  — Canada WMS overlay, free, no key
+// 4. DWD         — Germany/Europe WMS overlay, free, no key
+//
+// RainViewer drives the master frame count (~12 past frames, 10-min steps).
+// IEM/MSC/DWD are synced to the same timestamps.
+// All layers coexist — each covers its region and returns transparent elsewhere.
+
+const FRAME_MS = 400;   // time between frame advances (includes fade time)
+const HOLD_MS  = 1500;  // pause on last frame before looping
+const FADE_MS  = 250;   // crossfade duration between frames (ms)
+
+// IEM time slots matching approx 10-min intervals to align with RainViewer
+const IEM_SLOTS = [
+  { ts:'900913-m50m', minsAgo:50 }, { ts:'900913-m45m', minsAgo:45 },
+  { ts:'900913-m40m', minsAgo:40 }, { ts:'900913-m35m', minsAgo:35 },
+  { ts:'900913-m30m', minsAgo:30 }, { ts:'900913-m25m', minsAgo:25 },
+  { ts:'900913-m20m', minsAgo:20 }, { ts:'900913-m15m', minsAgo:15 },
+  { ts:'900913-m10m', minsAgo:10 }, { ts:'900913-m05m', minsAgo: 5 },
+  { ts:'900913',      minsAgo: 0 },
+];
+
+// frames[i] = { minsAgo, time, rvLayer, iemLayer }
+let frames     = [];
+let currentIdx = 0;
+let playing    = false;
+let playTimer  = null;
+let seqId      = 0;
+let activeRV   = null;
+let activeIEM  = null;
+let fadeAnim   = null;  // tracks running crossfade animation
+const loadedFrames = new Set(); // tracks which frame indices have layers on the map
+const MAX_LOADED   = 8;         // more frames preloaded for smoother looping
+
+/**
+ * Smooth crossfade between radar frames using requestAnimationFrame.
+ * Fades `fromLayer` → 0 and `toLayer` → targetOpacity over FADE_MS ms.
+ */
+function crossfade(fromLayer, toLayer, targetOpacity) {
+  if (fadeAnim) { cancelAnimationFrame(fadeAnim); fadeAnim = null; }
+  const t0 = performance.now();
+  const fromStart = fromLayer ? fromLayer.options.opacity : 0;
+  const toStart   = toLayer   ? toLayer.options.opacity   : 0;
+  const ease = t => 1 - Math.pow(1 - t, 3);  // ease-out cubic
+  function step(now) {
+    const t = Math.min(1, (now - t0) / FADE_MS);
+    const e = ease(t);
+    if (fromLayer) fromLayer.setOpacity(fromStart + (0 - fromStart) * e);
+    if (toLayer)   toLayer.setOpacity(toStart + (targetOpacity - toStart) * e);
+    if (t < 1) { fadeAnim = requestAnimationFrame(step); }
+    else {
+      if (fromLayer) fromLayer.setOpacity(0);
+      if (toLayer)   toLayer.setOpacity(targetOpacity);
+      fadeAnim = null;
+    }
   }
-
-  const totalElapsed = (performance.now() - startTime) / 1000;
-  const avgSpeed = (received * 8) / (totalElapsed * 1_000_000);
-  return { avgSpeed, totalBytes: received, totalTime: totalElapsed, speeds };
+  fadeAnim = requestAnimationFrame(step);
 }
 
-function setGauge(pct, speed) {
-  gaugeFill.style.strokeDashoffset = ARC_LEN - (ARC_LEN * Math.min(pct / 100, 1));
-  gaugeNum.textContent = Math.round(speed);
+// WMS overlays (static, update TIME param each frame)
+let wmsCanada = null;
+let wmsDWD    = null;
+let wmsNorway = null;
+let wmsINMIND = null;  // Netherlands
+
+// High-detail US radar overlays (these support deep zoom)
+let wmsUSHighRes = null;   // IEM GeoServer NEXRAD WMS (zoom 14+)
+let wmsUSMRMS    = null;   // NOAA MRMS composite (very high res)
+
+function setStatus(msg, show) {
+  const el = document.getElementById('radar-status');
+  el.textContent = msg;
+  el.classList.toggle('show', !!show);
 }
 
-async function runTest() {
-  if (running) return;
-  running = true;
-  startBtn.disabled = true;
-  startBtn.textContent = 'Testing…';
-  resultsEl.innerHTML = '';
-  setGauge(0, 0);
+function isoUTC(d) {
+  return d.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
 
+function floorMins(d, n) {
+  return new Date(Math.floor(d.getTime() / (n * 60000)) * (n * 60000));
+}
+
+function buildWMSOverlays() {
+  if (wmsCanada)  { try { map.removeLayer(wmsCanada);  } catch(e){} }
+  if (wmsDWD)     { try { map.removeLayer(wmsDWD);     } catch(e){} }
+  if (wmsNorway)  { try { map.removeLayer(wmsNorway);  } catch(e){} }
+  if (wmsINMIND)  { try { map.removeLayer(wmsINMIND);  } catch(e){} }
+  if (wmsUSHighRes) { try { map.removeLayer(wmsUSHighRes); } catch(e){} }
+  if (wmsUSMRMS)    { try { map.removeLayer(wmsUSMRMS);    } catch(e){} }
+
+  // Canada — MSC GeoMet 1km radar, free, no key
   try {
-    /* Download 25MB from Cloudflare edge */
-    const testUrl = 'https://speed.cloudflare.com/__down?bytes=25000000';
+    wmsCanada = L.tileLayer.wms('https://geo.weather.gc.ca/geomet?', {
+      layers: 'RADAR_1KM_RRAI', version: '1.3.0',
+      format: 'image/png', transparent: true,
+      opacity: 0.85, pane: 'radarPane', maxZoom: 19,
+      crossOrigin: '', attribution: 'MSC/ECCC'
+    }).addTo(map);
+    wmsCanada.on('tileerror', e => { if (e.tile) e.tile.style.display = 'none'; });
+  } catch(e) { wmsCanada = null; }
 
-    const { avgSpeed, totalBytes, totalTime, speeds } = await fetchWithProgress(testUrl, (speed, bytes) => {
-      const pct = Math.min((bytes / 25_000_000) * 100, 100);
-      setGauge(pct, speed);
+  // Germany + Europe — DWD 1km radar, free, no key
+  try {
+    wmsDWD = L.tileLayer.wms('https://maps.dwd.de/geoserver/dwd/wms?', {
+      layers: 'dwd:RX-Produkt', version: '1.3.0',
+      format: 'image/png', transparent: true,
+      opacity: 0.85, pane: 'radarPane', maxZoom: 19,
+      crossOrigin: '', attribution: 'DWD'
+    }).addTo(map);
+    wmsDWD.on('tileerror', e => { if (e.tile) e.tile.style.display = 'none'; });
+  } catch(e) { wmsDWD = null; }
+
+  // Norway / Nordics — MET Norway radar (free, no key)
+  try {
+    wmsNorway = L.tileLayer.wms('https://shyrd.met.no/radar?', {
+      layers: 'composite,se', version: '1.1.1',
+      format: 'image/png', transparent: true,
+      opacity: 0.8, pane: 'radarPane', maxZoom: 19,
+      attribution: 'MET Norway'
+    }).addTo(map);
+    wmsNorway.on('tileerror', e => { if (e.tile) e.tile.style.display = 'none'; });
+  } catch(e) { wmsNorway = null; }
+
+  // Netherlands — Buienradar radar (free, no key)
+  try {
+    wmsINMIND = L.tileLayer(
+      'https://api.buienradar.nl/image/1.0/{z}/{x}/{y}.png',
+      { opacity: 0.85, pane: 'radarPane', maxNativeZoom: 9, maxZoom: 19, attribution: 'Buienradar' }
+    ).addTo(map);
+    wmsINMIND.on('tileerror', e => { if (e.tile) e.tile.style.display = 'none'; });
+  } catch(e) { wmsINMIND = null; }
+
+  // ── HIGH-DETAIL US RADAR ─────────────────────────────────────────
+  // IEM GeoServer NEXRAD WMS — supports zoom 14+, much higher detail than tiles
+  try {
+    wmsUSHighRes = L.tileLayer.wms('https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi?', {
+      layers: 'nexrad-n0r', version: '1.1.1',
+      format: 'image/png', transparent: true,
+      opacity: 0.9, pane: 'radarPane', maxZoom: 19,
+      attribution: 'IEM/NWS'
+    }).addTo(map);
+    wmsUSHighRes.on('tileerror', e => { if (e.tile) e.tile.style.display = 'none'; });
+  } catch(e) { wmsUSHighRes = null; }
+
+  // NOAA MRMS — Multi-Radar Multi-Sensor, 0.01° resolution, highest detail available
+  // Free, no key, served by Iowa State University
+  try {
+    wmsUSMRMS = L.tileLayer.wms('https://mesonet.agron.iastate.edu/cgi-bin/wms/mrms/n1p_base_reflectivity.cgi?', {
+      layers: 'mrms-n1p-base-reflectivity', version: '1.1.1',
+      format: 'image/png', transparent: true,
+      opacity: 0.9, pane: 'radarPane', maxZoom: 19,
+      attribution: 'NOAA MRMS/IEM'
+    }).addTo(map);
+    wmsUSMRMS.on('tileerror', e => { if (e.tile) e.tile.style.display = 'none'; });
+  } catch(e) { wmsUSMRMS = null; }
+}
+
+function updateWMSTime(minsAgo) {
+  const t = floorMins(new Date(Date.now() - minsAgo * 60000), 5);
+  const ts = isoUTC(t);
+  if (wmsCanada)  { try { wmsCanada.setParams({ TIME: ts }, false);  } catch(e){} }
+  if (wmsDWD)     { try { wmsDWD.setParams({ TIME: ts }, false);     } catch(e){} }
+  if (wmsUSHighRes) { try { wmsUSHighRes.setParams({ TIME: ts }, false); } catch(e){} }
+  if (wmsUSMRMS)    { try { wmsUSMRMS.setParams({ TIME: ts }, false);    } catch(e){} }
+}
+
+async function loadRadar() {
+  try {
+    setStatus('Loading radar\u2026', true);
+
+    // Fetch RainViewer manifest — explicit error handling for Safari
+    let rv;
+    try {
+      const res = await fetch('https://api.rainviewer.com/public/weather-maps.json', {
+        cache: 'no-store',
+        mode: 'cors'
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      rv = await res.json();
+    } catch(fetchErr) {
+      console.warn('RainViewer fetch failed, trying fallback:', fetchErr);
+      // Fallback: try the RainViewer CDN directly to test connectivity
+      try {
+        const res2 = await fetch('https://tilecache.rainviewer.com/v2/radar/nowcast/past.json', { cache: 'no-store' });
+        if (res2.ok) {
+          rv = await res2.json();
+        } else {
+          throw new Error('Fallback also failed');
+        }
+      } catch(e2) {
+        console.warn('All radar fetch attempts failed:', e2);
+        setStatus('Radar unavailable', true);
+        return;
+      }
+    }
+    const rvPast = (rv.radar && rv.radar.past) || [];
+    if (!rvPast.length) { setStatus('No radar data', true); return; }
+
+    stopPlay();  // stop before touching layers
+
+    // Tear down old layers and clear memory
+    frames.forEach(f => {
+      try { map.removeLayer(f.rvLayer);  } catch(e){}
+      try { map.removeLayer(f.iemLayer); } catch(e){}
+    });
+    loadedFrames.clear();
+    activeRV = null; activeIEM = null;
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    const sz = 256;
+
+    // Use IEM_SLOTS as master timeline; find closest RainViewer frame per slot
+    frames = IEM_SLOTS.map((slot, i) => {
+      const frameTime = nowSec - slot.minsAgo * 60;
+      const closest   = rvPast.reduce((b, r) =>
+        Math.abs(r.time - frameTime) < Math.abs(b.time - frameTime) ? r : b
+      );
+      return {
+        minsAgo:  slot.minsAgo,
+        time:     frameTime,
+        // RainViewer — global base (entire world)
+        rvLayer:  L.tileLayer(
+          rv.host + closest.path + '/' + sz + '/{z}/{x}/{y}/2/1_1.png',
+          { opacity: 0, pane: 'radarPane', maxNativeZoom: 8, maxZoom: 19, errorTileUrl: '' }
+        ).on('tileerror', function(e) { e.tile.style.display = 'none'; }),
+        // IEM NEXRAD — US high-res overlay (transparent outside CONUS)
+        iemLayer: L.tileLayer(
+          `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-${slot.ts}/{z}/{x}/{y}.png`,
+          { opacity: 0, pane: 'radarPane', maxNativeZoom: 10, maxZoom: 19, errorTileUrl: '' }
+        )
+      };
     });
 
-    /* Peak speed */
-    const peakSpeed = Math.max(...speeds);
+    // Only add the last frame's layers immediately (NOT all 22 at once)
+    // Additional frames are added on-demand in showFrame() to keep memory low
+    const lastFrame = frames[frames.length - 1];
+    lastFrame.rvLayer.addTo(map);
+    lastFrame.iemLayer.addTo(map);
+    lastFrame.iemLayer.on('tileerror', evt => { evt.tile.style.display = 'none'; });
 
-    /* Final gauge */
-    setGauge(100, avgSpeed);
+    // Build/update WMS overlays
+    buildWMSOverlays();
+    buildTicks();
 
-    /* Results */
-    resultsEl.innerHTML = `
-      <div class="metric-row">
-        <div class="metric-card" style="animation-delay:0s">
-          <div class="metric-label">Download</div>
-          <div class="metric-value">${avgSpeed.toFixed(1)}</div>
-          <div class="metric-unit">Mbps avg</div>
-        </div>
-        <div class="metric-card" style="animation-delay:0.08s">
-          <div class="metric-label">Peak</div>
-          <div class="metric-value">${peakSpeed.toFixed(1)}</div>
-          <div class="metric-unit">Mbps</div>
-        </div>
-        <div class="metric-card" style="animation-delay:0.16s">
-          <div class="metric-label">Data</div>
-          <div class="metric-value">${(totalBytes / 1_000_000).toFixed(1)}</div>
-          <div class="metric-unit">MB in ${totalTime.toFixed(1)}s</div>
-        </div>
-      </div>
-    `;
+    // Show latest frame then autoplay
+    let shown = false;
+    const go = () => {
+      if (shown) return;
+      shown = true;
+      showFrame(frames.length - 1);
+      setStatus('', false);
+      startPlay();
+    };
+    lastFrame.rvLayer.once('load', go);
+    setTimeout(go, 3000);
 
-  } catch (err) {
-    resultsEl.innerHTML = `
-      <div class="metric-row">
-        <div class="metric-card">
-          <div class="metric-label">Error</div>
-          <div class="metric-value" style="font-size:1.2rem;color:var(--red)">${err.message}</div>
-          <div class="metric-unit">Cloudflare may be unreachable</div>
-        </div>
-      </div>
-    `;
+  } catch(e) {
+    console.error('Radar load error:', e);
+    setStatus('Radar unavailable', true);
+  }
+}
+
+function ensureLayer(layer) {
+  if (!map.hasLayer(layer)) {
+    // Prevent "zoom level not supported" errors
+    layer.on('tileerror', evt => {
+      if (evt.tile) {
+        evt.tile.style.display = 'none';
+        evt.tile.onerror = null; // prevent further error propagation
+      }
+    });
+    // Override _tileOnError to suppress console errors
+    layer._tileOnError = function(e, tile, url) {
+      if (tile) tile.style.display = 'none';
+      // Don't fire error events or log to console — silent fail
+    };
+    layer.addTo(map);
+  }
+}
+
+function showFrame(idx) {
+  if (!frames.length) return;
+  currentIdx = Math.max(0, Math.min(idx, frames.length - 1));
+  const f = frames[currentIdx];
+  const targetOpacity = getRadarOpacity();
+
+  // Ensure current + adjacent frames are loaded
+  const preloadRange = 2;  // preload 2 frames ahead and behind
+  for (let d = -preloadRange; d <= preloadRange; d++) {
+    const pi = ((currentIdx + d) % frames.length + frames.length) % frames.length;
+    const pf = frames[pi];
+    ensureLayer(pf.rvLayer);
+    ensureLayer(pf.iemLayer);
+    loadedFrames.add(pi);
   }
 
-  running = false;
-  startBtn.disabled = false;
-  startBtn.textContent = 'Test Again';
+  // Evict frames far from current to free memory
+  if (loadedFrames.size > MAX_LOADED) {
+    const keep = new Set();
+    for (let d = -preloadRange; d <= preloadRange; d++) {
+      const pi = ((currentIdx + d) % frames.length + frames.length) % frames.length;
+      keep.add(pi);
+    }
+    for (const li of loadedFrames) {
+      if (!keep.has(li)) {
+        try { map.removeLayer(frames[li].rvLayer);  } catch(e){}
+        try { map.removeLayer(frames[li].iemLayer); } catch(e){}
+        loadedFrames.delete(li);
+      }
+    }
+  }
+
+  // Crossfade RainViewer from old → new
+  if (activeRV && activeRV !== f.rvLayer) {
+    crossfade(activeRV, f.rvLayer, targetOpacity);
+  } else if (!activeRV) {
+    f.rvLayer.setOpacity(targetOpacity);
+  }
+
+  // IEM crossfade (same pattern)
+  if (activeIEM && activeIEM !== f.iemLayer) {
+    crossfade(activeIEM, f.iemLayer, 0.9);
+  } else if (!activeIEM) {
+    f.iemLayer.setOpacity(0.9);
+  }
+
+  activeRV  = f.rvLayer;
+  activeIEM = f.iemLayer;
+  updateWMSTime(frames[currentIdx].minsAgo);
+  updateUI();
 }
+
+// Radar tile opacity scales with zoom — subtle at low zoom, vivid at high zoom
+function getRadarOpacity() {
+  const z = map.getZoom();
+  if (z <= 3) return 0.3;
+  if (z <= 5) return 0.5;
+  if (z <= 7) return 0.65;
+  if (z <= 9) return 0.75;
+  return 0.85;
+}
+
+// Toggle high-detail US layers when zoomed in over the US
+function updateUSHighResLayers() {
+  const z = map.getZoom();
+  const center = map.getCenter();
+  const inUS = center.lat >= 20 && center.lat <= 55 && center.lng >= -130 && center.lng <= -60;
+  const zoomedIn = z >= 9;
+
+  if (inUS && zoomedIn) {
+    if (wmsUSHighRes && !map.hasLayer(wmsUSHighRes)) {
+      wmsUSHighRes.addTo(map);
+    }
+    if (wmsUSMRMS && !map.hasLayer(wmsUSMRMS)) {
+      wmsUSMRMS.addTo(map);
+    }
+    // Adjust base layer opacity during crossfade if one is running
+    if (fadeAnim && activeRV) {
+      // Let the crossfade finish naturally, just note that US hi-res is active
+    } else if (activeRV) {
+      activeRV.setOpacity(0.4);
+    }
+  } else {
+    if (wmsUSHighRes && map.hasLayer(wmsUSHighRes)) {
+      try { map.removeLayer(wmsUSHighRes); } catch(e){}
+    }
+    if (wmsUSMRMS && map.hasLayer(wmsUSMRMS)) {
+      try { map.removeLayer(wmsUSMRMS); } catch(e){}
+    }
+    if (!fadeAnim && activeRV) {
+      activeRV.setOpacity(getRadarOpacity());
+    }
+  }
+}
+
+function updateUI() {
+  if (!frames.length) return;
+  const f   = frames[currentIdx];
+  const ago = f.minsAgo === 0 ? 'LIVE \u00b7 NOW' : `${f.minsAgo}m ago`;
+  document.getElementById('time-display').innerHTML =
+    `<span class="t-time">${fmtTime(f.time)}</span>` +
+    `<span class="t-sep"> \u00b7 </span><span class="t-ago">${ago}</span>` +
+    `<span class="t-sep"> \u00b7 </span><span class="t-pos">${currentIdx+1}/${frames.length}</span>`;
+  const pct = frames.length > 1 ? (currentIdx / (frames.length - 1)) * 100 : 100;
+  document.getElementById('scrubber-fill').style.width = pct + '%';
+  document.getElementById('scrubber-thumb').style.left  = pct + '%';
+}
+
+function fmtTime(unixSec) {
+  const t = new Date(unixSec * 1000);
+  const h = t.getHours(), m = t.getMinutes();
+  return `${((h % 12) || 12)}:${m.toString().padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+function buildTicks() {
+  if (!frames.length) return;
+  const n = frames.length;
+  const picks = [0, Math.floor(n * .25), Math.floor(n * .5), Math.floor(n * .75), n - 1];
+  document.getElementById('scrubber-ticks').innerHTML =
+    [...new Set(picks)].map(i => {
+      const f = frames[i], isNow = f.minsAgo === 0;
+      return `<span class="tick-label${isNow ? ' is-now' : ''}">${isNow ? 'NOW' : '-' + f.minsAgo + 'm'}</span>`;
+    }).join('');
+}
+
+// ── PLAY / PAUSE ──────────────────────────────────────────────────────────
+// seqId is incremented on every start/stop. Each scheduled timeout captures
+// the seqId at the time it was scheduled — if seqId changed before it fires,
+// it's stale and bails immediately. Guarantees zero ghost callbacks.
+
+function setPlayIcon(on) {
+  document.getElementById('play-icon').style.display  = on ? 'none' : '';
+  document.getElementById('pause-icon').style.display = on ? ''     : 'none';
+}
+
+function _next(id, idx, delay) {
+  clearTimeout(playTimer);
+  playTimer = setTimeout(() => {
+    if (id !== seqId) return;
+    if (idx >= frames.length) {
+      // Hold on last frame then loop
+      showFrame(frames.length - 1);
+      _next(id, 0, HOLD_MS);
+    } else {
+      showFrame(idx);
+      _next(id, idx + 1, FRAME_MS);
+    }
+  }, delay);
+}
+
+function startPlay() {
+  if (playing || !frames.length) return;
+  playing = true;
+  seqId++;
+  setPlayIcon(true);
+  const next = currentIdx >= frames.length - 1 ? 0 : currentIdx + 1;
+  if (next === 0) showFrame(0);
+  _next(seqId, next, FRAME_MS);
+}
+
+function stopPlay() {
+  playing = false;
+  seqId++;
+  clearTimeout(playTimer);
+  playTimer = null;
+  setPlayIcon(false);
+}
+
+function togglePlay() {
+  if (playing) stopPlay();
+  else         startPlay();
+}
+// Expose to global scope so the inline onclick="togglePlay()" can reach it
+window.togglePlay = togglePlay;
+
+loadRadar();
+setInterval(loadRadar, 300000);
+// ── SCRUBBER ──────────────────────────────────────────────────────────────
+function scrubTo(clientX) {
+  const rect = document.getElementById('scrubber-track').getBoundingClientRect();
+  const pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  if (playing) stopPlay();
+  if (frames.length) showFrame(Math.round(pct * (frames.length - 1)));
+}
+
+let dragging = false;
+const track = document.getElementById('scrubber-track');
+track.addEventListener('mousedown',  e => { dragging = true; scrubTo(e.clientX); });
+track.addEventListener('touchstart', e => { dragging = true; scrubTo(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('mousemove',  e => { if (dragging) scrubTo(e.clientX); });
+window.addEventListener('touchmove',  e => { if (dragging) scrubTo(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('mouseup',   () => dragging = false);
+window.addEventListener('touchend',  () => dragging = false);
+
+// ── GLOBAL ALERTS ─────────────────────────────────────────────────────────
+let alertLayers = [];
+let cachedAlerts = [];
+const SEV = { Extreme:'#ff00cc', Severe:'#ff2d2d', Moderate:'#ffa500', Minor:'#ffd600', Unknown:'rgba(255,255,255,0.3)' };
+const sevOrder = { Extreme:0, Severe:1, Moderate:2, Minor:3, Unknown:4 };
+const sevClass = s => 'sev-' + (s||'unknown').toLowerCase();
+const timeAgo = iso => {
+  if (!iso) return '';
+  const d = Math.round((Date.now() - new Date(iso)) / 60000);
+  return d < 60 ? `${d}m ago` : d < 1440 ? `${Math.round(d/60)}h ago` : `${Math.round(d/1440)}d ago`;
+};
+
+// Map bounds → which region APIs to query
+// We always fetch NWS (US). For Europe we use MeteoAlarm.
+// For other regions we use national APIs where available.
+
+// ── US — NWS CAP alerts (severe thunderstorm, tornado, flash flood, etc.) ─
+async function fetchNWSAlerts() {
+  try {
+    const data = await (await fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert&limit=500')).json();
+    return (data.features||[]).map(f => {
+      const p = f.properties || {};
+      const event = p.event || 'Alert';
+
+      // NWS severity mapping based on event type
+      let sev = p.severity || 'Unknown';
+      const evt = event.toLowerCase();
+      if (/tornado|extreme wind|flash flood|dust storm|typhoon|hurricane/.test(evt)) sev = 'Extreme';
+      else if (/severe thunderstorm|flash flood watch|flood warning|winter storm|blizzard|ice storm|high wind|storm surge|special marine/.test(evt)) sev = 'Severe';
+      else if (/flood watch|winter weather|freez.*advisory|wind advisory|heat advisory|dense fog|red flag|hard freeze|frost/.test(evt)) sev = 'Moderate';
+      else sev = sev || 'Minor';
+
+      // Determine icon/tag based on event type
+      let tag = '';
+      if (/tornado/.test(evt))           tag = 'TORNADO';
+      else if (/severe thunderstorm/.test(evt)) tag = 'SEVERE TSTM';
+      else if (/flash flood/.test(evt))   tag = 'FLASH FLOOD';
+      else if (/flood/.test(evt))         tag = 'FLOOD';
+      else if (/winter storm|blizzard|ice storm|snow/.test(evt)) tag = 'WINTER STORM';
+      else if (/hurricane|tropical cyclone/.test(evt)) tag = 'HURRICANE';
+      else if (/high wind|extreme wind/.test(evt))     tag = 'HIGH WIND';
+      else if (/heat/.test(evt))          tag = 'HEAT';
+      else if (/fire|red flag/.test(evt)) tag = 'FIRE';
+      else if (/fog/.test(evt))           tag = 'FOG';
+      else if (/air quality|smoke/.test(evt)) tag = 'AIR QUALITY';
+      else if (/marine|special marine/.test(evt)) tag = 'MARINE';
+      else if (/coastal flood|storm surge/.test(evt)) tag = 'COASTAL FLOOD';
+      else if (/extreme cold|wind chill/.test(evt)) tag = 'EXTREME COLD';
+      else if (/excessive heat/.test(evt)) tag = 'EXCESSIVE HEAT';
+
+      return {
+        severity: sev,
+        event: event,
+        tag,   // extra label for the card UI
+        area:     p.areaDesc || '',
+        sent:     p.sent,
+        geometry: f.geometry,
+        region:   'US',
+        source:   'NWS',
+        url:      f.id || p['@id'] || 'https://www.weather.gov/alerts',
+        instruction: p.instruction || null,
+        headline:    p.headline || null
+      };
+    });
+  } catch(e) { return []; }
+}
+
+// ── CANADA — MSC GeoMet OGC API (free, no key, CORS-friendly) ─────────────
+async function fetchCanadaAlerts() {
+  try {
+    const url = 'https://api.weather.gc.ca/collections/warnings/items?f=json&limit=500&lang=en';
+    const data = await (await fetch(url)).json();
+    return (data.features || []).map(f => {
+      const p = f.properties || {};
+      const evt = (p.alert_name || '').toLowerCase();
+      let sev = 'Minor';
+      if (/tornado|extreme|hurricane|tsunami/.test(evt))    sev = 'Extreme';
+      else if (/warning|severe|blizzard|ice storm/.test(evt)) sev = 'Severe';
+      else if (/watch|winter storm/.test(evt))                sev = 'Moderate';
+      else if (/advisory|special/.test(evt))                  sev = 'Minor';
+
+      let tag = '';
+      if (/tornado/.test(evt))           tag = 'TORNADO';
+      else if (/severe thunderstorm/.test(evt)) tag = 'SEVERE TSTM';
+      else if (/flash flood|flood/.test(evt)) tag = 'FLOOD';
+      else if (/winter storm|blizzard|snow/.test(evt)) tag = 'WINTER STORM';
+      else if (/high wind|wind/.test(evt)) tag = 'HIGH WIND';
+      else if (/heat|extreme temp/.test(evt)) tag = 'HEAT';
+      else if (/fog|freezing fog/.test(evt)) tag = 'FOG';
+      else if (/rainfall|rain/.test(evt))  tag = 'HEAVY RAIN';
+      else if (/freezing rain/.test(evt))  tag = 'FREEZING RAIN';
+      else if (/blowing snow/.test(evt))   tag = 'BLOWING SNOW';
+      else if (/extreme cold/.test(evt))   tag = 'EXTREME COLD';
+      else if (/frost/.test(evt))          tag = 'FROST';
+      else if (/weather\/rainfall/.test(evt)) tag = 'HEAVY RAIN';
+
+      return {
+        severity: sev,
+        event:    p.alert_name || p.type || 'Weather Alert',
+        tag,
+        area:     p.zone || p.location || 'Canada',
+        sent:     p.effective || null,
+        geometry: f.geometry,
+        region:   'CA',
+        source:   'ECCC',
+        url:      p.url || 'https://weather.gc.ca/warnings/index_e.html',
+        instruction: p.instruction || null,
+        headline:    p.headline || null
+      };
+    });
+  } catch(e) { return []; }
+}
+
+// ── AUSTRALIA — BOM public app API (no key required) ──────────────────────
+// Source: api.weather.bom.gov.au — official Bureau of Meteorology backend
+async function fetchAustraliaAlerts() {
+  try {
+    const data = await (await fetch(
+      'https://api.weather.bom.gov.au/v1/warnings',
+      { headers: { 'Accept': 'application/json' } }
+    )).json();
+    return (data.data || []).map(w => {
+      // BOM warning_group_type: "flood_warning", "severe_thunderstorm_warning",
+      // "tropical_cyclone_warning", "fire_weather_warning", "coastal_hazard_warning", etc.
+      const wtype = (w.warning_group_type || '').toLowerCase();
+      let sev = 'Minor';
+      if (/tropical_cyclone|extreme/i.test(wtype))           sev = 'Extreme';
+      else if (/severe_thunderstorm|major_flood|fire_weather/i.test(wtype)) sev = 'Severe';
+      else if (/moderate_flood|coastal_hazard|strong_wind/i.test(wtype))    sev = 'Moderate';
+
+      // Build a clean area string: prefer the full title location over bare state code
+      // BOM title is e.g. "Flood Warning for the Daly River" — strip the warning type prefix
+      const rawTitle = w.title || w.short_title || 'Weather Warning';
+      // area: pull the "for..." part of the title if present, else fall back to state
+      const forMatch = rawTitle.match(/\bfor\b\s+(.+)/i);
+      const area = forMatch
+        ? forMatch[1].trim()
+        : (w.state ? w.state.toUpperCase() : 'Australia');
+
+      // Event label: strip trailing location noise to keep it concise
+      const event = rawTitle
+        .replace(/\s+for\s+.+/i, '')   // "Flood Warning" not "Flood Warning for the Daly River"
+        .trim();
+
+      let tag = '';
+      if (/tropical_cyclone/.test(wtype)) tag = 'CYCLONE';
+      else if (/severe_thunderstorm/.test(wtype)) tag = 'SEVERE TSTM';
+      else if (/flood/.test(wtype)) tag = 'FLOOD';
+      else if (/fire_weather/.test(wtype)) tag = 'FIRE DANGER';
+      else if (/coastal_hazard/.test(wtype)) tag = 'COASTAL HAZARD';
+      else if (/strong_wind/.test(wtype)) tag = 'HIGH WIND';
+      else if (/heat/.test(wtype)) tag = 'HEAT';
+      else if (/frost/.test(wtype)) tag = 'FROST';
+      else if (/marine_wind/.test(wtype)) tag = 'MARINE WIND';
+
+      return {
+        severity: sev,
+        event,
+        tag,
+        area,
+        sent:     w.issue_time || null,
+        geometry: null,
+        region:   'AU',
+        source:   'BOM',
+        url:      (function() {
+          // Map BOM state to their state-specific warnings page
+          const statePages = {
+            'qld': 'https://www.bom.gov.au/qld/warnings/',
+            'nsw': 'https://www.bom.gov.au/nsw/warnings/',
+            'vic': 'https://www.bom.gov.au/vic/warnings/',
+            'wa':  'https://www.bom.gov.au/wa/warnings/',
+            'sa':  'https://www.bom.gov.au/sa/warnings/',
+            'tas': 'https://www.bom.gov.au/tas/warnings/',
+            'nt':  'https://www.bom.gov.au/nt/warnings/',
+            'act': 'https://www.bom.gov.au/act/warnings/',
+          };
+          const st = (w.state || '').toLowerCase();
+          return statePages[st] || 'https://www.bom.gov.au/warnings/';
+        })(),
+        instruction: null,
+        headline: rawTitle
+      };
+    }).filter(a => a.event && !/cancel|terminated/i.test(a.event));
+  } catch(e) { return []; }
+}
+
+// ── NEW ZEALAND — MetService public CAP Atom feed (no key) ─────────────────
+async function fetchNZAlerts() {
+  try {
+    const r = await fetch('https://alerts.metservice.com/cap/rss');
+    if (!r.ok) return [];
+    const txt = await r.text();
+    const doc = new DOMParser().parseFromString(txt, 'text/xml');
+    return [...doc.querySelectorAll('item')].map(item => {
+      const title = (item.querySelector('title') ? item.querySelector('title').textContent : null) || 'Weather Alert';
+      const desc = (item.querySelector('description') && item.querySelector('description').textContent) || '';
+      const areaText = desc.split(':')[0] || 'New Zealand';
+      const nzLink = (item.querySelector('link') ? item.querySelector('link').textContent : null) || 'https://www.metservice.com/warnings/home';
+      const evt = title.toLowerCase();
+      let sev = 'Minor';
+      if (/severe|heavy|gale|extreme|tornado|cyclone/.test(evt))   sev = 'Severe';
+      if (/thunderstorm|tropical cyclone/.test(evt)) sev = 'Extreme';
+
+      let tag = '';
+      if (/tornado/.test(evt)) tag = 'TORNADO';
+      else if (/severe thunderstorm/.test(evt)) tag = 'SEVERE TSTM';
+      else if (/heavy rain|flood/.test(evt)) tag = 'FLOOD';
+      else if (/gale|strong wind/.test(evt)) tag = 'HIGH WIND';
+      else if (/cyclone/.test(evt)) tag = 'CYCLONE';
+      else if (/snow|ice/.test(evt)) tag = 'WINTER STORM';
+      else if (/heat/.test(evt)) tag = 'HEAT';
+      else if (/frost/.test(evt)) tag = 'FROST';
+      else if (/marine/.test(evt)) tag = 'MARINE';
+
+      return { severity: sev, event: title, tag, area: areaText, sent: null, geometry: null, region: 'NZ', source: 'MetService', url: nzLink, instruction: null, headline: null };
+    });
+  } catch(e) { return []; }
+}
+
+// ── SOUTH AMERICA — GDACS / ReliefWeb global alerts (no key) ──────────────
+async function fetchSouthAmericaAlerts() {
+  try {
+    const url = 'https://www.gdacs.org/gdacs/api/gdacsAlerts';
+    const data = await (await fetch(url)).json();
+    return (data.alerts || [])
+      .filter(a => {
+        const saCountries = ['BR','AR','CL','CO','PE','VE','EC','BO','PY','UY','GY','SR','GF','FK'];
+        return saCountries.some(c => (a.country || '').includes(c) || (a.location || '').includes('Brazil') || (a.location || '').includes('Argentina') || (a.location || '').includes('Colombia') || (a.location || '').includes('Chile') || (a.location || '').includes('Peru'));
+      })
+      .map(a => {
+        const sev = a.alertlevel >= 3 ? 'Extreme' : a.alertlevel >= 2 ? 'Severe' : a.alertlevel >= 1 ? 'Moderate' : 'Minor';
+        const evt = (a.eventtype || '').toLowerCase();
+        let tag = '';
+        if (/earthquake|tsunami/.test(evt)) tag = 'EARTHQUAKE';
+        else if (/tornado/.test(evt)) tag = 'TORNADO';
+        else if (/cyclone|typhoon|hurricane/.test(evt)) tag = 'CYCLONE';
+        else if (/flood/.test(evt)) tag = 'FLOOD';
+        else if (/volcano/.test(evt)) tag = 'VOLCANO';
+        else if (/fire|wildfire/.test(evt)) tag = 'FIRE DANGER';
+        else if (/drought/.test(evt)) tag = 'DROUGHT';
+        else if (/landslide/.test(evt)) tag = 'LANDSLIDE';
+
+        return {
+          severity: sev,
+          event:    a.eventtype || 'Weather Alert',
+          tag,
+          area:     a.location || 'South America',
+          sent:     a.fromdate || null,
+          geometry: null,
+          region:   'SA',
+          source:   'GDACS',
+          url:      a.gdacsurl || 'https://www.gdacs.org/',
+          instruction: null,
+          headline: a.description || null
+        };
+      });
+  } catch(e) { return []; }
+}
+
+// ── JAPAN — JMA (Japan Meteorological Agency) via GDACS ───────────────────
+async function fetchJapanAlerts() {
+  try {
+    const gdacsUrl = 'https://www.gdacs.org/gdacs/api/gdacsAlerts';
+    const data = await (await fetch(gdacsUrl)).json();
+    return (data.alerts || [])
+      .filter(a => (a.country || '').includes('JP') || (a.location || '').toLowerCase().includes('japan'))
+      .map(a => {
+        const sev = a.alertlevel >= 3 ? 'Extreme' : a.alertlevel >= 2 ? 'Severe' : 'Moderate';
+        const evt = (a.eventtype || '').toLowerCase();
+        let tag = '';
+        if (/earthquake|tsunami/.test(evt)) tag = 'EARTHQUAKE';
+        else if (/typhoon/.test(evt)) tag = 'CYCLONE';
+        else if (/flood/.test(evt)) tag = 'FLOOD';
+        else if (/volcano/.test(evt)) tag = 'VOLCANO';
+        else if (/fire/.test(evt)) tag = 'FIRE DANGER';
+
+        return {
+          severity: sev,
+          event:    a.eventtype || 'Weather Alert',
+          tag,
+          area:     a.location || 'Japan',
+          sent:     a.fromdate || null,
+          geometry: null,
+          region:   'JP',
+          source:   'JMA/GDACS',
+          url:      a.gdacsurl || 'https://www.jma.go.jp/jma/indexe.html',
+          instruction: null,
+          headline: a.description || null
+        };
+      });
+  } catch(e) { return []; }
+}
+
+// ── INDIA — IMD warnings via GDACS ────────────────────────────────────────
+async function fetchIndiaAlerts() {
+  try {
+    const url = 'https://www.gdacs.org/gdacs/api/gdacsAlerts';
+    const data = await (await fetch(url)).json();
+    return (data.alerts || [])
+      .filter(a => (a.country || '').includes('IN') || (a.location || '').toLowerCase().includes('india'))
+      .map(a => {
+        const sev = a.alertlevel >= 3 ? 'Extreme' : a.alertlevel >= 2 ? 'Severe' : 'Moderate';
+        const evt = (a.eventtype || '').toLowerCase();
+        let tag = '';
+        if (/cyclone/.test(evt)) tag = 'CYCLONE';
+        else if (/flood/.test(evt)) tag = 'FLOOD';
+        else if (/earthquake/.test(evt)) tag = 'EARTHQUAKE';
+        else if (/heat/.test(evt)) tag = 'HEAT';
+        else if (/fire/.test(evt)) tag = 'FIRE DANGER';
+        else if (/drought/.test(evt)) tag = 'DROUGHT';
+
+        return {
+          severity: sev,
+          event:    a.eventtype || 'Weather Alert',
+          tag,
+          area:     a.location || 'India',
+          sent:     a.fromdate || null,
+          geometry: null,
+          region:   'IN',
+          source:   'IMD/GDACS',
+          url:      a.gdacsurl || 'https://mausam.imd.gov.in/',
+          instruction: null,
+          headline: a.description || null
+        };
+      });
+  } catch(e) { return []; }
+}
+
+// ── US SPC — Storm Prediction Center watches (tornado/severe tstm) ────────
+async function fetchSPCWatches() {
+  try {
+    // SPC provides active watches as GeoJSON
+    const data = await (await fetch('https://www.spc.noaa.gov/products/watch/active-watches.geojson')).json();
+    return (data.features || []).map(f => {
+      const p = f.properties || {};
+      const evt = (p.type || p.event || '').toLowerCase();
+      // SPC watches are always either tornado or severe thunderstorm
+      const isTornado = /tornado/.test(evt);
+      const sev = isTornado ? 'Extreme' : 'Severe';
+      const tag = isTornado ? 'TORNADO WATCH' : 'SEVERE TSTM WATCH';
+
+      return {
+        severity: sev,
+        event:    p.type || p.event || 'SPC Watch',
+        tag,
+        area:     p.countyname || p.state || '',
+        sent:     p.date || null,
+        geometry: f.geometry,
+        region:   'US',
+        source:   'SPC',
+        url:      'https://www.spc.noaa.gov/products/watch/',
+        instruction: null,
+        headline: p.description || null
+      };
+    });
+  } catch(e) { return []; }
+}
+
+// ── US NHC — National Hurricane Center tropical alerts ─────────────────────
+async function fetchNHCAlerts() {
+  try {
+    // NHC provides active tropical cyclone advisories as GeoJSON
+    const data = await (await fetch('https://www.nhc.noaa.gov/gis/atcf/active.json')).json();
+    return (data.features || []).map(f => {
+      const p = f.properties || {};
+      const name = p.name || 'Tropical Cyclone';
+      const type = (p.type || '').toLowerCase();
+      let sev = 'Moderate';
+      let tag = 'TROPICAL';
+      if (/hurricane|major hurricane/.test(type)) { sev = 'Extreme'; tag = 'HURRICANE'; }
+      else if (/tropical storm/.test(type)) { sev = 'Severe'; tag = 'TROPICAL STORM'; }
+      else if (/tropical depression/.test(type)) { sev = 'Moderate'; tag = 'TROPICAL DEPRESSION'; }
+      else if (/invest/.test(type)) { sev = 'Minor'; tag = 'INVEST'; }
+
+      return {
+        severity: sev,
+        event:    `${name} — ${p.type || 'Tropical Cyclone'}`,
+        tag,
+        area:     p.basin || 'Atlantic/Pacific',
+        sent:     p.advisoryDate || null,
+        geometry: f.geometry,
+        region:   'US',
+        source:   'NHC',
+        url:      'https://www.nhc.noaa.gov/',
+        instruction: null,
+        headline: `${name}: ${p.type}`
+      };
+    });
+  } catch(e) { return []; }
+}
+
+// US (NWS) + EU (MeteoAlarm) + Canada (MSC GeoMet) + Australia (BOM) + NZ (MetService)
+// + South America (GDACS) + Japan (JMA/GDACS) + India (IMD/GDACS)
+// + US SPC (Storm Prediction Center watches) + US NHC (National Hurricane Center)
+async function loadAlerts() {
+  alertLayers.forEach(l => { try { map.removeLayer(l); } catch(e){} });
+  alertLayers = [];
+
+  // Fetch all regions in parallel
+  const [usAlerts, euAlerts, caAlerts, auAlerts, nzAlerts, saAlerts, jpAlerts, inAlerts] = await Promise.all([
+    fetchNWSAlerts(),
+    fetchEUAlerts(),
+    fetchCanadaAlerts(),
+    fetchAustraliaAlerts(),
+    fetchNZAlerts(),
+    fetchSouthAmericaAlerts(),
+    fetchJapanAlerts(),
+    fetchIndiaAlerts(),
+  ]);
+
+  // Also fetch SPC watches (severe thunderstorm/tornado watches) and NHC hurricanes
+  const [spcWatches, nhcAlerts] = await Promise.all([
+    fetchSPCWatches(),
+    fetchNHCAlerts(),
+  ]);
+
+  const allAlerts = [...usAlerts, ...euAlerts, ...caAlerts, ...auAlerts, ...nzAlerts, ...saAlerts, ...jpAlerts, ...inAlerts, ...spcWatches, ...nhcAlerts].sort((a,b) =>
+    (sevOrder[a.severity]||4) - (sevOrder[b.severity]||4)
+  );
+
+  const total = allAlerts.length;
+  document.getElementById('alert-num').textContent   = total;
+  document.getElementById('panel-count').textContent = total;
+  document.getElementById('alert-pill').className    = total ? 'alert-pill' : 'alert-pill none';
+  document.getElementById('panel-toggle').classList.toggle('has-alerts', total > 0);
+
+  // Update timestamp
+  const now = new Date();
+  document.getElementById('last-updated').textContent =
+    `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+  // Store and render
+  cachedAlerts = allAlerts;
+  activeRegionFilter = 'ALL';
+  // Reset tab highlight to ALL
+  document.querySelectorAll('.rtab').forEach(t => t.classList.toggle('active', t.dataset.region === 'ALL'));
+  renderAlertList();
+  renderAlertLayers();
+}
+
+// ── ALERT LIST RENDERING ───────────────────────────────────────────────────
+let activeRegionFilter = 'ALL';
+
+function filterRegion(tab) {
+  activeRegionFilter = tab.dataset.region;
+  document.querySelectorAll('.rtab').forEach(t => t.classList.toggle('active', t === tab));
+  renderAlertList();
+}
+window.filterRegion = filterRegion;
+
+function makeAlertCard(a) {
+  const item = document.createElement('div');
+  item.className = `alert-item ${sevClass(a.severity)}`;
+
+  const timeStr = timeAgo(a.sent);
+  const sevColors = { Extreme:'#ff00cc', Severe:'#ff3737', Moderate:'#ff9500', Minor:'#ffd60a', Unknown:'rgba(255,255,255,0.25)' };
+  const sevColor = sevColors[a.severity] || sevColors.Unknown;
+
+  // Tag pill (e.g. TORNADO, SEVERE TSTM, FLOOD, etc.)
+  const tagHtml = a.tag
+    ? `<span class="alert-tag-chip" style="border-color:${sevColor}44;color:${sevColor};background:${sevColor}11">${a.tag}</span>`
+    : '';
+
+  const govLinkHtml = a.url
+    ? `<a class="alert-gov-link" href="${a.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">&#8599; View alert</a>`
+    : '';
+
+  item.innerHTML =
+    `<div class="alert-bar"></div>` +
+    `<div class="alert-body">` +
+      `<div class="alert-top-row">` +
+        `<div class="alert-sev-badge">` +
+          `<span class="alert-sev-dot" style="background:${sevColor};box-shadow:0 0 5px ${sevColor}77"></span>` +
+          `<span class="alert-sev-text" style="color:${sevColor}">${a.severity || 'Unknown'}</span>` +
+        `</div>` +
+        (timeStr ? `<span class="alert-time-chip">${timeStr}</span>` : '') +
+      `</div>` +
+      (tagHtml ? `<div class="alert-tag-row">${tagHtml}</div>` : '') +
+      `<div class="alert-event" title="${a.event}">${a.event}</div>` +
+      `<div class="alert-area" title="${a.area}">${a.area}</div>` +
+      `<div class="alert-footer">` +
+        (a.source ? `<span class="alert-source-chip">${a.source}</span>` : '<span></span>') +
+        govLinkHtml +
+      `</div>` +
+    `</div>`;
+
+  if (a.geometry) {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.alert-gov-link')) return;
+      map.flyToBounds(L.geoJSON(a.geometry).getBounds(), {padding:[60,60], duration:1.2});
+    });
+  }
+  return item;
+}
+
+function renderAlertList() {
+  const list = document.getElementById('alerts-list');
+  const filtered = activeRegionFilter === 'ALL'
+    ? cachedAlerts
+    : cachedAlerts.filter(a => a.region === activeRegionFilter);
+
+  if (!filtered.length) {
+    list.innerHTML = cachedAlerts.length
+      ? `<div class="no-alerts">No alerts for ${activeRegionFilter}.</div>`
+      : `<div class="no-alerts">No active alerts.<br>All clear globally.</div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+
+  // Group by severity
+  const groups = [
+    { key:'Extreme',  label:'Extreme' },
+    { key:'Severe',   label:'Severe' },
+    { key:'Moderate', label:'Moderate' },
+    { key:'Minor',    label:'Minor' },
+    { key:'Unknown',  label:'Other' },
+  ];
+
+  groups.forEach(g => {
+    const items = filtered.filter(a => a.severity === g.key);
+    if (!items.length) return;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'alert-group-header';
+    hdr.innerHTML =
+      `<span class="alert-group-label">${g.label}</span>` +
+      `<span class="alert-group-line"></span>` +
+      `<span class="alert-group-n">${items.length}</span>`;
+    list.appendChild(hdr);
+
+    items.forEach(a => list.appendChild(makeAlertCard(a)));
+  });
+}
+
+// Severity → minimum zoom level before showing on map
+const SEV_MIN_ZOOM = { Extreme:2, Severe:3, Moderate:5, Minor:6, Unknown:7 };
+
+function renderAlertLayers() {
+  // Tear down existing layers safely
+  alertLayers.forEach(l => { try { map.removeLayer(l); } catch(e){} });
+  alertLayers = [];
+
+  const zoom = map.getZoom();
+  let drawn = 0;
+  const MAX_LAYERS = 300; // hard cap to prevent frame-rate collapse
+
+  cachedAlerts.forEach(a => {
+    if (!a.geometry) return;
+    if (drawn >= MAX_LAYERS) return;
+    // Only render if zoom meets severity threshold
+    const minZ = SEV_MIN_ZOOM[a.severity] ?? 6;
+    if (zoom < minZ) return;
+
+    const col = SEV[a.severity] || SEV.Unknown;
+    // Thinner strokes and less fill at lower zooms for readability
+    const weight = zoom < 5 ? 1 : 1.5;
+    const fillOp = zoom < 5 ? 0.08 : 0.12;
+    const gl = L.geoJSON(a.geometry, {
+      style:{ color:col, fillColor:col, weight, opacity:0.85, fillOpacity:fillOp }
+    });
+    gl.bindTooltip(`<strong>${a.event}</strong><br>${a.area}`, { className:'alert-tooltip', sticky:true });
+    gl.addTo(map);
+    alertLayers.push(gl);
+    drawn++;
+  });
+}
+
+// Re-render alert polygons AND adjust radar opacity whenever the user zooms or pans (throttled)
+let _zoomTimer = null;
+map.on('zoomend moveend', () => {
+  clearTimeout(_zoomTimer);
+  _zoomTimer = setTimeout(() => {
+    renderAlertLayers();
+    updateUSHighResLayers();
+    // Force tiles to redraw at new zoom
+    if (activeRV && map.hasLayer(activeRV)) activeRV.redraw();
+    if (activeIEM && map.hasLayer(activeIEM)) activeIEM.redraw();
+  }, 100);
+});
+
+async function fetchEUAlerts() {
+  // MeteoAlarm provides EU-wide severe weather alerts as GeoJSON — free, no key
+  try {
+    const data = await (await fetch('https://feeds.meteoalarm.org/api/v1/warnings/region/europe')).json();
+    return (data.features||[]).map(f => {
+      const p = f.properties||{};
+      const awareness = p.awareness_level || '';
+      const awarenessType = (p.awareness_type || '').toLowerCase();
+      // MeteoAlarm levels: 1=green(none), 2=yellow, 3=orange, 4=red
+      const lvl = parseInt(awareness.split(';')[0]) || 1;
+      const sev = lvl >= 4 ? 'Extreme' : lvl === 3 ? 'Severe' : lvl === 2 ? 'Moderate' : 'Minor';
+      const EU_AGENCY = {
+        AT:'ZAMG',BE:'RMI',BG:'NIMH',HR:'DHMZ',CY:'CMS',CZ:'CHMI',
+        DK:'DMI',EE:'EMI',FI:'FMI',FR:'Météo-France',DE:'DWD',
+        GR:'EMY',HU:'OMSZ',IS:'IMO',IE:'Met Éireann',IT:'ARPA',
+        LV:'LVGMC',LT:'LHMT',LU:'MeteoLux',MT:'MMS',NL:'KNMI',
+        NO:'MET Norway',PL:'IMGW',PT:'IPMA',RO:'ANM',RS:'RHMSS',
+        SK:'SHMU',SI:'ARSO',ES:'AEMET',SE:'SMHI',CH:'MeteoSwiss',
+        GB:'Met Office',UA:'UHC',TR:'MGM',ME:'IHMS',MK:'UHMR',
+        AL:'IGJEO',BA:'FHMZBIH',MD:'SHS'
+      };
+      const cc = (p.country||'').toUpperCase();
+      const agency = EU_AGENCY[cc] || (cc||'MeteoAlarm');
+
+      // Determine tag based on awareness type
+      let tag = '';
+      if (/thunderstorm/.test(awarenessType)) tag = 'SEVERE TSTM';
+      else if (/tornado/.test(awarenessType)) tag = 'TORNADO';
+      else if (/rain|flood/.test(awarenessType)) tag = 'FLOOD';
+      else if (/wind/.test(awarenessType)) tag = 'HIGH WIND';
+      else if (/snow|ice/.test(awarenessType)) tag = 'WINTER STORM';
+      else if (/heat|temperature/.test(awarenessType)) tag = 'HEAT';
+      else if (/cold|frost/.test(awarenessType)) tag = 'EXTREME COLD';
+      else if (/fog/.test(awarenessType)) tag = 'FOG';
+      else if (/coastal/.test(awarenessType)) tag = 'COASTAL HAZARD';
+      else if (/forest.?fire|wildfire/.test(awarenessType)) tag = 'FIRE DANGER';
+      else if (/avalanche/.test(awarenessType)) tag = 'AVALANCHE';
+      else if (/rainbow|rain/.test(awarenessType)) tag = 'HEAVY RAIN';
+
+      return {
+        severity: sev,
+        event:    p.awareness_type ? p.awareness_type.split(';')[1] || 'Weather Alert' : 'Weather Alert',
+        tag,
+        area:     p.region_name || p.country || 'Europe',
+        sent:     p.from || null,
+        geometry: f.geometry,
+        region:   'EU',
+        source:   agency,
+        url:      'https://www.meteoalarm.org/en/live/',
+        instruction: p.description || null,
+        headline: p.awareness_type || null
+      };
+    });
+  } catch(e) {
+    try {
+      const r = await fetch('https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-europe');
+      return [];
+    } catch(e2) { return []; }
+  }
+}
+
+function togglePanel() {
+  const panel = document.getElementById('panel');
+  panel.classList.toggle('open');
+}
+window.togglePanel = togglePanel;
+
+// Swipe down to close panel on mobile
+(function() {
+  const panel = document.getElementById('panel');
+  let startY = 0, startTime = 0;
+  panel.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+  }, { passive:true });
+  panel.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - startY;
+    const dt = Date.now() - startTime;
+    if (dy > 60 && dt < 400) togglePanel(); // swipe down fast
+  }, { passive:true });
+})();
+
+// Only auto-start if beta was already acknowledged (returning user)
+if(window._betaAlreadyAcknowledged){
+  loadAlerts();
+  setInterval(loadAlerts, 60000);
+}
+
+// Called by the "Got it" button
+window.acknowledgeBeta = function() {
+  if(document.getElementById('beta-no-show').checked){
+    try{localStorage.setItem('beta_dismissed','1')}catch(e){}
+  }
+  document.getElementById('beta-overlay').style.display='none';
+  loadAlerts();
+  setInterval(loadAlerts, 60000);
+};
+
+// ── BETA DISCLAIMER handled inline on the modal button ───────────────────
+
+});
 </script>
 </body>
 </html>
