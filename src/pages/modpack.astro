@@ -203,63 +203,64 @@ h1 .grad {
 .pill[data-cat="library"].active { background:rgba(240,238,255,0.06); border-color:rgba(240,238,255,0.3); color:var(--muted) }
 .pill[data-cat="qol"].active { background:rgba(255,71,87,0.1); border-color:var(--red); color:var(--red) }
 
-/* ── GRID ── */
-.grid-wrap { max-width:1100px; margin:0 auto; padding:0 40px 80px }
+
+
+/* ── LIST ── */
+.grid-wrap { max-width:860px; margin:0 auto; padding:0 40px 80px; position:relative; }
 .mod-count {
   font-family:var(--mono); font-size:0.65rem; letter-spacing:0.14em;
   text-transform:uppercase; color:var(--dim); margin-bottom:20px;
 }
 .mod-count span { color:var(--accent2) }
 
-.mod-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
-  gap:12px;
-}
+.mod-grid { display:flex; flex-direction:column; gap:0; }
 
-/* MOD CARD */
+/* MOD ROW */
 .mod-card {
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:0;
-  overflow:hidden;
-  transition:border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-  cursor:default;
-  animation:card-in 0.4s var(--ease) both;
+  display:flex; align-items:baseline; gap:16px;
+  padding:13px 0;
+  border-bottom:1px solid var(--border);
+  animation:row-in 0.3s var(--ease) both;
+  transition:background 0.15s;
   position:relative;
 }
-@keyframes card-in { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-.mod-card:hover {
-  border-color:var(--border2);
-  transform:translateY(-2px);
-  box-shadow:0 8px 32px rgba(0,0,0,0.3);
-}
+.mod-card:first-child { border-top:1px solid var(--border) }
+@keyframes row-in { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
 .mod-card.hidden { display:none }
 
-.card-top-bar {
-  height:2px;
-  background:var(--border);
+/* left accent bar */
+.mod-card::before {
+  content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+  width:2px; height:0; border-radius:2px;
+  transition:height 0.2s var(--ease), opacity 0.2s;
+  opacity:0;
 }
-.mod-card[data-cat="performance"] .card-top-bar { background:linear-gradient(90deg, var(--lime), rgba(0,255,136,0.3)) }
-.mod-card[data-cat="world"]       .card-top-bar { background:linear-gradient(90deg, var(--cyan), rgba(0,210,211,0.3)) }
-.mod-card[data-cat="content"]     .card-top-bar { background:linear-gradient(90deg, var(--amber), rgba(255,165,2,0.3)) }
-.mod-card[data-cat="visual"]      .card-top-bar { background:linear-gradient(90deg, var(--accent2), rgba(162,155,254,0.3)) }
-.mod-card[data-cat="library"]     .card-top-bar { background:linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)) }
-.mod-card[data-cat="qol"]         .card-top-bar { background:linear-gradient(90deg, var(--red), rgba(255,71,87,0.3)) }
+.mod-card:hover::before { height:60%; opacity:1 }
+.mod-card[data-cat="performance"]::before { background:var(--lime) }
+.mod-card[data-cat="world"]::before       { background:var(--cyan) }
+.mod-card[data-cat="content"]::before     { background:var(--amber) }
+.mod-card[data-cat="visual"]::before      { background:var(--accent2) }
+.mod-card[data-cat="library"]::before     { background:rgba(255,255,255,0.25) }
+.mod-card[data-cat="qol"]::before         { background:var(--red) }
 
-.card-body { padding:16px }
-.card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px }
+.row-index {
+  font-family:var(--mono); font-size:0.6rem; color:var(--dim);
+  width:28px; flex-shrink:0; text-align:right; line-height:1;
+  padding-top:2px;
+}
+
+.row-main { flex:1; min-width:0; }
+
+.row-top { display:flex; align-items:center; gap:10px; margin-bottom:3px; flex-wrap:wrap; }
 
 .mod-name {
-  font-size:0.88rem; font-weight:700; color:var(--white); line-height:1.25;
-  flex:1;
+  font-size:0.88rem; font-weight:700; color:var(--white);
 }
+
 .cat-badge {
-  font-family:var(--mono); font-size:0.52rem; font-weight:700;
+  font-family:var(--mono); font-size:0.5rem; font-weight:700;
   letter-spacing:0.14em; text-transform:uppercase;
-  padding:3px 7px; border-radius:4px; white-space:nowrap; flex-shrink:0;
-  margin-top:1px;
+  padding:2px 6px; border-radius:3px; white-space:nowrap; flex-shrink:0;
 }
 [data-cat="performance"] .cat-badge { background:rgba(0,255,136,0.12); color:var(--lime); border:1px solid rgba(0,255,136,0.2) }
 [data-cat="world"]       .cat-badge { background:rgba(0,210,211,0.12); color:var(--cyan); border:1px solid rgba(0,210,211,0.2) }
@@ -269,31 +270,30 @@ h1 .grad {
 [data-cat="qol"]         .cat-badge { background:rgba(255,71,87,0.12); color:var(--red); border:1px solid rgba(255,71,87,0.2) }
 
 .mod-author {
-  font-family:var(--mono); font-size:0.6rem; color:var(--dim);
-  letter-spacing:0.08em; margin-bottom:10px;
+  font-family:var(--mono); font-size:0.6rem; color:var(--dim); letter-spacing:0.06em;
 }
 .mod-author span { color:var(--accent2) }
 
 .mod-desc {
-  font-size:0.78rem; color:var(--muted); line-height:1.55;
-  margin-bottom:12px; min-height:42px;
+  font-size:0.78rem; color:var(--muted); line-height:1.5; margin-top:4px;
 }
 
-.card-footer { display:flex; justify-content:flex-end }
+.row-right {
+  flex-shrink:0; display:flex; align-items:center;
+}
 .cf-link {
-  font-family:var(--mono); font-size:0.58rem; font-weight:600;
-  letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--dim); padding:5px 0;
-  transition:color 0.2s;
-  display:flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:0.55rem; font-weight:600;
+  letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--dim); transition:color 0.2s;
+  display:flex; align-items:center; gap:4px;
+  white-space:nowrap;
 }
 .cf-link:hover { color:var(--accent2) }
-.cf-link::after { content:'↗'; font-size:0.65rem }
+.cf-link::after { content:'↗'; font-size:0.6rem }
 
 /* ── EMPTY STATE ── */
 .empty-state {
   display:none; text-align:center; padding:64px 24px;
-  grid-column:1/-1;
 }
 .empty-state.show { display:block }
 .empty-icon { font-size:2.2rem; margin-bottom:14px; opacity:0.5 }
@@ -313,8 +313,9 @@ footer {
 @media (max-width:600px) {
   header { padding:0 20px }
   .hero, .controls, .grid-wrap { padding-left:20px; padding-right:20px }
-  .mod-grid { grid-template-columns:1fr }
   .stats-bar { gap:18px }
+  .row-index { display:none }
+  .row-right { display:none }
 }
 </style>
 </head>
@@ -326,7 +327,6 @@ footer {
     <a href="/">koels.site</a>
   </div>
   <nav class="nav">
-    <a href="/mc">MC Lookup</a>
     <a href="/modpack" class="active">Modpack</a>
     <a href="/links">Links</a>
   </nav>
@@ -579,28 +579,28 @@ const CAT_LABEL = {
 
 function buildCards() {
   MODS.forEach((mod, i) => {
-    const card = document.createElement('div');
-    card.className = 'mod-card';
-    card.dataset.cat = mod.cat;
-    card.dataset.name = mod.name.toLowerCase();
-    card.dataset.author = mod.author.toLowerCase();
-    card.dataset.desc = mod.desc.toLowerCase();
-    card.style.animationDelay = (i * 15) + 'ms';
-    card.innerHTML = `
-      <div class="card-top-bar"></div>
-      <div class="card-body">
-        <div class="card-head">
-          <div class="mod-name">${mod.name}</div>
-          <div class="cat-badge">${CAT_LABEL[mod.cat] || mod.cat}</div>
+    const row = document.createElement('div');
+    row.className = 'mod-card';
+    row.dataset.cat = mod.cat;
+    row.dataset.name = mod.name.toLowerCase();
+    row.dataset.author = mod.author.toLowerCase();
+    row.dataset.desc = mod.desc.toLowerCase();
+    row.style.animationDelay = (i * 8) + 'ms';
+    row.innerHTML = `
+      <div class="row-index">${String(i + 1).padStart(2, '0')}</div>
+      <div class="row-main">
+        <div class="row-top">
+          <span class="mod-name">${mod.name}</span>
+          <span class="cat-badge">${CAT_LABEL[mod.cat] || mod.cat}</span>
+          <span class="mod-author">by <span>${mod.author}</span></span>
         </div>
-        <div class="mod-author">by <span>${mod.author}</span></div>
         <div class="mod-desc">${mod.desc}</div>
-        <div class="card-footer">
-          <a class="cf-link" href="${mod.url}" target="_blank" rel="noopener">CurseForge</a>
-        </div>
+      </div>
+      <div class="row-right">
+        <a class="cf-link" href="${mod.url}" target="_blank" rel="noopener">CurseForge</a>
       </div>
     `;
-    grid.appendChild(card);
+    grid.appendChild(row);
   });
 }
 
@@ -608,12 +608,18 @@ function filterCards() {
   const q = searchInput.value.toLowerCase().trim();
   const cards = grid.querySelectorAll('.mod-card');
   let visible = 0;
+  let rowNum = 0;
   cards.forEach(card => {
     const matchCat = activeFilter === 'all' || card.dataset.cat === activeFilter;
     const matchSearch = !q || card.dataset.name.includes(q) || card.dataset.author.includes(q) || card.dataset.desc.includes(q);
     const show = matchCat && matchSearch;
     card.classList.toggle('hidden', !show);
-    if (show) visible++;
+    if (show) {
+      rowNum++;
+      const idx = card.querySelector('.row-index');
+      if (idx) idx.textContent = String(rowNum).padStart(2, '0');
+      visible++;
+    }
   });
   visCountEl.textContent = visible;
   emptyState.classList.toggle('show', visible === 0);
