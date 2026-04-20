@@ -1,0 +1,634 @@
+---
+// src/pages/legal.astro
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Legal — Koels.site</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2303030a'/%3E%3Ctext x='16' y='26' text-anchor='middle' font-family='Inter%2C system-ui%2C sans-serif' font-size='26' font-weight='900' fill='url(%23g)'%3EK%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a29bfe'/%3E%3Cstop offset='100%25' stop-color='%236c5ce7'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style is:global>
+:root {
+  --bg:       #03030a;
+  --bg2:      #08080f;
+  --surface:  #0f0f1a;
+  --surface2: #141420;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --text:     #f0eeff;
+  --muted:    rgba(240,238,255,0.68);
+  --dim:      rgba(240,238,255,0.4);
+  --accent:   #6c5ce7;
+  --accent2:  #a29bfe;
+  --lime:     #00ff88;
+  --red:      #ff4757;
+  --white:    #ffffff;
+  --sans: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box }
+html { scroll-behavior:smooth; font-size:17px }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color:inherit; text-decoration:none }
+
+/* ── NOISE ── */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9990;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── CURTAIN ── */
+#curtain {
+  position:fixed; inset:0; background:var(--bg); z-index:9997;
+  display:flex; align-items:center; justify-content:center;
+  transition:opacity 0.8s var(--ease), visibility 0.8s;
+}
+#curtain.gone { opacity:0; visibility:hidden; pointer-events:none }
+.curtain-logo {
+  font-family:var(--mono); font-size:0.85rem; letter-spacing:0.25em;
+  color:var(--dim); text-transform:uppercase;
+  animation:curtain-pulse 1s ease infinite;
+}
+@keyframes curtain-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+/* ── HEADER ── */
+header {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  height:60px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 40px;
+  border-bottom:1px solid var(--border);
+  background:rgba(3,3,10,0.85);
+  backdrop-filter:blur(24px) saturate(1.8);
+  -webkit-backdrop-filter:blur(24px) saturate(1.8);
+}
+.logo {
+  font-family:var(--mono); font-size:0.7rem; font-weight:700;
+  letter-spacing:0.2em; text-transform:uppercase; color:var(--white);
+  display:flex; align-items:center; gap:10px;
+}
+.logo-pulse {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--lime); box-shadow:0 0 10px var(--lime);
+  animation:lg-pulse 2s ease infinite;
+}
+@keyframes lg-pulse { 0%,100%{box-shadow:0 0 6px var(--lime)} 50%{box-shadow:0 0 20px var(--lime),0 0 40px rgba(0,255,136,0.25)} }
+.nav { display:flex; align-items:center; gap:32px }
+.nav a {
+  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em;
+  color:var(--muted); text-transform:uppercase; transition:color 0.2s;
+}
+.nav a:hover { color:var(--white) }
+
+/* ── PAGE WRAPPER ── */
+.page-wrap {
+  max-width:860px;
+  margin:0 auto;
+  padding:120px 40px 80px;
+}
+
+/* ── PAGE HERO ── */
+.page-hero {
+  margin-bottom:72px;
+  position:relative;
+}
+.page-hero::before {
+  content:'';
+  position:absolute;
+  top:-60px; left:-40px; right:-40px; bottom:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 100% at 20% 50%, black 0%, transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 100% at 20% 50%, black 0%, transparent 100%);
+  opacity:0.4; pointer-events:none; z-index:0;
+}
+.eyebrow {
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--mono); font-size:0.72rem; font-weight:500;
+  letter-spacing:0.2em; text-transform:uppercase; color:var(--accent2);
+  margin-bottom:24px;
+  animation:fade-up 0.9s var(--ease) both;
+}
+.eyebrow-line { width:28px; height:1px; background:var(--accent) }
+.page-title {
+  font-family:var(--sans);
+  font-size:clamp(2.6rem, 5vw, 4.5rem);
+  font-weight:900; line-height:0.95;
+  letter-spacing:-0.03em; color:var(--white);
+  animation:fade-up 0.9s 0.07s var(--ease) both;
+  position:relative; z-index:1;
+}
+.page-title .grad {
+  background:linear-gradient(135deg, var(--accent2) 0%, #c084fc 50%, var(--accent2) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  animation:shimmer 4s linear infinite;
+}
+@keyframes shimmer { to { background-position:200% center } }
+.page-meta {
+  margin-top:20px;
+  font-family:var(--mono); font-size:0.72rem; color:var(--dim);
+  letter-spacing:0.1em; text-transform:uppercase;
+  animation:fade-up 0.9s 0.14s var(--ease) both;
+}
+
+/* ── TAB NAV ── */
+.tab-nav {
+  display:flex; gap:0;
+  border:1px solid var(--border2);
+  border-radius:6px; overflow:hidden;
+  margin-bottom:56px;
+  animation:fade-up 0.9s 0.2s var(--ease) both;
+}
+.tab-btn {
+  flex:1; padding:13px 20px;
+  font-family:var(--mono); font-size:0.7rem; font-weight:600;
+  letter-spacing:0.14em; text-transform:uppercase;
+  background:transparent; color:var(--muted);
+  border:none; cursor:pointer;
+  transition:0.25s var(--ease);
+  position:relative;
+}
+.tab-btn + .tab-btn { border-left:1px solid var(--border2) }
+.tab-btn.active {
+  background:var(--accent);
+  color:var(--white);
+}
+.tab-btn:not(.active):hover {
+  background:rgba(255,255,255,0.04);
+  color:var(--white);
+}
+
+/* ── CONTENT PANEL ── */
+.panel { display:none }
+.panel.active { display:block }
+
+/* ── SECTION ── */
+.doc-section {
+  margin-bottom:48px;
+  padding-bottom:48px;
+  border-bottom:1px solid var(--border);
+}
+.doc-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0 }
+
+.section-header {
+  display:flex; align-items:baseline; gap:16px;
+  margin-bottom:20px;
+}
+.section-num {
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.2em;
+  color:var(--accent2); text-transform:uppercase; flex-shrink:0;
+}
+.section-title {
+  font-family:var(--sans); font-size:1.05rem; font-weight:700;
+  color:var(--white); letter-spacing:-0.01em;
+}
+.doc-text {
+  font-family:var(--mono); font-size:0.8rem; line-height:1.95;
+  color:var(--muted); letter-spacing:0.03em;
+}
+.doc-text + .doc-text { margin-top:14px }
+
+/* ── DATA TABLE ── */
+.data-table {
+  width:100%; border-collapse:collapse;
+  margin-top:20px; margin-bottom:4px;
+  border:1px solid var(--border2); border-radius:6px; overflow:hidden;
+}
+.data-table th {
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.15em;
+  text-transform:uppercase; color:var(--dim);
+  background:var(--surface2); padding:12px 16px;
+  text-align:left; border-bottom:1px solid var(--border2);
+}
+.data-table td {
+  font-family:var(--mono); font-size:0.75rem; color:var(--muted);
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  line-height:1.6;
+}
+.data-table tr:last-child td { border-bottom:none }
+.data-table tr:hover td { background:rgba(255,255,255,0.02) }
+.badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:2px 9px; border-radius:999px;
+  font-size:0.62rem; letter-spacing:0.1em; font-weight:600;
+  text-transform:uppercase;
+}
+.badge-green { background:rgba(0,255,136,0.1); color:var(--lime); border:1px solid rgba(0,255,136,0.2) }
+.badge-purple { background:rgba(108,92,231,0.12); color:var(--accent2); border:1px solid rgba(108,92,231,0.25) }
+
+/* ── CALLOUT ── */
+.callout {
+  display:flex; gap:14px; align-items:flex-start;
+  padding:18px 20px;
+  border-radius:6px;
+  margin-top:20px;
+}
+.callout-promise {
+  background:rgba(0,255,136,0.05);
+  border:1px solid rgba(0,255,136,0.15);
+}
+.callout-warn {
+  background:rgba(108,92,231,0.06);
+  border:1px solid rgba(108,92,231,0.2);
+}
+.callout-icon {
+  font-size:1rem; flex-shrink:0; margin-top:1px;
+}
+.callout-text {
+  font-family:var(--mono); font-size:0.75rem; line-height:1.8;
+  color:var(--muted); letter-spacing:0.03em;
+}
+.callout-promise .callout-text { color:rgba(0,255,136,0.85) }
+
+/* ── FOOTER ── */
+footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:22px 48px;
+  border-top:1px solid var(--border);
+  margin-top:56px;
+}
+.foot-l, .foot-r {
+  font-family:var(--mono); font-size:0.68rem;
+  letter-spacing:0.12em; color:var(--dim); text-transform:uppercase;
+}
+.foot-r { display:flex; gap:18px }
+
+/* ── UTILS ── */
+@keyframes fade-up { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+.reveal { opacity:0; transform:translateY(22px); transition:opacity 0.7s var(--ease), transform 0.7s var(--ease) }
+.reveal.visible { opacity:1; transform:translateY(0) }
+
+@media(max-width:700px){
+  .page-wrap { padding:100px 20px 60px }
+  header { padding:0 20px }
+  .nav { display:none }
+  footer { flex-direction:column; gap:10px; text-align:center; padding:22px 20px }
+  .data-table th, .data-table td { padding:10px 12px }
+}
+</style>
+</head>
+<body>
+
+<div id="curtain"><div class="curtain-logo">koels.site</div></div>
+
+<!-- HEADER -->
+<header>
+  <a href="/" class="logo"><div class="logo-pulse"></div>Koels.site</a>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/links">Links</a>
+  </nav>
+</header>
+
+<!-- CONTENT -->
+<div class="page-wrap">
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="eyebrow"><span class="eyebrow-line"></span>Discord Bot</div>
+    <h1 class="page-title">
+      <span class="grad">Legal</span><br>
+      Docs.
+    </h1>
+    <div class="page-meta">Last updated — April 2026 &nbsp;·&nbsp; Effective immediately</div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('tos', this)">Terms of Service</button>
+    <button class="tab-btn" onclick="switchTab('privacy', this)">Privacy Policy</button>
+  </div>
+
+  <!-- ── TERMS OF SERVICE ── -->
+  <div id="panel-tos" class="panel active">
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">01 / Agreement</span>
+        <span class="section-title">Acceptance of Terms</span>
+      </div>
+      <p class="doc-text">
+        By inviting, using, or interacting with the Koels Discord bot (the "Bot") in any Discord server, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must immediately stop using the Bot and remove it from any servers you control.
+      </p>
+      <p class="doc-text">
+        These terms apply to all users, server administrators, and any third party who interacts with the Bot in any capacity. Your continued use of the Bot following any changes to these terms constitutes your acceptance of those changes.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">02 / Eligibility</span>
+        <span class="section-title">Who Can Use the Bot</span>
+      </div>
+      <p class="doc-text">
+        You must be at least 13 years of age (or the minimum age required in your country) to use the Bot, in accordance with Discord's own Terms of Service. By using the Bot, you represent that you meet this age requirement.
+      </p>
+      <p class="doc-text">
+        Server administrators who add the Bot to a Discord server are responsible for ensuring that all members of that server who interact with the Bot also comply with these terms.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">03 / Permitted Use</span>
+        <span class="section-title">Acceptable Behaviour</span>
+      </div>
+      <p class="doc-text">
+        The Bot is provided to assist with Minecraft verification and related functionality within Discord servers. You agree to use the Bot only for its intended purpose and in a manner consistent with all applicable laws and Discord's Community Guidelines.
+      </p>
+      <div class="callout callout-warn">
+        <span class="callout-icon">⚠</span>
+        <span class="callout-text">
+          You may not attempt to abuse, exploit, reverse-engineer, or interfere with the Bot's functionality. Any attempt to circumvent the verification system, spoof Minecraft accounts, or manipulate the Bot's commands is strictly prohibited and may result in a permanent ban from the service.
+        </span>
+      </div>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">04 / Prohibited Actions</span>
+        <span class="section-title">What You Must Not Do</span>
+      </div>
+      <p class="doc-text">
+        The following actions are strictly prohibited when using the Bot:
+      </p>
+      <p class="doc-text" style="margin-top:14px; padding-left:16px; border-left:2px solid var(--border2);">
+        · Attempting to verify using accounts that do not belong to you<br>
+        · Using automation, bots, or scripts to abuse the verification flow<br>
+        · Harassing, threatening, or abusing other users via Bot commands<br>
+        · Using the Bot to facilitate illegal activity of any kind<br>
+        · Attempting to access data belonging to other users<br>
+        · Impersonating any individual or entity through the Bot<br>
+        · Exploiting bugs or errors rather than reporting them
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">05 / Availability</span>
+        <span class="section-title">Service & Uptime</span>
+      </div>
+      <p class="doc-text">
+        The Bot is provided on an "as-is" and "as-available" basis. We make no guarantees regarding uptime, availability, or uninterrupted service. The Bot may go offline for maintenance, updates, or due to circumstances beyond our control at any time without prior notice.
+      </p>
+      <p class="doc-text">
+        We reserve the right to modify, suspend, or discontinue the Bot (or any part of it) at any time, with or without notice, and without liability to you.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">06 / Termination</span>
+        <span class="section-title">Access Revocation</span>
+      </div>
+      <p class="doc-text">
+        We reserve the right to restrict or terminate your access to the Bot at any time, for any reason, including but not limited to violations of these Terms of Service. Termination may be immediate and without prior notice.
+      </p>
+      <p class="doc-text">
+        If you wish to stop using the Bot, you may have a server administrator remove it from any relevant Discord server at any time.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">07 / Liability</span>
+        <span class="section-title">Limitation of Liability</span>
+      </div>
+      <p class="doc-text">
+        To the fullest extent permitted by law, Koels.site and its operator shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Bot. This includes any loss of data, loss of profits, or any other damages, even if we have been advised of the possibility of such damages.
+      </p>
+      <p class="doc-text">
+        Your sole remedy for dissatisfaction with the Bot is to stop using it.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">08 / Changes</span>
+        <span class="section-title">Updates to These Terms</span>
+      </div>
+      <p class="doc-text">
+        These Terms of Service may be updated at any time. Continued use of the Bot after changes are made constitutes your acceptance of the revised terms. We encourage you to review this page periodically to stay informed.
+      </p>
+      <p class="doc-text">
+        For questions regarding these terms, contact us at <span style="color:var(--accent2)">kyle@koels.site</span> or via Discord at <span style="color:var(--accent2)">@koels</span>.
+      </p>
+    </div>
+
+  </div><!-- /panel-tos -->
+
+  <!-- ── PRIVACY POLICY ── -->
+  <div id="panel-privacy" class="panel">
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">01 / Overview</span>
+        <span class="section-title">Our Commitment to You</span>
+      </div>
+      <p class="doc-text">
+        This Privacy Policy explains what information the Koels Discord Bot collects, why it collects it, how it is used, and how it is protected. We believe in being transparent with our users and keeping things simple and honest.
+      </p>
+      <div class="callout callout-promise">
+        <span class="callout-icon">✦</span>
+        <span class="callout-text">
+          Your data will never be sold to any third party, full stop. There is no monetisation, no advertising, no shady intent behind any data we hold. We collect only what is necessary for the Bot to function, nothing more.
+        </span>
+      </div>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">02 / What We Collect</span>
+        <span class="section-title">Data We Hold</span>
+      </div>
+      <p class="doc-text">
+        The following data is collected when you use the Bot's verification system:
+      </p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data Type</th>
+            <th>Example</th>
+            <th>Purpose</th>
+            <th>Sold?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Minecraft Username</td>
+            <td>Notch</td>
+            <td>Account verification &amp; linking</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Minecraft UUID</td>
+            <td>069a79f4-…</td>
+            <td>Unique account identification</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Discord Username</td>
+            <td>koels</td>
+            <td>Linking Discord to MC account</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>Discord User ID</td>
+            <td>123456789…</td>
+            <td>Unique user identification</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+          <tr>
+            <td>IP Address</td>
+            <td>xxx.xxx.x.x</td>
+            <td>Abuse prevention &amp; security</td>
+            <td><span class="badge badge-green">Never</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">03 / Why We Collect It</span>
+        <span class="section-title">Purpose of Data Collection</span>
+      </div>
+      <p class="doc-text">
+        Every piece of data listed above is collected for one reason only: to make the Bot work correctly and securely. Here is the honest breakdown:
+      </p>
+      <p class="doc-text" style="margin-top:14px; padding-left:16px; border-left:2px solid var(--border2);">
+        · <span style="color:var(--accent2)">Minecraft username &amp; UUID</span> — required to verify that a Minecraft account actually exists and belongs to the person claiming it.<br><br>
+        · <span style="color:var(--accent2)">Discord username &amp; ID</span> — required to link your Discord account to your Minecraft identity so the Bot can assign roles or permissions accurately.<br><br>
+        · <span style="color:var(--accent2)">IP address</span> — collected passively as a byproduct of any network request. Used solely to detect and prevent abuse, spam verification attempts, and bot activity. We do not profile or track your browsing in any way.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">04 / What We Don't Do</span>
+        <span class="section-title">Our Promises</span>
+      </div>
+      <div class="callout callout-promise" style="margin-top:0; margin-bottom:16px;">
+        <span class="callout-icon">✦</span>
+        <span class="callout-text">We do not sell, rent, trade, or share your data with any third party for any commercial purpose whatsoever.</span>
+      </div>
+      <p class="doc-text">
+        We do not use your data for advertising. We do not build profiles on users. We do not share your information with data brokers, analytics companies, or advertisers. Your data is used only to keep the Bot running smoothly and securely — nothing more, nothing else, nothing sinister.
+      </p>
+      <p class="doc-text">
+        We have no bad intent. This is a small project run by a real person who simply wants to provide a useful tool for the community. Your privacy genuinely matters to us.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">05 / Data Storage</span>
+        <span class="section-title">How Your Data Is Stored</span>
+      </div>
+      <p class="doc-text">
+        Collected data is stored on private, access-controlled servers. Access to stored data is limited to the operator of the Bot (Kyle / Koels.site). We take reasonable precautions to protect stored data from unauthorised access, including secure passwords, private server environments, and minimal data exposure.
+      </p>
+      <p class="doc-text">
+        We do not store data indefinitely. Data associated with your account may be removed upon request (see Section 07) or if it is no longer needed for the Bot's operation.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">06 / Third Parties</span>
+        <span class="section-title">External Services</span>
+      </div>
+      <p class="doc-text">
+        The Bot interacts with the following third-party services to function:
+      </p>
+      <p class="doc-text" style="margin-top:14px; padding-left:16px; border-left:2px solid var(--border2);">
+        · <span style="color:var(--accent2)">Discord</span> — the platform the Bot runs on. Discord's own privacy policy governs the data they hold.<br><br>
+        · <span style="color:var(--accent2)">Mojang / Microsoft</span> — Minecraft account data is verified against Mojang's public API. No personal data is sent to Mojang beyond what is required to look up a username or UUID.
+      </p>
+      <p class="doc-text" style="margin-top:14px;">
+        No other third parties receive any of your data.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">07 / Your Rights</span>
+        <span class="section-title">Control Over Your Data</span>
+      </div>
+      <p class="doc-text">
+        You have the right to request access to the data we hold about you, or to request that your data be deleted entirely. If you would like to exercise either of these rights, please contact us directly:
+      </p>
+      <p class="doc-text" style="margin-top:14px; padding-left:16px; border-left:2px solid var(--accent);">
+        Email: <span style="color:var(--accent2)">kyle@koels.site</span><br>
+        Discord: <span style="color:var(--accent2)">@koels</span>
+      </p>
+      <p class="doc-text" style="margin-top:14px;">
+        We will respond to all legitimate requests as promptly as possible. Deletion requests will be honoured unless data retention is required by law.
+      </p>
+    </div>
+
+    <div class="doc-section reveal">
+      <div class="section-header">
+        <span class="section-num">08 / Policy Changes</span>
+        <span class="section-title">Updates to This Policy</span>
+      </div>
+      <p class="doc-text">
+        This Privacy Policy may be updated from time to time. Any changes will be reflected on this page with an updated effective date. Continued use of the Bot following changes constitutes your acceptance of the revised policy.
+      </p>
+      <p class="doc-text">
+        If we ever make a significant change to how we handle your data — especially anything less favourable — we will make a reasonable effort to notify affected users.
+      </p>
+    </div>
+
+  </div><!-- /panel-privacy -->
+
+</div><!-- /page-wrap -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-l">© 2026 Koels.site</div>
+  <div class="foot-r">
+    <a href="/">Home</a>
+    <span>·</span>
+    <a href="/links">Links</a>
+  </div>
+</footer>
+
+<script is:inline>
+/* Curtain */
+window.addEventListener('load', () => setTimeout(() => document.getElementById('curtain').classList.add('gone'), 650))
+
+/* Scroll reveal */
+const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }), { threshold: 0.08 })
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
+
+/* Tab switching */
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('panel-' + id).classList.add('active')
+  btn.classList.add('active')
+
+  // re-trigger reveals for newly visible panel
+  document.querySelectorAll('#panel-' + id + ' .reveal').forEach(el => {
+    el.classList.remove('visible')
+    setTimeout(() => el.classList.add('visible'), 60)
+  })
+}
+</script>
+</body>
+</html>
