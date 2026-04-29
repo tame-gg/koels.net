@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%"   stop-color="#6c5ce7" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#03030a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#6c5ce7"/>
+      <stop offset="100%" stop-color="#a29bfe"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#03030a"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Subtle grid lines -->
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="0" y1="105" x2="1200" y2="105"/>
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="525" x2="1200" y2="525"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+  </g>
+
+  <!-- Border -->
+  <rect x="1" y="1" width="1198" height="628" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" rx="0"/>
+
+  <!-- Logo mark -->
+  <text x="100" y="220" font-family="serif" font-size="96" fill="url(#accent)" opacity="0.9">◈</text>
+
+  <!-- Wordmark -->
+  <text x="100" y="310" font-family="'Inter',Arial,sans-serif" font-size="72" font-weight="700" fill="#f0eeff" letter-spacing="-2">Spectre</text>
+
+  <!-- Tagline -->
+  <text x="100" y="368" font-family="'Inter',Arial,sans-serif" font-size="28" font-weight="400" fill="rgba(240,238,255,0.6)">Privacy without compromise.</text>
+
+  <!-- Pill badges -->
+  <rect x="100" y="410" width="210" height="38" rx="19" fill="rgba(108,92,231,0.18)" stroke="rgba(162,155,254,0.35)" stroke-width="1"/>
+  <text x="205" y="434" font-family="'JetBrains Mono',monospace,monospace" font-size="15" fill="#a29bfe" text-anchor="middle">Firefox-based</text>
+
+  <rect x="326" y="410" width="200" height="38" rx="19" fill="rgba(108,92,231,0.18)" stroke="rgba(162,155,254,0.35)" stroke-width="1"/>
+  <text x="426" y="434" font-family="'JetBrains Mono',monospace,monospace" font-size="15" fill="#a29bfe" text-anchor="middle">No telemetry</text>
+
+  <rect x="542" y="410" width="230" height="38" rx="19" fill="rgba(108,92,231,0.18)" stroke="rgba(162,155,254,0.35)" stroke-width="1"/>
+  <text x="657" y="434" font-family="'JetBrains Mono',monospace,monospace" font-size="15" fill="#a29bfe" text-anchor="middle">Open source</text>
+
+  <!-- URL -->
+  <text x="100" y="560" font-family="'JetBrains Mono',monospace,monospace" font-size="18" fill="rgba(240,238,255,0.25)">koels.site</text>
+
+  <!-- Decorative right-side orb -->
+  <circle cx="980" cy="315" r="220" fill="rgba(108,92,231,0.07)" stroke="rgba(108,92,231,0.12)" stroke-width="1"/>
+  <circle cx="980" cy="315" r="150" fill="rgba(108,92,231,0.06)" stroke="rgba(108,92,231,0.1)" stroke-width="1"/>
+  <circle cx="980" cy="315" r="80" fill="rgba(108,92,231,0.08)" stroke="rgba(162,155,254,0.2)" stroke-width="1"/>
+  <text x="980" y="338" font-family="serif" font-size="64" fill="url(#accent)" text-anchor="middle" opacity="0.7">◈</text>
+</svg>
