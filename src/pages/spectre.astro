@@ -962,11 +962,10 @@
 
   <script>
     (function () {
-      const BASE = 'https://github.com/koelss/Spectre/releases/latest/download/'
-      const cfg = {
-        win:   { label: 'Windows x64', icon: '🪟', url: BASE + 'Spectre-Setup.exe' },
-        mac:   { label: 'macOS ARM',   icon: '',   url: BASE + 'Spectre.dmg' },
-        linux: { label: 'Linux x64',   icon: '🐧', url: BASE + 'Spectre.AppImage' },
+      const meta = {
+        win:   { label: 'Windows x64', icon: '🪟', ext: '.exe' },
+        mac:   { label: 'macOS ARM',   icon: '',   ext: '.dmg' },
+        linux: { label: 'Linux x64',   icon: '🐧', ext: '.AppImage' },
       }
 
       const ua = navigator.userAgent.toLowerCase()
@@ -975,33 +974,51 @@
       if (/win/.test(pl) || /windows/.test(ua))     platform = 'win'
       else if (/mac/.test(pl) || /mac os/.test(ua)) platform = 'mac'
 
-      // Primary download button
-      const btn = document.getElementById('btn-primary')
-      btn.href = cfg[platform].url
-      document.getElementById('btn-icon').textContent  = cfg[platform].icon
-      document.getElementById('btn-label').textContent = `Download for ${cfg[platform].label}`
+      // Update button label immediately (before API responds)
+      document.getElementById('btn-icon').textContent  = meta[platform].icon
+      document.getElementById('btn-label').textContent = `Download for ${meta[platform].label}`
 
-      // Platform selector buttons
+      // Highlight detected platform button
       document.querySelectorAll('.btn-platform[data-platform]').forEach(a => {
-        const p = a.dataset.platform
-        a.href = cfg[p].url
-        if (p === platform) a.classList.add('active')
+        if (a.dataset.platform === platform) a.classList.add('active')
       })
 
-      // Fetch latest version tag from GitHub API
+      // Fetch latest release — resolve actual asset URLs by extension
       fetch('https://api.github.com/repos/koelss/Spectre/releases/latest')
         .then(r => r.json())
         .then(data => {
+          if (!data.assets) return
+
+          // Build a map: platform → download URL (matched by file extension)
+          const urls = {}
+          for (const [p, { ext }] of Object.entries(meta)) {
+            const asset = data.assets.find(a =>
+              a.name.toLowerCase().endsWith(ext.toLowerCase()) &&
+              // prefer installer over portable for windows
+              (p !== 'win' || a.name.toLowerCase().includes('setup') || !a.name.toLowerCase().includes('portable'))
+            )
+            if (asset) urls[p] = asset.browser_download_url
+          }
+
+          // Wire up primary button
+          if (urls[platform]) document.getElementById('btn-primary').href = urls[platform]
+
+          // Wire up all platform buttons
+          document.querySelectorAll('.btn-platform[data-platform]').forEach(a => {
+            if (urls[a.dataset.platform]) a.href = urls[a.dataset.platform]
+          })
+
+          // Version badge + hint
           if (data.tag_name) {
             document.getElementById('version-badge').textContent = data.tag_name
             document.getElementById('platform-hint').textContent =
-              `${data.tag_name} · ${cfg[platform].label} detected`
+              `${data.tag_name} · ${meta[platform].label} detected`
           } else {
-            document.getElementById('platform-hint').textContent = `${cfg[platform].label} detected`
+            document.getElementById('platform-hint').textContent = `${meta[platform].label} detected`
           }
         })
         .catch(() => {
-          document.getElementById('platform-hint').textContent = `${cfg[platform].label} detected`
+          document.getElementById('platform-hint').textContent = `${meta[platform].label} detected`
         })
     })()
   </script>
