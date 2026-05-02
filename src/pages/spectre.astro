@@ -306,7 +306,17 @@
       color: var(--dim);
       font-size: 0.78rem;
       font-family: 'JetBrains Mono', monospace;
-      cursor: not-allowed;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+      cursor: pointer;
+    }
+
+    .btn-platform:hover { border-color: var(--border2); color: var(--muted); }
+
+    .btn-platform.active {
+      border-color: rgba(0,204,255,0.35);
+      color: var(--cyan);
+      background: rgba(0,204,255,0.07);
     }
 
     .platform-hint {
@@ -661,7 +671,7 @@
 
       <div class="badge">
         <span class="badge-pulse"></span>
-        v0.1-alpha — building now
+        <span id="version-badge">latest</span> — open source
       </div>
 
       <h1>
@@ -676,14 +686,14 @@
       </p>
 
       <div class="download-wrap">
-        <button id="btn-primary" class="btn-primary soon" onclick="return false;">
+        <a id="btn-primary" class="btn-primary" href="#">
           <span id="btn-icon">⬇</span>
           <span id="btn-label">Download Spectre</span>
-        </button>
+        </a>
         <div class="platform-row">
-          <button class="btn-platform" onclick="return false;">win x64</button>
-          <button class="btn-platform" onclick="return false;">linux x64</button>
-          <button class="btn-platform" onclick="return false;">macos arm</button>
+          <a class="btn-platform" data-platform="win"   href="#">win x64</a>
+          <a class="btn-platform" data-platform="linux" href="#">linux x64</a>
+          <a class="btn-platform" data-platform="mac"   href="#">macos arm</a>
         </div>
         <span class="platform-hint" id="platform-hint">detecting platform…</span>
       </div>
@@ -952,16 +962,48 @@
 
   <script>
     (function () {
-      const ua = navigator.userAgent.toLowerCase();
-      const pl = (navigator.platform ?? '').toLowerCase();
-      let os = 'Unknown', icon = '⬇';
-      if (/win/.test(pl) || /windows/.test(ua))      { os = 'Windows x64'; icon = '🪟'; }
-      else if (/mac/.test(pl) || /mac os/.test(ua))  { os = 'macOS ARM';   icon = ''; }
-      else if (/linux/.test(pl) || /linux/.test(ua)) { os = 'Linux x64';   icon = '🐧'; }
-      document.getElementById('btn-label').textContent = `Download for ${os}`;
-      document.getElementById('btn-icon').textContent  = icon;
-      document.getElementById('platform-hint').textContent = `detected: ${os} — builds in progress`;
-    })();
+      const BASE = 'https://github.com/koelss/Spectre/releases/latest/download/'
+      const cfg = {
+        win:   { label: 'Windows x64', icon: '🪟', url: BASE + 'Spectre-Setup.exe' },
+        mac:   { label: 'macOS ARM',   icon: '',   url: BASE + 'Spectre.dmg' },
+        linux: { label: 'Linux x64',   icon: '🐧', url: BASE + 'Spectre.AppImage' },
+      }
+
+      const ua = navigator.userAgent.toLowerCase()
+      const pl = (navigator.platform ?? '').toLowerCase()
+      let platform = 'linux'
+      if (/win/.test(pl) || /windows/.test(ua))     platform = 'win'
+      else if (/mac/.test(pl) || /mac os/.test(ua)) platform = 'mac'
+
+      // Primary download button
+      const btn = document.getElementById('btn-primary')
+      btn.href = cfg[platform].url
+      document.getElementById('btn-icon').textContent  = cfg[platform].icon
+      document.getElementById('btn-label').textContent = `Download for ${cfg[platform].label}`
+
+      // Platform selector buttons
+      document.querySelectorAll('.btn-platform[data-platform]').forEach(a => {
+        const p = a.dataset.platform
+        a.href = cfg[p].url
+        if (p === platform) a.classList.add('active')
+      })
+
+      // Fetch latest version tag from GitHub API
+      fetch('https://api.github.com/repos/koelss/Spectre/releases/latest')
+        .then(r => r.json())
+        .then(data => {
+          if (data.tag_name) {
+            document.getElementById('version-badge').textContent = data.tag_name
+            document.getElementById('platform-hint').textContent =
+              `${data.tag_name} · ${cfg[platform].label} detected`
+          } else {
+            document.getElementById('platform-hint').textContent = `${cfg[platform].label} detected`
+          }
+        })
+        .catch(() => {
+          document.getElementById('platform-hint').textContent = `${cfg[platform].label} detected`
+        })
+    })()
   </script>
 
 </body>
