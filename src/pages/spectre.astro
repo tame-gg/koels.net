@@ -686,14 +686,14 @@
       </p>
 
       <div class="download-wrap">
-        <a id="btn-primary" class="btn-primary" href="https://github.com/koelss/Spectre/releases/latest" target="_blank" rel="noopener">
+        <a id="btn-primary" class="btn-primary" href="https://github.com/koelss/Spectre/releases/latest/download/Spectre-Setup.exe">
           <span id="btn-icon">⬇</span>
           <span id="btn-label">Download Spectre</span>
         </a>
         <div class="platform-row">
-          <a class="btn-platform" data-platform="win"   href="https://github.com/koelss/Spectre/releases/latest">win x64</a>
-          <a class="btn-platform" data-platform="linux" href="https://github.com/koelss/Spectre/releases/latest">linux x64</a>
-          <a class="btn-platform" data-platform="mac"   href="https://github.com/koelss/Spectre/releases/latest">macos arm</a>
+          <a class="btn-platform" data-platform="win"   href="https://github.com/koelss/Spectre/releases/latest/download/Spectre-Setup.exe">win x64</a>
+          <a class="btn-platform" data-platform="linux" href="https://github.com/koelss/Spectre/releases/latest/download/Spectre.AppImage">linux x64</a>
+          <a class="btn-platform" data-platform="mac"   href="https://github.com/koelss/Spectre/releases/latest/download/Spectre.dmg">macos arm</a>
         </div>
         <span class="platform-hint" id="platform-hint">detecting platform…</span>
       </div>
@@ -962,10 +962,11 @@
 
   <script>
     (function () {
-      const meta = {
-        win:   { label: 'Windows x64', icon: '🪟', ext: '.exe' },
-        mac:   { label: 'macOS ARM',   icon: '',   ext: '.dmg' },
-        linux: { label: 'Linux x64',   icon: '🐧', ext: '.AppImage' },
+      const BASE = 'https://github.com/koelss/Spectre/releases/latest/download/'
+      const cfg = {
+        win:   { label: 'Windows x64', icon: '🪟', url: BASE + 'Spectre-Setup.exe' },
+        mac:   { label: 'macOS ARM',   icon: '',   url: BASE + 'Spectre.dmg' },
+        linux: { label: 'Linux x64',   icon: '🐧', url: BASE + 'Spectre.AppImage' },
       }
 
       const ua = navigator.userAgent.toLowerCase()
@@ -974,46 +975,23 @@
       if (/win/.test(pl) || /windows/.test(ua))     platform = 'win'
       else if (/mac/.test(pl) || /mac os/.test(ua)) platform = 'mac'
 
-      document.getElementById('btn-icon').textContent  = meta[platform].icon
-      document.getElementById('btn-label').textContent = `Download for ${meta[platform].label}`
+      const { label, icon, url } = cfg[platform]
+
+      document.getElementById('btn-primary').href      = url
+      document.getElementById('btn-icon').textContent  = icon
+      document.getElementById('btn-label').textContent = `Download for ${label}`
+      document.getElementById('platform-hint').textContent = `${label} detected`
+
       document.querySelectorAll('.btn-platform[data-platform]').forEach(a => {
+        a.href = cfg[a.dataset.platform].url
         if (a.dataset.platform === platform) a.classList.add('active')
       })
 
+      // Pull version tag for the badge
       fetch('https://api.github.com/repos/koelss/Spectre/releases/latest')
         .then(r => r.json())
-        .then(data => {
-          if (!data.assets) return
-
-          const urls = {}
-          for (const [p, { ext }] of Object.entries(meta)) {
-            const asset = data.assets.find(a =>
-              a.name.toLowerCase().endsWith(ext.toLowerCase()) &&
-              (p !== 'win' || !a.name.toLowerCase().includes('portable'))
-            )
-            if (asset) urls[p] = asset.browser_download_url
-          }
-
-          if (data.tag_name) {
-            document.getElementById('version-badge').textContent = data.tag_name
-            document.getElementById('platform-hint').textContent =
-              `${data.tag_name} · ${meta[platform].label} detected`
-          }
-
-          document.querySelectorAll('.btn-platform[data-platform]').forEach(a => {
-            const p = a.dataset.platform
-            if (urls[p]) { a.href = urls[p]; a.target = '_blank'; a.rel = 'noopener' }
-          })
-
-          if (urls[platform]) {
-            document.getElementById('btn-primary').href = urls[platform]
-            // trigger download — browser downloads binary files and stays on the page
-            window.location.href = urls[platform]
-          }
-        })
-        .catch(() => {
-          document.getElementById('platform-hint').textContent = `${meta[platform].label} detected`
-        })
+        .then(d => { if (d.tag_name) document.getElementById('version-badge').textContent = d.tag_name })
+        .catch(() => {})
     })()
   </script>
 
