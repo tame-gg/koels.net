@@ -336,10 +336,29 @@
       font-weight: 600;
       font-family: 'Inter', sans-serif;
       text-decoration: none;
+      cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .btn-install:hover { background: rgba(0,204,255,0.2); border-color: rgba(0,204,255,0.45); }
+    .btn-install:hover:not(:disabled) { background: rgba(0,204,255,0.2); border-color: rgba(0,204,255,0.45); }
+
+    .btn-install.loading {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .btn-install.installed {
+      background: rgba(0,232,122,0.12);
+      border-color: rgba(0,232,122,0.3);
+      color: #00e87a;
+      cursor: default;
+    }
+
+    .btn-install.error {
+      background: rgba(255,69,96,0.1);
+      border-color: rgba(255,69,96,0.3);
+      color: #ff4560;
+    }
 
     .btn-source {
       display: inline-flex;
@@ -356,6 +375,9 @@
     }
 
     .btn-source:hover { border-color: rgba(255,255,255,0.25); color: var(--muted); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; animation: spin 0.8s linear infinite; }
 
     /* ─── HOW TO INSTALL ─── */
     .install-section {
@@ -507,11 +529,9 @@
     <div class="store">
       <div class="grid" id="grid">
 
-        <div class="ext-card" data-category="Privacy">
+        <div class="ext-card" data-category="Privacy" data-repo="gorhill/uBlock" data-asset="chromium.zip">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/ublock-origin.svg" alt="uBlock Origin" />
-            </div>
+            <div class="ext-icon"><img src="/extensions/ublock-origin.svg" alt="uBlock Origin" /></div>
             <div class="ext-meta">
               <div class="ext-name">uBlock Origin</div>
               <span class="ext-tag tag-Privacy">Privacy</span>
@@ -519,20 +539,14 @@
           </div>
           <p class="ext-desc">The most effective ad and tracker blocker available. Lightweight, wide-spectrum, and completely open. Already bundled with Spectre.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/gorhill/uBlock/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/gorhill/uBlock" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/gorhill/uBlock/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/gorhill/uBlock" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Privacy">
+        <div class="ext-card" data-category="Privacy" data-repo="ClearURLs/Addon" data-asset=".zip">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/clearurls.svg" alt="ClearURLs" />
-            </div>
+            <div class="ext-icon"><img src="/extensions/clearurls.svg" alt="ClearURLs" /></div>
             <div class="ext-meta">
               <div class="ext-name">ClearURLs</div>
               <span class="ext-tag tag-Privacy">Privacy</span>
@@ -540,20 +554,14 @@
           </div>
           <p class="ext-desc">Automatically strips tracking parameters from URLs — UTM tags, fbclid, gclid, and hundreds more — before they ever reach the server.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/ClearURLs/Addon/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/ClearURLs/Addon" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/ClearURLs/Addon/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/ClearURLs/Addon" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Privacy">
+        <div class="ext-card" data-category="Privacy" data-repo="EFForg/privacybadger" data-asset=".zip">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/privacy-badger.png" alt="Privacy Badger" />
-            </div>
+            <div class="ext-icon"><img src="/extensions/privacy-badger.png" alt="Privacy Badger" /></div>
             <div class="ext-meta">
               <div class="ext-name">Privacy Badger</div>
               <span class="ext-tag tag-Privacy">Privacy</span>
@@ -561,20 +569,29 @@
           </div>
           <p class="ext-desc">Learns to block invisible trackers automatically by watching for cross-site tracking behaviour. Made by the EFF, not a filter list.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/EFForg/privacybadger/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/EFForg/privacybadger" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/EFForg/privacybadger/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/EFForg/privacybadger" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Security">
+        <div class="ext-card" data-category="Privacy" data-repo="Cookie-AutoDelete/Cookie-AutoDelete" data-asset=".zip">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/bitwarden.png" alt="Bitwarden" />
+            <div class="ext-icon"><img src="/extensions/cookie-autodelete.png" alt="Cookie AutoDelete" /></div>
+            <div class="ext-meta">
+              <div class="ext-name">Cookie AutoDelete</div>
+              <span class="ext-tag tag-Privacy">Privacy</span>
             </div>
+          </div>
+          <p class="ext-desc">Automatically deletes cookies from closed tabs. Keep cookies only for sites you whitelist — everything else gets wiped instantly.</p>
+          <div class="ext-actions">
+            <button class="btn-install" data-fallback="https://github.com/Cookie-AutoDelete/Cookie-AutoDelete/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/Cookie-AutoDelete/Cookie-AutoDelete" target="_blank" rel="noopener">Source</a>
+          </div>
+        </div>
+
+        <div class="ext-card" data-category="Security" data-repo="bitwarden/clients" data-asset="dist-chrome">
+          <div class="ext-header">
+            <div class="ext-icon"><img src="/extensions/bitwarden.png" alt="Bitwarden" /></div>
             <div class="ext-meta">
               <div class="ext-name">Bitwarden</div>
               <span class="ext-tag tag-Security">Security</span>
@@ -582,20 +599,14 @@
           </div>
           <p class="ext-desc">Open-source password manager. Stores your credentials end-to-end encrypted in your own vault. Fills logins, generates strong passwords.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/bitwarden/clients/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/bitwarden/clients" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/bitwarden/clients/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/bitwarden/clients" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Security">
+        <div class="ext-card" data-category="Security" data-repo="keepassxreboot/keepassxc-browser" data-asset="keepassxc-browser">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/keepassxc.svg" alt="KeePassXC-Browser" />
-            </div>
+            <div class="ext-icon"><img src="/extensions/keepassxc.svg" alt="KeePassXC-Browser" /></div>
             <div class="ext-meta">
               <div class="ext-name">KeePassXC-Browser</div>
               <span class="ext-tag tag-Security">Security</span>
@@ -603,20 +614,14 @@
           </div>
           <p class="ext-desc">Connects Spectre to your local KeePassXC database. Credentials never leave your machine — everything stays offline and encrypted.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/keepassxreboot/keepassxc-browser/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/keepassxreboot/keepassxc-browser" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/keepassxreboot/keepassxc-browser/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/keepassxreboot/keepassxc-browser" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Productivity">
+        <div class="ext-card" data-category="Productivity" data-repo="violentmonkey/violentmonkey" data-asset="chromium">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/violentmonkey.png" alt="Violentmonkey" />
-            </div>
+            <div class="ext-icon"><img src="/extensions/violentmonkey.png" alt="Violentmonkey" /></div>
             <div class="ext-meta">
               <div class="ext-name">Violentmonkey</div>
               <span class="ext-tag tag-Productivity">Productivity</span>
@@ -624,20 +629,14 @@
           </div>
           <p class="ext-desc">Open-source userscript manager. Run custom JavaScript on any website to modify, automate, or enhance pages however you want.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/violentmonkey/violentmonkey/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/violentmonkey/violentmonkey" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/violentmonkey/violentmonkey/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/violentmonkey/violentmonkey" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Productivity">
+        <div class="ext-card" data-category="Productivity" data-repo="ajayyy/SponsorBlock" data-asset="ChromeExtension">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/sponsorblock.png" alt="SponsorBlock" />
-            </div>
+            <div class="ext-icon"><img src="/extensions/sponsorblock.png" alt="SponsorBlock" /></div>
             <div class="ext-meta">
               <div class="ext-name">SponsorBlock</div>
               <span class="ext-tag tag-Productivity">Productivity</span>
@@ -645,20 +644,44 @@
           </div>
           <p class="ext-desc">Automatically skips sponsor segments, intros, outros, and self-promotion in YouTube videos using a community-driven database.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/ajayyy/SponsorBlock/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/ajayyy/SponsorBlock" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/ajayyy/SponsorBlock/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/ajayyy/SponsorBlock" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
-        <div class="ext-card" data-category="Appearance">
+        <div class="ext-card" data-category="Productivity" data-repo="gildas-lormeau/SingleFile" data-asset="chromium">
           <div class="ext-header">
-            <div class="ext-icon">
-              <img src="/extensions/dark-reader.png" alt="Dark Reader" />
+            <div class="ext-icon"><img src="/extensions/singlefile.png" alt="SingleFile" /></div>
+            <div class="ext-meta">
+              <div class="ext-name">SingleFile</div>
+              <span class="ext-tag tag-Productivity">Productivity</span>
             </div>
+          </div>
+          <p class="ext-desc">Save a complete web page — including images, CSS, and fonts — into a single self-contained HTML file. Works offline, no account needed.</p>
+          <div class="ext-actions">
+            <button class="btn-install" data-fallback="https://github.com/gildas-lormeau/SingleFile/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/gildas-lormeau/SingleFile" target="_blank" rel="noopener">Source</a>
+          </div>
+        </div>
+
+        <div class="ext-card" data-category="Productivity" data-repo="Anarios/return-youtube-dislike" data-asset=".zip">
+          <div class="ext-header">
+            <div class="ext-icon"><img src="/extensions/return-yt-dislike.png" alt="Return YouTube Dislike" /></div>
+            <div class="ext-meta">
+              <div class="ext-name">Return YouTube Dislike</div>
+              <span class="ext-tag tag-Productivity">Productivity</span>
+            </div>
+          </div>
+          <p class="ext-desc">Brings back the YouTube dislike count using a crowdsourced database. See how many people actually disliked a video before you watch it.</p>
+          <div class="ext-actions">
+            <button class="btn-install" data-fallback="https://github.com/Anarios/return-youtube-dislike/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/Anarios/return-youtube-dislike" target="_blank" rel="noopener">Source</a>
+          </div>
+        </div>
+
+        <div class="ext-card" data-category="Appearance" data-repo="darkreader/darkreader" data-asset="chromium.zip">
+          <div class="ext-header">
+            <div class="ext-icon"><img src="/extensions/dark-reader.png" alt="Dark Reader" /></div>
             <div class="ext-meta">
               <div class="ext-name">Dark Reader</div>
               <span class="ext-tag tag-Appearance">Appearance</span>
@@ -666,12 +689,23 @@
           </div>
           <p class="ext-desc">Enables dark mode on every website. Fully customisable brightness, contrast, and sepia filters — no eyestrain, no white flash.</p>
           <div class="ext-actions">
-            <a class="btn-install" href="https://github.com/darkreader/darkreader/releases/latest" target="_blank" rel="noopener">
-              ↓ Download
-            </a>
-            <a class="btn-source" href="https://github.com/darkreader/darkreader" target="_blank" rel="noopener">
-              Source
-            </a>
+            <button class="btn-install" data-fallback="https://github.com/darkreader/darkreader/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/darkreader/darkreader" target="_blank" rel="noopener">Source</a>
+          </div>
+        </div>
+
+        <div class="ext-card" data-category="Appearance" data-repo="openstyles/stylus" data-asset="chromium">
+          <div class="ext-header">
+            <div class="ext-icon"><img src="/extensions/stylus.png" alt="Stylus" /></div>
+            <div class="ext-meta">
+              <div class="ext-name">Stylus</div>
+              <span class="ext-tag tag-Appearance">Appearance</span>
+            </div>
+          </div>
+          <p class="ext-desc">Install custom CSS themes for any website. Thousands of user styles on userstyles.world — restyle Reddit, Twitter, GitHub, or anything.</p>
+          <div class="ext-actions">
+            <button class="btn-install" data-fallback="https://github.com/openstyles/stylus/releases/latest">↓ Download</button>
+            <a class="btn-source" href="https://github.com/openstyles/stylus" target="_blank" rel="noopener">Source</a>
           </div>
         </div>
 
@@ -731,17 +765,57 @@
   </div>
 
   <script>
+    // ── Filters ──
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
         btn.classList.add('active')
-
         const filter = btn.dataset.filter
         document.querySelectorAll('.ext-card').forEach(card => {
-          const show = filter === 'all' || card.dataset.category === filter
-          card.style.display = show ? '' : 'none'
+          card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none'
         })
       })
+    })
+
+    // ── One-click install (only active when running inside Spectre) ──
+    const inSpectre = typeof window.spectreStore !== 'undefined' && window.spectreStore.isSpectre
+
+    document.querySelectorAll('.ext-card').forEach(card => {
+      const btn = card.querySelector('.btn-install')
+      const repo = card.dataset.repo
+      const asset = card.dataset.asset
+      const fallback = btn.dataset.fallback
+
+      if (inSpectre && repo && asset) {
+        btn.textContent = '⚡ Add to Spectre'
+        btn.addEventListener('click', async () => {
+          if (btn.classList.contains('installed') || btn.classList.contains('loading')) return
+          btn.classList.add('loading')
+          btn.innerHTML = '<span class="spinner">↻</span> Installing…'
+          try {
+            const result = await window.spectreStore.installExtension(repo, asset)
+            if (result.success) {
+              btn.classList.remove('loading')
+              btn.classList.add('installed')
+              btn.textContent = '✓ Installed'
+            } else {
+              throw new Error(result.error)
+            }
+          } catch (err) {
+            btn.classList.remove('loading')
+            btn.classList.add('error')
+            btn.textContent = '✕ Failed — click to retry'
+            btn.addEventListener('click', () => {
+              btn.classList.remove('error')
+              btn.textContent = '⚡ Add to Spectre'
+            }, { once: true })
+            console.error('Install failed:', err.message)
+          }
+        })
+      } else {
+        // Not in Spectre — open GitHub releases page
+        btn.addEventListener('click', () => window.open(fallback, '_blank'))
+      }
     })
   </script>
 
