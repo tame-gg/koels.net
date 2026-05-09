@@ -34,19 +34,19 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #05050f;
-      --bg2:      #08081a;
-      --surface:  rgba(255,255,255,0.035);
-      --surface2: rgba(255,255,255,0.065);
+      --bg:       #03080f;
+      --bg2:      #060e1a;
+      --surface:  rgba(255,255,255,0.04);
+      --surface2: rgba(255,255,255,0.07);
       --border:   rgba(255,255,255,0.07);
       --border2:  rgba(255,255,255,0.13);
-      --text:     #eeeeff;
-      --muted:    rgba(238,238,255,0.52);
-      --dim:      rgba(238,238,255,0.28);
-      --cyan:     #00ccff;
-      --cyan2:    #66deff;
+      --text:     #e8f5ff;
+      --muted:    rgba(232,245,255,0.55);
+      --dim:      rgba(232,245,255,0.3);
+      --cyan:     #00d4aa;
+      --cyan2:    #4dffdc;
       --violet:   #7b5fff;
-      --green:    #00e87a;
+      --green:    #00ff88;
       --red:      #ff4560;
     }
 
@@ -66,13 +66,25 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(circle, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-image: radial-gradient(circle, rgba(255,255,255,0.022) 1px, transparent 1px);
       background-size: 28px 28px;
       pointer-events: none;
       z-index: 0;
     }
 
-    nav, main, footer, .stats-strip, .policy-section { position: relative; z-index: 1; }
+    /* aurora */
+    .aurora { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .aurora .ab { position:absolute; border-radius:50%; filter:blur(120px); opacity:0.18; }
+    .aurora .ab1 { width:600px; height:450px; background:radial-gradient(ellipse,#00ff88 0%,transparent 70%); top:-100px; left:-150px; animation:sab1 34s ease-in-out infinite; }
+    .aurora .ab2 { width:580px; height:580px; background:radial-gradient(ellipse,#7c3aed 0%,transparent 70%); top:-60px; right:-120px; animation:sab2 42s ease-in-out infinite; }
+    .aurora .ab3 { width:460px; height:380px; background:radial-gradient(ellipse,#00d4aa 0%,transparent 70%); bottom:20%; left:30%; animation:sab3 26s ease-in-out infinite; }
+    .aurora .ab4 { width:420px; height:420px; background:radial-gradient(ellipse,#3b5bff 0%,transparent 70%); bottom:0; right:10%; animation:sab4 48s ease-in-out infinite; }
+    @keyframes sab1{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(80px,60px) scale(1.1)}50%{transform:translate(20px,120px) scale(0.93)}75%{transform:translate(-40px,40px) scale(1.05)}}
+    @keyframes sab2{0%,100%{transform:translate(0,0) scale(1)}30%{transform:translate(-90px,70px) scale(1.08)}60%{transform:translate(-30px,140px) scale(0.91)}80%{transform:translate(50px,60px) scale(1.04)}}
+    @keyframes sab3{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(60px,-80px) scale(1.12)}70%{transform:translate(-50px,-40px) scale(0.9)}}
+    @keyframes sab4{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-70px,-90px) scale(1.1)}70%{transform:translate(30px,-60px) scale(0.94)}}
+
+    nav, main, footer, .stats-strip, .policy-section { position: relative; z-index: 2; }
 
     /* ─── NAV ─── */
     nav {
@@ -84,8 +96,9 @@
       justify-content: space-between;
       padding: 0 2.5rem;
       height: 56px;
-      background: rgba(5,5,15,0.82);
-      backdrop-filter: blur(18px);
+      background: rgba(3,8,15,0.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
     }
 
@@ -398,13 +411,16 @@
     }
 
     .card {
-      background: var(--surface);
+      background: rgba(6,14,26,0.5);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.6rem;
       transition: border-color 0.2s, background 0.2s;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .card::after {
@@ -413,13 +429,13 @@
       top: 0; right: 0;
       width: 100px;
       height: 100px;
-      background: radial-gradient(circle at top right, rgba(0,204,255,0.055), transparent 65%);
+      background: radial-gradient(circle at top right, rgba(0,212,170,0.06), transparent 65%);
       pointer-events: none;
     }
 
     .card:hover {
-      border-color: rgba(0,204,255,0.22);
-      background: rgba(255,255,255,0.055);
+      border-color: rgba(0,212,170,0.25);
+      background: rgba(0,212,170,0.06);
     }
 
     .c2 { grid-column: span 2; }
@@ -643,6 +659,14 @@
   </style>
 </head>
 <body>
+
+  <!-- ─── AURORA ─── -->
+  <div class="aurora" aria-hidden="true">
+    <div class="ab ab1"></div>
+    <div class="ab ab2"></div>
+    <div class="ab ab3"></div>
+    <div class="ab ab4"></div>
+  </div>
 
   <!-- ─── NAV ─── -->
   <nav>
