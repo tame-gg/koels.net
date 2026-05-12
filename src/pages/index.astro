@@ -246,18 +246,20 @@ section { position:relative; z-index:1 }
 .project-link:hover { gap:10px }
 .project-card.wip .project-link { color:var(--dim); pointer-events:none }
 
-/* ── MC WIDGET ── */
+/* ── COMMUNITY ── */
 .mc-section { padding:0 80px 100px }
-.mc-widget {
+.widget-row {
+  display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;
+}
+.mc-widget, .dc-widget {
   background:rgba(2,10,24,0.55);
   border:1px solid var(--border);
   border-radius:14px;
   overflow:hidden;
   backdrop-filter:blur(16px);
-  max-width:560px;
   transition:border-color 0.25s;
 }
-.mc-widget:hover { border-color:var(--border2) }
+.mc-widget:hover, .dc-widget:hover { border-color:var(--border2) }
 .mc-stripe { height:2px; background:linear-gradient(90deg,var(--accent),var(--teal)) }
 .mc-body { padding:28px 32px }
 .mc-top {
@@ -299,6 +301,63 @@ section { position:relative; z-index:1 }
   cursor:pointer; transition:0.2s;
 }
 .mc-ip:hover { background:rgba(64,200,255,0.13); border-color:rgba(64,200,255,0.3) }
+
+/* ── DISCORD WIDGET ── */
+.dc-stripe { height:2px; background:linear-gradient(90deg,#5865f2,#7289da) }
+.dc-body { padding:28px 32px }
+.dc-top {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;
+}
+.dc-label {
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--dim);
+}
+.dc-online {
+  display:flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em;
+  color:#57f287; text-transform:uppercase;
+}
+.dc-online i { width:5px;height:5px;border-radius:50%;background:#57f287;animation:blink 1.3s ease infinite }
+.dc-count-row { display:flex; align-items:baseline; gap:10px; margin-bottom:6px }
+.dc-count {
+  font-size:2.5rem; font-weight:900; letter-spacing:-0.04em; line-height:1;
+  color:#7289da;
+}
+.dc-count-label {
+  font-family:var(--mono); font-size:0.75rem; color:var(--muted);
+}
+.dc-server-name {
+  font-family:var(--mono); font-size:0.7rem; color:var(--dim); margin-bottom:20px;
+}
+.dc-members {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; min-height:36px;
+}
+.dc-member {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(88,101,242,0.07); border:1px solid rgba(88,101,242,0.16);
+  border-radius:999px; padding:4px 10px 4px 4px;
+}
+.dc-avatar {
+  width:22px; height:22px; border-radius:50%; object-fit:cover;
+  background:rgba(88,101,242,0.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.6rem; color:rgba(200,240,255,0.5); flex-shrink:0;
+}
+.dc-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover }
+.dc-username { font-family:var(--mono); font-size:0.65rem; color:var(--muted); letter-spacing:0.04em }
+.dc-join {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:0.72rem; font-weight:700;
+  letter-spacing:0.08em; color:#e8f8ff;
+  padding:10px 20px; border-radius:8px; text-decoration:none;
+  background:rgba(88,101,242,0.12); border:1px solid rgba(88,101,242,0.28);
+  cursor:pointer; transition:0.2s;
+}
+.dc-join:hover { background:rgba(88,101,242,0.22); border-color:rgba(88,101,242,0.5) }
+.dc-error {
+  font-family:var(--mono); font-size:0.72rem; color:var(--dim);
+  padding:12px 0;
+}
 
 /* ── ABOUT + CONTACT ── */
 .bottom-grid {
@@ -370,6 +429,7 @@ footer {
   .scroll-hint { left:24px }
   .projects { padding:72px 24px }
   .mc-section { padding:0 24px 72px }
+  .widget-row { grid-template-columns:1fr }
   .bottom-grid { grid-template-columns:1fr }
   .bottom-col { padding:52px 24px; border-right:none; border-bottom:1px solid var(--border) }
   .bottom-col:last-child { border-bottom:none }
@@ -468,30 +528,53 @@ footer {
   </div>
 </section>
 
-<!-- ── MC SERVER ── -->
+<!-- ── COMMUNITY ── -->
 <section class="mc-section">
   <div class="section-header reveal">
-    <span class="section-num">02 / Server</span>
-    <span class="section-title">Minecraft server</span>
+    <span class="section-num">02 / Community</span>
+    <span class="section-title">Join us</span>
   </div>
 
-  <div class="mc-widget reveal">
-    <div class="mc-stripe"></div>
-    <div class="mc-body">
-      <div class="mc-top">
-        <span class="mc-label">koels.online</span>
-        <span class="mc-live"><i></i>Live</span>
+  <div class="widget-row">
+
+    <div class="mc-widget reveal">
+      <div class="mc-stripe"></div>
+      <div class="mc-body">
+        <div class="mc-top">
+          <span class="mc-label">koels.online</span>
+          <span class="mc-live"><i></i>Live</span>
+        </div>
+        <div class="mc-status-row">
+          <div class="mc-status-text" id="mcStatus">Checking…</div>
+        </div>
+        <div class="mc-players"><strong id="mcNow">—</strong> / <strong id="mcMax">—</strong> players online</div>
+        <div class="mc-bar-row"><span>Capacity</span><span id="mcPct">—</span></div>
+        <div class="mc-track"><div class="mc-fill" id="mcFill"></div></div>
+        <button class="mc-ip" onclick="copyIP()">
+          <span>⛏</span> koels.online — click to copy
+        </button>
       </div>
-      <div class="mc-status-row">
-        <div class="mc-status-text" id="mcStatus">Checking…</div>
-      </div>
-      <div class="mc-players"><strong id="mcNow">—</strong> / <strong id="mcMax">—</strong> players online</div>
-      <div class="mc-bar-row"><span>Capacity</span><span id="mcPct">—</span></div>
-      <div class="mc-track"><div class="mc-fill" id="mcFill"></div></div>
-      <button class="mc-ip" onclick="copyIP()">
-        <span>⛏</span> koels.online — click to copy
-      </button>
     </div>
+
+    <div class="dc-widget reveal" style="transition-delay:.07s">
+      <div class="dc-stripe"></div>
+      <div class="dc-body">
+        <div class="dc-top">
+          <span class="dc-label" id="dcName">Discord</span>
+          <span class="dc-online"><i></i><span id="dcOnlineLabel">—</span></span>
+        </div>
+        <div class="dc-count-row">
+          <div class="dc-count" id="dcCount">—</div>
+          <div class="dc-count-label">online now</div>
+        </div>
+        <div class="dc-members" id="dcMembers"></div>
+        <a class="dc-join" id="dcJoin" href="https://discord.gg/7VdjWMMtSc" target="_blank" rel="noopener">
+          <svg width="16" height="12" viewBox="0 0 24 18" fill="none"><path d="M20.317 1.492a19.84 19.84 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.84 13.84 0 0 0-.612 1.259 18.319 18.319 0 0 0-5.487 0 12.64 12.64 0 0 0-.621-1.259.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 1.492a.07.07 0 0 0-.032.027C.533 6.093-.32 10.555.099 14.961a.08.08 0 0 0 .031.055 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.027 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.442a.061.061 0 0 0-.031-.03Z" fill="currentColor"/></svg>
+          Join Discord
+        </a>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -589,6 +672,52 @@ async function updateMC() {
 }
 updateMC();
 setInterval(updateMC, 180000);
+
+async function updateDiscord() {
+  try {
+    const d = await (await fetch('https://discord.com/api/guilds/1494858459785465896/widget.json')).json();
+    if (d.code === 50004 || !d.name) {
+      document.getElementById('dcMembers').innerHTML = '<span class="dc-error">Widget not enabled on server.</span>';
+      return;
+    }
+    document.getElementById('dcName').textContent = d.name;
+    const count = d.presence_count || 0;
+    document.getElementById('dcCount').textContent = count;
+    document.getElementById('dcOnlineLabel').textContent = count === 1 ? 'online' : 'online';
+    if (d.instant_invite) document.getElementById('dcJoin').href = d.instant_invite;
+
+    const container = document.getElementById('dcMembers');
+    container.innerHTML = '';
+    const members = (d.members || []).slice(0, 10);
+    if (members.length === 0) {
+      container.innerHTML = '<span style="font-family:var(--mono);font-size:0.65rem;color:var(--dim)">No members visible</span>';
+    } else {
+      members.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'dc-member';
+        const av = document.createElement('div');
+        av.className = 'dc-avatar';
+        if (m.avatar_url) {
+          const img = document.createElement('img');
+          img.src = m.avatar_url;
+          img.alt = m.username;
+          av.appendChild(img);
+        } else {
+          av.textContent = (m.username || '?')[0].toUpperCase();
+        }
+        const name = document.createElement('span');
+        name.className = 'dc-username';
+        name.textContent = m.username || 'unknown';
+        el.appendChild(av);
+        el.appendChild(name);
+        container.appendChild(el);
+      });
+    }
+  } catch(e) {
+    document.getElementById('dcMembers').innerHTML = '<span class="dc-error">Could not load widget.</span>';
+  }
+}
+updateDiscord();
 </script>
 </body>
 </html>
