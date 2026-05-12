@@ -320,28 +320,21 @@ section { position:relative; z-index:1 }
 .dc-stat-label { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim) }
 .dc-stat-val { font-size:1.4rem; font-weight:900; letter-spacing:-0.03em; color:#e8f8ff }
 .dc-stat-val.green { color:#57f287; text-shadow:0 0 24px rgba(87,242,135,0.2) }
-.dc-members-preview {
-  display:flex; align-items:center; gap:10px; margin-bottom:24px;
-}
-.dc-av-stack { display:flex; align-items:center }
+.dc-members-preview { display:flex; align-items:center; gap:10px; margin-bottom:24px }
+.dc-av-stack { display:flex; flex-direction:row; align-items:center }
 .dc-av-sm {
-  width:30px; height:30px; border-radius:50%;
+  width:28px; height:28px; border-radius:50%;
   border:2px solid rgba(2,8,16,1);
-  background:rgba(88,101,242,0.3); overflow:hidden; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:0.65rem; color:rgba(200,240,255,0.6);
-  margin-left:-8px; position:relative;
+  background:rgba(88,101,242,0.3);
+  overflow:hidden; flex-shrink:0;
+  margin-left:-7px;
 }
 .dc-av-sm:first-child { margin-left:0 }
-.dc-av-sm img {
-  position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; border-radius:50%;
-}
+.dc-av-sm img { width:28px; height:28px; object-fit:cover; display:block }
+.dc-av-sm span { display:flex; align-items:center; justify-content:center; width:28px; height:28px; font-size:0.6rem; color:rgba(200,240,255,0.6) }
 .dc-av-more {
-  flex-shrink:0;
   font-family:var(--mono); font-size:0.62rem; font-weight:600;
-  color:rgba(200,240,255,0.55);
-  letter-spacing:0.04em;
+  color:rgba(200,240,255,0.45); letter-spacing:0.04em; flex-shrink:0;
 }
 .dc-join {
   display:flex; align-items:center; justify-content:center; gap:8px;
@@ -692,10 +685,12 @@ async function updateDiscord() {
       el.className = 'dc-av-sm';
       if (m.avatar_url) {
         const img = document.createElement('img');
-        img.src = m.avatar_url; img.alt = '';
+        img.src = m.avatar_url; img.alt = ''; img.width = 28; img.height = 28;
         el.appendChild(img);
       } else {
-        el.textContent = (m.username||'?')[0].toUpperCase();
+        const s = document.createElement('span');
+        s.textContent = (m.username||'?')[0].toUpperCase();
+        el.appendChild(s);
       }
       stack.appendChild(el);
     });
