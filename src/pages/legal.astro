@@ -7,32 +7,30 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Legal — koels.site</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2303030a'/%3E%3Ctext x='16' y='26' text-anchor='middle' font-family='Inter%2C system-ui%2C sans-serif' font-size='26' font-weight='900' fill='url(%23g)'%3EK%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a29bfe'/%3E%3Cstop offset='100%25' stop-color='%236c5ce7'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23020810'/%3E%3Ctext x='16' y='26' text-anchor='middle' font-family='Inter%2C system-ui%2C sans-serif' font-size='26' font-weight='900' fill='url(%23g)'%3EK%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2340c8ff'/%3E%3Cstop offset='100%25' stop-color='%2300ffcc'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<style is:global>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
 :root {
-  --bg:       #03030a;
-  --bg2:      #08080f;
-  --surface:  #0f0f1a;
-  --surface2: #141420;
-  --border:   rgba(255,255,255,0.07);
-  --border2:  rgba(255,255,255,0.12);
-  --text:     #f0eeff;
-  --muted:    rgba(240,238,255,0.68);
-  --dim:      rgba(240,238,255,0.4);
-  --accent:   #6c5ce7;
-  --accent2:  #a29bfe;
-  --lime:     #00ff88;
-  --red:      #ff4757;
-  --white:    #ffffff;
+  --bg:      #020810;
+  --bg2:     #040e1e;
+  --surface: rgba(2,10,24,0.6);
+  --border:  rgba(0,120,200,0.14);
+  --border2: rgba(64,200,255,0.22);
+  --text:    #c8f0ff;
+  --muted:   rgba(200,240,255,0.5);
+  --dim:     rgba(200,240,255,0.28);
+  --accent:  #40c8ff;
+  --teal:    #00ffcc;
+  --red:     #ff4757;
+  --white:   #e8f8ff;
   --sans: "Inter", system-ui, sans-serif;
   --mono: "JetBrains Mono", monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box }
-html { scroll-behavior:smooth; font-size:17px }
+html { scroll-behavior:smooth; font-size:16px }
 body {
   font-family: var(--sans);
   background: var(--bg);
@@ -42,157 +40,215 @@ body {
 }
 a { color:inherit; text-decoration:none }
 
+/* ── NOISE ── */
 body::after {
   content:''; position:fixed; inset:0; pointer-events:none; z-index:9990;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
-#curtain {
-  position:fixed; inset:0; background:var(--bg); z-index:9997;
-  display:flex; align-items:center; justify-content:center;
-  transition:opacity 0.8s var(--ease), visibility 0.8s;
-}
-#curtain.gone { opacity:0; visibility:hidden; pointer-events:none }
-.curtain-logo {
-  font-family:var(--mono); font-size:0.85rem; letter-spacing:0.25em;
-  color:var(--dim); text-transform:uppercase;
-  animation:curtain-pulse 1s ease infinite;
-}
-@keyframes curtain-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+/* ── BLOBS ── */
+.blobs { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden }
+.blob { position:absolute; border-radius:50%; filter:blur(130px) }
+.b1 { width:600px;height:500px;background:radial-gradient(#0050c8,transparent 70%);opacity:.18;top:-120px;left:-100px;animation:bm1 38s ease-in-out infinite }
+.b2 { width:500px;height:500px;background:radial-gradient(#003080,transparent 70%);opacity:.14;bottom:10%;right:-100px;animation:bm2 48s ease-in-out infinite }
+@keyframes bm1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,80px)} }
+@keyframes bm2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-60px)} }
 
+/* ── HEADER ── */
 header {
   position:fixed; top:0; left:0; right:0; z-index:500;
-  height:60px;
-  display:flex; align-items:center; justify-content:space-between;
+  height:58px; display:flex; align-items:center; justify-content:space-between;
   padding:0 40px;
   border-bottom:1px solid var(--border);
-  background:rgba(3,3,10,0.85);
-  backdrop-filter:blur(24px) saturate(1.8);
-  -webkit-backdrop-filter:blur(24px) saturate(1.8);
+  background:rgba(2,8,16,0.7);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
 }
 .logo {
   font-family:var(--mono); font-size:0.7rem; font-weight:700;
   letter-spacing:0.2em; text-transform:uppercase; color:var(--white);
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:9px;
 }
-.logo-pulse {
+.logo-dot {
   width:6px; height:6px; border-radius:50%;
-  background:var(--lime); box-shadow:0 0 10px var(--lime);
-  animation:lg-pulse 2s ease infinite;
+  background:var(--teal); box-shadow:0 0 10px var(--teal);
+  animation:dot-pulse 2s ease infinite;
 }
-@keyframes lg-pulse { 0%,100%{box-shadow:0 0 6px var(--lime)} 50%{box-shadow:0 0 20px var(--lime),0 0 40px rgba(0,255,136,0.25)} }
-.nav { display:flex; align-items:center; gap:32px }
-.nav a {
-  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em;
+@keyframes dot-pulse { 0%,100%{box-shadow:0 0 6px var(--teal)} 50%{box-shadow:0 0 20px var(--teal),0 0 40px rgba(0,255,204,0.2)} }
+nav { display:flex; align-items:center; gap:28px }
+nav a {
+  font-family:var(--mono); font-size:0.7rem; letter-spacing:0.14em;
   color:var(--muted); text-transform:uppercase; transition:color 0.2s;
 }
-.nav a:hover { color:var(--white) }
+nav a:hover { color:var(--white) }
 
-.page-wrap { max-width:860px; margin:0 auto; padding:120px 40px 80px }
-
-.page-hero { margin-bottom:72px; position:relative }
-.page-hero::before {
-  content:''; position:absolute;
-  top:-60px; left:-40px; right:-40px; bottom:0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size:64px 64px;
-  mask-image:radial-gradient(ellipse 80% 100% at 20% 50%, black 0%, transparent 100%);
-  -webkit-mask-image:radial-gradient(ellipse 80% 100% at 20% 50%, black 0%, transparent 100%);
-  opacity:0.4; pointer-events:none; z-index:0;
+/* ── PAGE ── */
+.page-wrap {
+  max-width:800px; margin:0 auto;
+  padding:110px 40px 80px;
+  position:relative; z-index:1;
 }
+
+.page-hero { margin-bottom:64px }
 .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
-  font-family:var(--mono); font-size:0.72rem; font-weight:500;
-  letter-spacing:0.2em; text-transform:uppercase; color:var(--accent2);
-  margin-bottom:24px; animation:fade-up 0.9s var(--ease) both;
+  font-family:var(--mono); font-size:0.68rem; letter-spacing:0.22em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:24px;
+  opacity:0; animation:fade-up 0.9s var(--ease) 0.1s both;
 }
-.eyebrow-line { width:28px; height:1px; background:var(--accent) }
+.eyebrow-line { width:24px; height:1px; background:var(--accent) }
 .page-title {
-  font-family:var(--sans); font-size:clamp(2.6rem, 5vw, 4.5rem);
-  font-weight:900; line-height:0.95; letter-spacing:-0.03em; color:var(--white);
-  animation:fade-up 0.9s 0.07s var(--ease) both; position:relative; z-index:1;
+  font-size:clamp(2.8rem, 6vw, 5rem);
+  font-weight:900; line-height:0.92; letter-spacing:-0.03em; color:var(--white);
+  opacity:0; animation:fade-up 0.9s 0.16s var(--ease) both;
 }
 .page-title .grad {
-  background:linear-gradient(135deg, var(--accent2) 0%, #c084fc 50%, var(--accent2) 100%);
+  background:linear-gradient(135deg, var(--accent) 0%, var(--teal) 60%, var(--accent) 100%);
   background-size:200% auto;
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  animation:shimmer 4s linear infinite;
+  animation:shimmer 5s linear infinite;
 }
 @keyframes shimmer { to { background-position:200% center } }
 .page-meta {
-  margin-top:20px; font-family:var(--mono); font-size:0.72rem;
-  color:var(--dim); letter-spacing:0.1em; text-transform:uppercase;
-  animation:fade-up 0.9s 0.14s var(--ease) both;
+  margin-top:20px;
+  font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em;
+  color:var(--dim); text-transform:uppercase;
+  opacity:0; animation:fade-up 0.9s 0.22s var(--ease) both;
 }
 
+/* ── TABS ── */
 .tab-nav {
-  display:flex; border:1px solid var(--border2);
-  border-radius:6px; overflow:hidden; margin-bottom:56px;
-  animation:fade-up 0.9s 0.2s var(--ease) both;
+  display:flex; gap:0;
+  border:1px solid var(--border2);
+  border-radius:8px; overflow:hidden;
+  margin-bottom:52px;
+  opacity:0; animation:fade-up 0.9s 0.28s var(--ease) both;
 }
 .tab-btn {
-  flex:1; padding:13px 20px;
-  font-family:var(--mono); font-size:0.7rem; font-weight:600;
+  flex:1; padding:12px 20px;
+  font-family:var(--mono); font-size:0.68rem; font-weight:600;
   letter-spacing:0.14em; text-transform:uppercase;
   background:transparent; color:var(--muted);
-  border:none; cursor:pointer; transition:0.25s var(--ease);
+  border:none; cursor:pointer; transition:0.2s var(--ease);
 }
 .tab-btn + .tab-btn { border-left:1px solid var(--border2) }
-.tab-btn.active { background:var(--accent); color:var(--white) }
-.tab-btn:not(.active):hover { background:rgba(255,255,255,0.04); color:var(--white) }
+.tab-btn.active {
+  background:linear-gradient(135deg, rgba(64,200,255,0.15), rgba(0,255,204,0.08));
+  color:var(--accent);
+}
+.tab-btn:not(.active):hover { background:rgba(64,200,255,0.05); color:var(--text) }
 
 .panel { display:none }
 .panel.active { display:block }
 
-.doc-section { margin-bottom:44px; padding-bottom:44px; border-bottom:1px solid var(--border) }
+/* ── CONTENT ── */
+.doc-section {
+  margin-bottom:40px; padding-bottom:40px;
+  border-bottom:1px solid var(--border);
+}
 .doc-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0 }
-.section-header { display:flex; align-items:baseline; gap:16px; margin-bottom:16px }
-.section-num { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.2em; color:var(--accent2); text-transform:uppercase; flex-shrink:0 }
-.section-title { font-family:var(--sans); font-size:1rem; font-weight:700; color:var(--white); letter-spacing:-0.01em }
-.doc-text { font-family:var(--mono); font-size:0.8rem; line-height:1.95; color:var(--muted); letter-spacing:0.03em }
+
+.section-header { display:flex; align-items:baseline; gap:14px; margin-bottom:14px }
+.section-num {
+  font-family:var(--mono); font-size:0.62rem; letter-spacing:0.2em;
+  color:var(--dim); text-transform:uppercase; flex-shrink:0;
+}
+.section-title {
+  font-size:1rem; font-weight:700; color:var(--white); letter-spacing:-0.01em;
+}
+.doc-text {
+  font-family:var(--mono); font-size:0.78rem; line-height:1.95;
+  color:var(--muted); letter-spacing:0.02em;
+}
 .doc-text + .doc-text { margin-top:12px }
 
-.data-table { width:100%; border-collapse:collapse; margin-top:20px; border:1px solid var(--border2); border-radius:6px; overflow:hidden }
-.data-table th { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--dim); background:var(--surface2); padding:12px 16px; text-align:left; border-bottom:1px solid var(--border2) }
-.data-table td { font-family:var(--mono); font-size:0.75rem; color:var(--muted); padding:12px 16px; border-bottom:1px solid var(--border); line-height:1.6 }
+/* inline code */
+code {
+  color:var(--accent); background:rgba(64,200,255,0.08);
+  padding:1px 7px; border-radius:4px; font-size:0.85em;
+}
+
+/* ── TABLE ── */
+.data-table {
+  width:100%; border-collapse:collapse; margin-top:20px;
+  border:1px solid var(--border2); border-radius:8px; overflow:hidden;
+}
+.data-table th {
+  font-family:var(--mono); font-size:0.62rem; letter-spacing:0.15em;
+  text-transform:uppercase; color:var(--dim);
+  background:rgba(4,18,40,0.7); padding:11px 16px;
+  text-align:left; border-bottom:1px solid var(--border2);
+}
+.data-table td {
+  font-family:var(--mono); font-size:0.74rem; color:var(--muted);
+  padding:11px 16px; border-bottom:1px solid var(--border); line-height:1.6;
+}
 .data-table tr:last-child td { border-bottom:none }
-.data-table tr:hover td { background:rgba(255,255,255,0.02) }
-.badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:999px; font-size:0.62rem; letter-spacing:0.1em; font-weight:600; text-transform:uppercase }
-.badge-green { background:rgba(0,255,136,0.1); color:var(--lime); border:1px solid rgba(0,255,136,0.2) }
+.data-table tr:hover td { background:rgba(64,200,255,0.03) }
+.badge {
+  display:inline-flex; align-items:center;
+  padding:2px 9px; border-radius:999px;
+  font-size:0.6rem; letter-spacing:0.1em; font-weight:600; text-transform:uppercase;
+}
+.badge-teal { background:rgba(0,255,204,0.08); color:var(--teal); border:1px solid rgba(0,255,204,0.22) }
 
-.callout { display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border-radius:6px; margin-top:16px }
-.callout-promise { background:rgba(0,255,136,0.05); border:1px solid rgba(0,255,136,0.15) }
-.callout-warn { background:rgba(108,92,231,0.06); border:1px solid rgba(108,92,231,0.2) }
-.callout-icon { font-size:1rem; flex-shrink:0; margin-top:1px }
-.callout-text { font-family:var(--mono); font-size:0.75rem; line-height:1.8; color:var(--muted); letter-spacing:0.03em }
-.callout-promise .callout-text { color:rgba(0,255,136,0.85) }
+/* ── CALLOUTS ── */
+.callout {
+  display:flex; gap:12px; align-items:flex-start;
+  padding:14px 18px; border-radius:8px; margin-top:16px;
+}
+.callout-promise {
+  background:rgba(0,255,204,0.04);
+  border:1px solid rgba(0,255,204,0.15);
+}
+.callout-warn {
+  background:rgba(64,200,255,0.04);
+  border:1px solid rgba(64,200,255,0.16);
+}
+.callout-icon { font-size:0.95rem; flex-shrink:0; margin-top:2px }
+.callout-text {
+  font-family:var(--mono); font-size:0.74rem; line-height:1.8;
+  color:var(--muted); letter-spacing:0.02em;
+}
+.callout-promise .callout-text { color:rgba(0,255,204,0.8) }
+.callout-warn .callout-text { color:rgba(64,200,255,0.85) }
 
-footer { display:flex; align-items:center; justify-content:space-between; padding:22px 48px; border-top:1px solid var(--border); margin-top:56px }
-.foot-l, .foot-r { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; color:var(--dim); text-transform:uppercase }
-.foot-r { display:flex; gap:18px }
+/* ── FOOTER ── */
+footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 40px; border-top:1px solid var(--border);
+  max-width:800px; margin:0 auto;
+  position:relative; z-index:1;
+}
+.foot-l { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim) }
+.foot-links { display:flex; gap:20px }
+.foot-links a { font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); transition:color 0.2s }
+.foot-links a:hover { color:var(--accent) }
 
-@keyframes fade-up { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-.reveal { opacity:0; transform:translateY(22px); transition:opacity 0.7s var(--ease), transform 0.7s var(--ease) }
+/* ── UTILS ── */
+@keyframes fade-up { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+.reveal { opacity:0; transform:translateY(20px); transition:opacity 0.7s var(--ease), transform 0.7s var(--ease) }
 .reveal.visible { opacity:1; transform:translateY(0) }
 
-@media(max-width:700px){
-  .page-wrap { padding:100px 20px 60px }
+@media(max-width:700px) {
   header { padding:0 20px }
-  .nav { display:none }
-  footer { flex-direction:column; gap:10px; text-align:center; padding:22px 20px }
+  nav { display:none }
+  .page-wrap { padding:90px 20px 60px }
+  footer { padding:20px; flex-direction:column; gap:10px; text-align:center }
   .data-table th, .data-table td { padding:10px 12px }
 }
 </style>
 </head>
 <body>
 
-<div id="curtain"><div class="curtain-logo">koels.site</div></div>
+<div class="blobs" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+</div>
 
 <header>
-  <a href="/" class="logo"><div class="logo-pulse"></div>Koels.site</a>
-  <nav class="nav">
+  <a href="/" class="logo"><div class="logo-dot"></div>Koels.site</a>
+  <nav>
     <a href="/">Home</a>
     <a href="/links">Links</a>
   </nav>
@@ -258,7 +314,7 @@ footer { display:flex; align-items:center; justify-content:space-between; paddin
         <span class="section-title">Contact</span>
       </div>
       <p class="doc-text">
-        Questions or concerns? Hit me up on Discord at <span style="color:var(--accent2)">@koels</span> or email <span style="color:var(--accent2)">kyle@koels.site</span>.
+        Questions or concerns? Hit me up on Discord at <span style="color:var(--accent)">@koels</span> or email <span style="color:var(--accent)">kyle@koels.site</span>.
       </p>
     </div>
 
@@ -285,21 +341,21 @@ footer { display:flex; align-items:center; justify-content:space-between; paddin
           <tr>
             <td>Minecraft Username &amp; UUID</td>
             <td>Account verification &amp; linking</td>
-            <td><span class="badge badge-green">Never</span></td>
+            <td><span class="badge badge-teal">Never</span></td>
           </tr>
           <tr>
             <td>Discord Username &amp; ID</td>
             <td>Linking Discord to your MC account</td>
-            <td><span class="badge badge-green">Never</span></td>
+            <td><span class="badge badge-teal">Never</span></td>
           </tr>
           <tr>
             <td>IP Address</td>
             <td>Alt-account detection &amp; ban enforcement</td>
-            <td><span class="badge badge-green">Never</span></td>
+            <td><span class="badge badge-teal">Never</span></td>
           </tr>
         </tbody>
       </table>
-      <div class="callout callout-promise" style="margin-top:20px;">
+      <div class="callout callout-promise" style="margin-top:20px">
         <span class="callout-icon">✦</span>
         <span class="callout-text">None of this is sold, shared, or used for anything outside of running the server. No ads, no bad intent.</span>
       </div>
@@ -314,7 +370,7 @@ footer { display:flex; align-items:center; justify-content:space-between; paddin
         Everything is stored locally on my personal computer, encrypted at rest with AES-256. The files are unreadable without the key — access is only possible through controlled bot commands, not by opening the files directly.
       </p>
       <p class="doc-text">
-        Your IP is also obfuscated in server console logs — what shows up there is a fake placeholder, not your real address. The real IP is only ever visible via the <code style="color:var(--accent2);background:rgba(108,92,231,0.1);padding:1px 6px;border-radius:3px">/view</code> command, which is staff-only, ephemeral, and fully logged.
+        Your IP is also obfuscated in server console logs — what shows up there is a fake placeholder, not your real address. The real IP is only ever visible via the <code>/view</code> command, which is staff-only, ephemeral, and fully logged.
       </p>
     </div>
 
@@ -324,7 +380,7 @@ footer { display:flex; align-items:center; justify-content:space-between; paddin
         <span class="section-title">Deletion</span>
       </div>
       <p class="doc-text">
-        You can request the deletion of your data at any time by contacting me on Discord <span style="color:var(--accent2)">@koels</span> or email <span style="color:var(--accent2)">kyle@koels.site</span>. I will remove your verification record, IP address, and join history. Please note that if you have an active ban, the ban entry will remain, as it is necessary to enforce server rules and cannot be removed.
+        You can request the deletion of your data at any time by contacting me on Discord <span style="color:var(--accent)">@koels</span> or email <span style="color:var(--accent)">kyle@koels.site</span>. I will remove your verification record, IP address, and join history. Please note that if you have an active ban, the ban entry will remain, as it is necessary to enforce server rules.
       </p>
     </div>
 
@@ -343,29 +399,29 @@ footer { display:flex; align-items:center; justify-content:space-between; paddin
 </div>
 
 <footer>
-  <div class="foot-l">© 2026 Koels.site</div>
-  <div class="foot-r">
+  <span class="foot-l">© 2026 koels.site</span>
+  <div class="foot-links">
     <a href="/">Home</a>
-    <span>·</span>
     <a href="/links">Links</a>
   </div>
 </footer>
 
 <script is:inline>
-window.addEventListener('load', () => setTimeout(() => document.getElementById('curtain').classList.add('gone'), 650))
-
-const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }), { threshold: 0.08 })
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
+const obs = new IntersectionObserver(
+  es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
+  { threshold: 0.08 }
+);
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
 function switchTab(id, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
-  document.getElementById('panel-' + id).classList.add('active')
-  btn.classList.add('active')
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
   document.querySelectorAll('#panel-' + id + ' .reveal').forEach(el => {
-    el.classList.remove('visible')
-    setTimeout(() => el.classList.add('visible'), 60)
-  })
+    el.classList.remove('visible');
+    setTimeout(() => el.classList.add('visible'), 60);
+  });
 }
 </script>
 </body>
