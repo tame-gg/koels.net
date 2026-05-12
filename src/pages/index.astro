@@ -303,87 +303,12 @@ section { position:relative; z-index:1 }
 .mc-ip:hover { background:rgba(64,200,255,0.13); border-color:rgba(64,200,255,0.3) }
 
 /* ── DISCORD WIDGET ── */
+.dc-widget { overflow:hidden }
 .dc-stripe { height:2px; background:linear-gradient(90deg,#5865f2,#7289da) }
-.dc-body { padding:24px 28px }
-.dc-head {
-  display:flex; align-items:center; gap:12px; margin-bottom:18px;
-}
-.dc-logo {
-  width:36px; height:36px; border-radius:10px; flex-shrink:0;
-  background:#5865f2; display:flex; align-items:center; justify-content:center;
-}
-.dc-head-text { display:flex; flex-direction:column; gap:2px; min-width:0 }
-.dc-server-name {
-  font-size:0.9rem; font-weight:700; color:#e8f8ff;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.dc-online-row {
-  display:flex; align-items:center; gap:6px;
-  font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; color:#57f287;
-}
-.dc-online-dot { width:6px; height:6px; border-radius:50%; background:#57f287; flex-shrink:0; animation:blink 1.3s ease infinite }
-
-.dc-channels { display:flex; flex-direction:column; gap:2px; margin-bottom:18px; max-height:220px; overflow-y:auto }
-.dc-channels::-webkit-scrollbar { width:3px }
-.dc-channels::-webkit-scrollbar-thumb { background:rgba(88,101,242,0.3); border-radius:99px }
-.dc-channel-row {
-  display:flex; align-items:center; gap:8px;
-  padding:5px 8px; border-radius:6px;
-  cursor:pointer; transition:background 0.15s; text-decoration:none;
-}
-.dc-channel-row:hover { background:rgba(88,101,242,0.1) }
-.dc-ch-icon {
-  font-family:var(--mono); font-size:0.75rem; color:rgba(200,240,255,0.3);
-  flex-shrink:0; width:16px; text-align:center;
-}
-.dc-ch-name {
-  font-size:0.82rem; color:rgba(200,240,255,0.6);
-  flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.dc-ch-members { display:flex; gap:4px; align-items:center }
-.dc-ch-av {
-  width:18px; height:18px; border-radius:50%; overflow:hidden; flex-shrink:0;
-  background:rgba(88,101,242,0.25); display:flex; align-items:center; justify-content:center;
-  font-size:0.55rem; color:rgba(200,240,255,0.5); border:1px solid rgba(88,101,242,0.2);
-}
-.dc-ch-av img { width:100%; height:100%; object-fit:cover }
-
-.dc-member-list { display:flex; flex-direction:column; gap:2px; margin-bottom:18px; max-height:180px; overflow-y:auto }
-.dc-member-list::-webkit-scrollbar { width:3px }
-.dc-member-list::-webkit-scrollbar-thumb { background:rgba(88,101,242,0.3); border-radius:99px }
-.dc-member-row {
-  display:flex; align-items:center; gap:10px;
-  padding:5px 8px; border-radius:6px; transition:background 0.15s;
-}
-.dc-member-row:hover { background:rgba(88,101,242,0.07) }
-.dc-av-wrap { position:relative; flex-shrink:0 }
-.dc-av {
-  width:28px; height:28px; border-radius:50%; overflow:hidden;
-  background:rgba(88,101,242,0.25); display:flex; align-items:center; justify-content:center;
-  font-size:0.7rem; color:rgba(200,240,255,0.5);
-}
-.dc-av img { width:100%; height:100%; object-fit:cover }
-.dc-status-badge {
-  position:absolute; bottom:-1px; right:-1px;
-  width:9px; height:9px; border-radius:50%; border:2px solid rgba(2,10,24,0.9);
-}
-.dc-status-badge.online  { background:#57f287 }
-.dc-status-badge.idle    { background:#faa61a }
-.dc-status-badge.dnd     { background:#ed4245 }
-.dc-mem-name { font-size:0.82rem; color:rgba(200,240,255,0.7) }
-
-.dc-join {
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  font-family:var(--mono); font-size:0.68rem; font-weight:700;
-  letter-spacing:0.08em; color:#e8f8ff;
-  padding:10px 20px; border-radius:8px; text-decoration:none;
-  background:rgba(88,101,242,0.15); border:1px solid rgba(88,101,242,0.32);
-  transition:0.2s;
-}
-.dc-join:hover { background:rgba(88,101,242,0.28); border-color:rgba(88,101,242,0.55) }
-.dc-empty {
-  font-family:var(--mono); font-size:0.68rem; color:var(--dim);
-  padding:8px 0; text-align:center;
+.dc-iframe {
+  width:100%; height:500px;
+  border:none; display:block;
+  border-radius:0 0 14px 14px;
 }
 
 /* ── ABOUT + CONTACT ── */
@@ -585,28 +510,14 @@ footer {
 
     <div class="dc-widget reveal" style="transition-delay:.07s">
       <div class="dc-stripe"></div>
-      <div class="dc-body">
-        <!-- header -->
-        <div class="dc-head">
-          <div class="dc-logo">
-            <svg width="20" height="15" viewBox="0 0 24 18" fill="white"><path d="M20.317 1.492a19.84 19.84 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.84 13.84 0 0 0-.612 1.259 18.319 18.319 0 0 0-5.487 0 12.64 12.64 0 0 0-.621-1.259.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 1.492a.07.07 0 0 0-.032.027C.533 6.093-.32 10.555.099 14.961a.08.08 0 0 0 .031.055 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.027 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.442a.061.061 0 0 0-.031-.03Z"/></svg>
-          </div>
-          <div class="dc-head-text">
-            <div class="dc-server-name" id="dcName">Loading…</div>
-            <div class="dc-online-row">
-              <div class="dc-online-dot"></div>
-              <span id="dcCount">—</span> online
-            </div>
-          </div>
-        </div>
-        <!-- channels / members -->
-        <div id="dcBody"></div>
-        <!-- join -->
-        <a class="dc-join" id="dcJoin" href="https://discord.gg/7VdjWMMtSc" target="_blank" rel="noopener">
-          <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M20.317 1.492a19.84 19.84 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.84 13.84 0 0 0-.612 1.259 18.319 18.319 0 0 0-5.487 0 12.64 12.64 0 0 0-.621-1.259.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 1.492a.07.07 0 0 0-.032.027C.533 6.093-.32 10.555.099 14.961a.08.08 0 0 0 .031.055 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.027 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.442a.061.061 0 0 0-.031-.03Z"/></svg>
-          Join Discord
-        </a>
-      </div>
+      <iframe
+        class="dc-iframe"
+        src="https://discord.com/widget?id=1494858459785465896&theme=dark"
+        allowtransparency="true"
+        frameborder="0"
+        sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+        title="Discord server widget"
+      ></iframe>
     </div>
 
   </div>
@@ -707,108 +618,6 @@ async function updateMC() {
 updateMC();
 setInterval(updateMC, 180000);
 
-function dcAvatar(m, size) {
-  const wrap = document.createElement('div');
-  wrap.className = 'dc-av-wrap';
-  const av = document.createElement('div');
-  av.className = size === 'sm' ? 'dc-ch-av' : 'dc-av';
-  if (m.avatar_url) {
-    const img = document.createElement('img');
-    img.src = m.avatar_url; img.alt = m.username;
-    av.appendChild(img);
-  } else {
-    av.textContent = (m.username || '?')[0].toUpperCase();
-  }
-  wrap.appendChild(av);
-  if (size !== 'sm') {
-    const badge = document.createElement('div');
-    badge.className = 'dc-status-badge ' + (m.status || 'online');
-    wrap.appendChild(badge);
-  }
-  return wrap;
-}
-
-async function updateDiscord() {
-  const body = document.getElementById('dcBody');
-  try {
-    const d = await (await fetch('https://discord.com/api/guilds/1494858459785465896/widget.json')).json();
-    if (d.code === 50004 || !d.name) {
-      body.innerHTML = '<div class="dc-empty">Enable widget in server settings.</div>';
-      return;
-    }
-    document.getElementById('dcName').textContent = d.name;
-    document.getElementById('dcCount').textContent = d.presence_count || 0;
-    if (d.instant_invite) document.getElementById('dcJoin').href = d.instant_invite;
-
-    const members = d.members || [];
-    const channels = d.channels || [];
-
-    // members keyed by channel_id
-    const byChannel = {};
-    const noChannel = [];
-    members.forEach(m => {
-      if (m.channel_id) {
-        (byChannel[m.channel_id] = byChannel[m.channel_id] || []).push(m);
-      } else {
-        noChannel.push(m);
-      }
-    });
-
-    body.innerHTML = '';
-
-    // voice channels with members
-    const voiceChannels = channels
-      .filter(c => byChannel[c.id])
-      .sort((a, b) => a.position - b.position);
-
-    if (voiceChannels.length > 0) {
-      const chList = document.createElement('div');
-      chList.className = 'dc-channels';
-      voiceChannels.forEach(ch => {
-        const row = document.createElement('div');
-        row.className = 'dc-channel-row';
-        const icon = document.createElement('span');
-        icon.className = 'dc-ch-icon'; icon.textContent = '🔊';
-        const name = document.createElement('span');
-        name.className = 'dc-ch-name'; name.textContent = ch.name;
-        const avs = document.createElement('div');
-        avs.className = 'dc-ch-members';
-        (byChannel[ch.id] || []).slice(0,5).forEach(m => avs.appendChild(dcAvatar(m,'sm')));
-        row.appendChild(icon); row.appendChild(name); row.appendChild(avs);
-        chList.appendChild(row);
-      });
-      body.appendChild(chList);
-    }
-
-    // online members not in VC
-    const listMembers = noChannel.slice(0, 12);
-    if (listMembers.length > 0) {
-      const sep = document.createElement('div');
-      sep.style.cssText = 'font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);padding:8px 8px 4px;';
-      sep.textContent = 'Online — ' + (d.presence_count || 0);
-      body.appendChild(sep);
-      const memList = document.createElement('div');
-      memList.className = 'dc-member-list';
-      listMembers.forEach(m => {
-        const row = document.createElement('div');
-        row.className = 'dc-member-row';
-        row.appendChild(dcAvatar(m,'lg'));
-        const name = document.createElement('span');
-        name.className = 'dc-mem-name'; name.textContent = m.username || 'unknown';
-        row.appendChild(name);
-        memList.appendChild(row);
-      });
-      body.appendChild(memList);
-    }
-
-    if (voiceChannels.length === 0 && listMembers.length === 0) {
-      body.innerHTML = '<div class="dc-empty">No one online right now.</div>';
-    }
-  } catch(e) {
-    body.innerHTML = '<div class="dc-empty">Could not load widget.</div>';
-  }
-}
-updateDiscord();
 </script>
 </body>
 </html>
