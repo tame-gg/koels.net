@@ -111,35 +111,22 @@ nav a:hover { color:#e8f8ff }
 }
 .hero h1 .line2 {
   display:block;
-  font-size:0.52em; font-weight:300; letter-spacing:0.01em;
-  color:var(--muted); margin-top:8px;
+  font-size:0.52em; font-weight:900; letter-spacing:-0.04em;
+  color:var(--muted); margin-top:4px;
   -webkit-text-fill-color:unset;
 }
 @keyframes shimmer { to{background-position:200% center} }
 
-.hero-meta {
-  display:flex; align-items:center; gap:24px;
-  margin-top:36px;
-  opacity:0; animation:fade-up 0.9s var(--ease) 0.26s both;
-}
-.hero-meta-item {
-  display:flex; align-items:center; gap:8px;
-  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.12em;
-  text-transform:uppercase; color:var(--dim);
-}
-.hero-meta-dot { width:4px; height:4px; border-radius:50%; background:var(--teal); flex-shrink:0 }
-.hero-meta-sep { width:1px; height:16px; background:var(--border2) }
-
 .hero-sub {
-  margin-top:28px;
+  margin-top:32px;
   font-size:1.05rem; color:var(--muted); line-height:1.75;
   max-width:480px;
-  opacity:0; animation:fade-up 0.9s var(--ease) 0.3s both;
+  opacity:0; animation:fade-up 0.9s var(--ease) 0.26s both;
 }
 
 .hero-actions {
   margin-top:44px; display:flex; gap:14px; flex-wrap:wrap;
-  opacity:0; animation:fade-up 0.9s var(--ease) 0.38s both;
+  opacity:0; animation:fade-up 0.9s var(--ease) 0.34s both;
 }
 .btn {
   display:inline-flex; align-items:center; gap:8px;
@@ -414,14 +401,6 @@ footer {
 <div class="hero">
   <div class="hero-tag"><span class="hero-tag-line"></span>Personal site</div>
   <h1>Hey, I'm <span class="grad">Kyle.</span><span class="line2">I build things.</span></h1>
-
-  <div class="hero-meta">
-    <div class="hero-meta-item"><div class="hero-meta-dot"></div>20 years old</div>
-    <div class="hero-meta-sep"></div>
-    <div class="hero-meta-item"><div class="hero-meta-dot"></div>Builder</div>
-    <div class="hero-meta-sep"></div>
-    <div class="hero-meta-item"><div class="hero-meta-dot"></div>koels.site</div>
-  </div>
 
   <p class="hero-sub">
     Apps, tools, servers — whatever sounds interesting at the time. This is where it all lives.
