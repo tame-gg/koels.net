@@ -342,20 +342,6 @@ footer {
 
   <div class="services">
 
-    <div class="service-row" id="svc-site">
-      <div class="svc-left">
-        <div class="svc-icon">🌐</div>
-        <div class="svc-info">
-          <div class="svc-name">koels.site</div>
-          <div class="svc-desc">Main website</div>
-        </div>
-      </div>
-      <div class="svc-right">
-        <div class="svc-ping" id="ping-site">—</div>
-        <div class="svc-badge badge-checking" id="badge-site"><span class="badge-dot"></span>Checking</div>
-      </div>
-    </div>
-
     <div class="service-row" id="svc-mc">
       <div class="svc-left">
         <div class="svc-icon">⛏️</div>
@@ -447,22 +433,6 @@ function setBadge(id, state, label) {
 function setPing(id, ms) {
   const el = document.getElementById('ping-' + id);
   el.textContent = ms !== null ? ms + 'ms' : '—';
-}
-
-async function checkSite() {
-  // The site is obviously up if you're viewing it, but measure a lightweight fetch
-  const t0 = performance.now();
-  try {
-    await fetch('/favicon.svg', { method:'HEAD', cache:'no-store' });
-    const ms = Math.round(performance.now() - t0);
-    setPing('site', ms);
-    setBadge('site', 'up', 'Operational');
-    return 'up';
-  } catch {
-    setPing('site', null);
-    setBadge('site', 'down', 'Down');
-    return 'down';
-  }
 }
 
 async function checkMC() {
@@ -569,7 +539,7 @@ async function runChecks() {
   btn.disabled = true;
 
   // Reset all to checking
-  ['site','mc','discord','radar'].forEach(id => {
+  ['mc','discord','radar'].forEach(id => {
     setBadge(id, 'checking', 'Checking');
     setPing(id, null);
   });
@@ -578,7 +548,6 @@ async function runChecks() {
   document.getElementById('bannerDot').className    = 'banner-dot';
 
   const results = await Promise.all([
-    checkSite(),
     checkMC(),
     checkDiscord(),
     checkRadar(),
