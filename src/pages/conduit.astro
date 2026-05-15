@@ -678,23 +678,13 @@
             <span style="width:40px;flex-shrink:0"></span>
           </div>
           <div class="terminal-body">
-            <span class="t-line t-comment"># generated on first run next to velocity.toml</span>
+            <span class="t-line t-comment"># the one change that unblocks modded clients</span>
             <span class="t-gap"></span>
             <span class="t-line t-section">[modded]</span>
-            <span class="t-line-del"><span class="t-key">max-known-packs</span>     = <span class="t-val">64</span></span>
-            <span class="t-line-add"><span class="t-key">max-known-packs</span>         = <span class="t-val">1024</span><span class="t-ann">← configurable</span></span>
-            <span class="t-line"><span class="t-key">handshake-cache</span>         = <span class="t-val">true</span></span>
-            <span class="t-line"><span class="t-key">handshake-cache-ttl</span>     = <span class="t-val">300</span></span>
-            <span class="t-line"><span class="t-key">handshake-timeout-ms</span>    = <span class="t-val">30000</span></span>
-            <span class="t-line"><span class="t-key">neoforge-compat</span>         = <span class="t-val">true</span></span>
-            <span class="t-line"><span class="t-key">legacy-forge-compat</span>     = <span class="t-val">true</span></span>
+            <span class="t-line-del"><span class="t-key">max-known-packs</span> = <span class="t-val">64</span>    <span class="t-ann">← vanilla cap</span></span>
+            <span class="t-line-add"><span class="t-key">max-known-packs</span> = <span class="t-val">1024</span>  <span class="t-ann">← Conduit default</span></span>
             <span class="t-gap"></span>
-            <span class="t-line t-section">[network]</span>
-            <span class="t-line"><span class="t-key">smart-compression</span>          = <span class="t-val">true</span></span>
-            <span class="t-line"><span class="t-key">connection-throttle</span>        = <span class="t-val">true</span></span>
-            <span class="t-gap"></span>
-            <span class="t-line t-section">[diagnostics]</span>
-            <span class="t-line"><span class="t-key">enabled</span>                    = <span class="t-val">false</span></span>
+            <span class="t-line t-comment"># that's it. everything else is opt-in.</span>
           </div>
         </div>
 
@@ -1037,6 +1027,10 @@ cd conduit
 </footer>
 
 <script is:inline>
+// Disable browser scroll restoration so refresh always starts at top
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
 // Scroll reveal
 const obs = new IntersectionObserver(
   es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
