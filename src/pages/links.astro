@@ -268,13 +268,17 @@ html[data-theme="dark"] .card-username-text {
   color:rgba(64,200,255,0.45); letter-spacing:0.05em; margin-bottom:6px;
 }
 html[data-theme="dark"] .card-badge {
-  display:inline-flex; align-items:center; gap:5px;
+  display:flex; align-items:center; gap:5px;
   padding:3px 10px; border-radius:20px; line-height:1;
   border:1px solid rgba(64,200,255,0.15); background:rgba(0,140,220,0.06);
 }
 html[data-theme="dark"] .card-badge-label {
   font-family:"JetBrains Mono",monospace; font-size:0.58rem;
   letter-spacing:0.1em; text-transform:uppercase; line-height:1;
+}
+#card-status-dot {
+  display:block; width:7px; height:7px; border-radius:50%;
+  flex-shrink:0; align-self:center;
 }
 html[data-theme="dark"] #activity-rows { margin:0 14px; border-top:1px solid rgba(255,255,255,0.07); }
 
@@ -597,7 +601,7 @@ html[data-theme="aero"] .footer {
         <div class="card-name-text" id="card-displayname">koels</div>
         <div class="card-username-text" id="card-username">@koels</div>
         <div class="card-badge" id="card-status-badge">
-          <span id="card-status-dot" style="width:7px;height:7px;border-radius:50%;background:#747f8d;flex-shrink:0;"></span>
+          <span id="card-status-dot" style="background:#747f8d;"></span>
           <span class="card-badge-label" id="card-status-label">offline</span>
         </div>
       </div>
