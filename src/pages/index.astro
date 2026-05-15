@@ -501,6 +501,7 @@ footer {
   <nav>
     <a href="/links">Links</a>
     <a href="/radar">Radar</a>
+    <a href="/conduit">Conduit</a>
     <a href="/modpack">Modpack</a>
     <a href="/status">Status</a>
   </nav>
@@ -511,6 +512,7 @@ footer {
 <div id="mobile-menu">
   <a href="/links" onclick="toggleMenu()">Links</a>
   <a href="/radar" onclick="toggleMenu()">Radar</a>
+  <a href="/conduit" onclick="toggleMenu()">Conduit</a>
   <a href="/modpack" onclick="toggleMenu()">Modpack</a>
   <a href="/status" onclick="toggleMenu()">Status</a>
 </div>
@@ -553,7 +555,17 @@ footer {
       <div class="project-link">In progress</div>
     </div>
 
-    <a href="/radar" class="project-card reveal" style="transition-delay:.05s">
+    <a href="/conduit" class="project-card reveal" style="transition-delay:.05s">
+      <div class="project-top">
+        <div class="project-icon">🔌</div>
+        <span class="project-badge badge-live">Live</span>
+      </div>
+      <div class="project-name">Conduit</div>
+      <div class="project-desc">A performance-focused Velocity fork for modded Minecraft networks. Native NeoForge and Forge support, smart compression, configurable networking.</div>
+      <div class="project-link">View page →</div>
+    </a>
+
+    <a href="/radar" class="project-card reveal" style="transition-delay:.1s">
       <div class="project-top">
         <div class="project-icon">🌩️</div>
         <span class="project-badge badge-beta">Beta</span>
@@ -563,7 +575,7 @@ footer {
       <div class="project-link">Open radar →</div>
     </a>
 
-    <a href="/modpack" class="project-card reveal" style="transition-delay:.1s">
+    <a href="/modpack" class="project-card reveal" style="transition-delay:.15s">
       <div class="project-top">
         <div class="project-icon">⛏️</div>
         <span class="project-badge badge-live">Live</span>
@@ -573,7 +585,7 @@ footer {
       <div class="project-link">View page →</div>
     </a>
 
-    <a href="/calculator" class="project-card reveal" style="transition-delay:.15s">
+    <a href="/calculator" class="project-card reveal" style="transition-delay:.2s">
       <div class="project-top">
         <div class="project-icon">🧮</div>
         <span class="project-badge badge-live">Live</span>
