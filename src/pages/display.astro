@@ -242,7 +242,7 @@
 
   <!-- image view (shown when image loaded) -->
   <div id="image-view">
-    <img id="displayed-img" src="" alt="Displayed image">
+    <img id="displayed-img" src="/display.png" alt="Displayed image">
     <div class="img-meta" id="img-meta"></div>
   </div>
 
@@ -251,13 +251,31 @@
 <script is:inline>
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-const dropZone   = document.getElementById('drop-zone');
-const imageView  = document.getElementById('image-view');
+const dropZone     = document.getElementById('drop-zone');
+const imageView    = document.getElementById('image-view');
 const displayedImg = document.getElementById('displayed-img');
-const imgMeta    = document.getElementById('img-meta');
-const fileInput  = document.getElementById('file-input');
-const clearBtn   = document.getElementById('clear-btn');
-const toast      = document.getElementById('toast');
+const imgMeta      = document.getElementById('img-meta');
+const fileInput    = document.getElementById('file-input');
+const clearBtn     = document.getElementById('clear-btn');
+const toast        = document.getElementById('toast');
+
+// Try to load the repo image on startup
+function showStaticImage() {
+  dropZone.style.display = 'none';
+  imageView.classList.add('visible');
+  clearBtn.style.display = '';
+  imgMeta.textContent = 'display.png';
+}
+
+displayedImg.addEventListener('load', () => {
+  if (displayedImg.naturalWidth > 0) showStaticImage();
+});
+displayedImg.addEventListener('error', () => {
+  // No image uploaded yet — show drop zone
+  dropZone.style.display = '';
+  imageView.classList.remove('visible');
+  clearBtn.style.display = 'none';
+});
 
 function showToast(msg) {
   toast.textContent = msg;
@@ -287,12 +305,10 @@ function loadImage(file) {
 }
 
 function clearImage() {
-  displayedImg.src = '';
-  imgMeta.textContent = '';
-  imageView.classList.remove('visible');
-  dropZone.style.display = '';
-  clearBtn.style.display = 'none';
   fileInput.value = '';
+  // Reload the repo image; if it 404s the error handler shows the drop zone
+  displayedImg.src = '/display.png?' + Date.now();
+  imgMeta.textContent = 'display.png';
 }
 
 // file input
