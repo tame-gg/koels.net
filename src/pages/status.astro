@@ -5,10 +5,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Status — koels.site</title>
+<meta name="description" content="Live service status for koels.site — Minecraft server, radar, and more." />
+<meta property="og:title" content="Status — koels.site" />
+<meta property="og:description" content="Live service status for koels.site." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://koels.site/status" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23020810'/%3E%3Ctext x='16' y='26' text-anchor='middle' font-family='Inter%2C system-ui%2C sans-serif' font-size='26' font-weight='900' fill='url(%23g)'%3EK%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2340c8ff'/%3E%3Cstop offset='100%25' stop-color='%2300ffcc'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 @view-transition { navigation: auto; }
@@ -309,7 +315,7 @@ footer {
     <a href="/modpack">Modpack</a>
     <a href="/status" class="active">Status</a>
   </nav>
-  <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+  <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
     <span></span><span></span><span></span>
   </button>
 </header>
@@ -390,18 +396,26 @@ footer {
 (function() {
   const glow = document.getElementById('cursorGlow');
   if (!glow) return;
-  let visible = false;
+  let visible = false, rafId = null;
   document.addEventListener('mousemove', e => {
-    glow.style.left = e.clientX + 'px';
-    glow.style.top  = e.clientY + 'px';
-    if (!visible) { glow.style.opacity = '1'; visible = true; }
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top  = e.clientY + 'px';
+      if (!visible) { glow.style.opacity = '1'; visible = true; }
+      rafId = null;
+    });
   });
   document.addEventListener('mouseleave', () => { glow.style.opacity = '0'; visible = false; });
 })();
 
+document.getElementById('hamburger').addEventListener('click', toggleMenu);
 function toggleMenu() {
-  document.getElementById('hamburger').classList.toggle('open');
-  document.getElementById('mobile-menu').classList.toggle('open');
+  const btn  = document.getElementById('hamburger');
+  const menu = document.getElementById('mobile-menu');
+  const open = btn.classList.toggle('open');
+  menu.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', open);
 }
 
 // ── STATUS CHECKS ──
@@ -420,7 +434,7 @@ function setPing(id, ms) {
 async function checkMC() {
   const t0 = performance.now();
   try {
-    const res = await fetch('https://mcapi.us/server/status?ip=koels.online', { cache:'no-store' });
+    const res = await fetch('https://api.mcsrvstat.us/3/koels.online', { cache:'no-store' });
     const ms  = Math.round(performance.now() - t0);
     const d   = await res.json();
     if (d && d.online) {
@@ -428,7 +442,7 @@ async function checkMC() {
       const p = d.players;
       setBadge('mc', 'up', 'Online');
       document.querySelector('#svc-mc .svc-desc').textContent =
-        `${p.now} / ${p.max} players`;
+        `${p.online} / ${p.max} players`;
       return 'up';
     } else {
       setBadge('mc', 'down', 'Offline');
@@ -492,7 +506,12 @@ function updateLastChecked() {
     'Last checked ' + now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 }
 
+let isChecking = false;
+
 async function runChecks() {
+  if (isChecking) return;
+  isChecking = true;
+
   const btn = document.getElementById('refreshBtn');
   btn.classList.add('spinning');
   btn.disabled = true;
@@ -517,13 +536,21 @@ async function runChecks() {
   setTimeout(() => {
     btn.classList.remove('spinning');
     btn.disabled = false;
+    isChecking = false;
   }, 600);
 }
 
 // Run on load
 runChecks();
-// Auto-refresh every 2 minutes
-setInterval(runChecks, 120000);
+
+// Auto-refresh every 2 minutes, paused when tab is hidden
+let autoRefresh = setInterval(() => {
+  if (!document.hidden) runChecks();
+}, 120000);
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) runChecks();
+});
 </script>
 </body>
 </html>
