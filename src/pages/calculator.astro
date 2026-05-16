@@ -4,10 +4,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Calculator — koels.site</title>
+<meta name="description" content="A calculator with a paywall. You'll see." />
+<meta property="og:title" content="Calculator — koels.site" />
+<meta property="og:description" content="A calculator with a paywall. You'll see." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://koels.site/calculator" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23020810'/%3E%3Ctext x='16' y='26' text-anchor='middle' font-family='Inter%2C system-ui%2C sans-serif' font-size='22' font-weight='900' fill='url(%23g)'%3E%3D%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2340c8ff'/%3E%3Cstop offset='100%25' stop-color='%2300ffcc'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box }
@@ -268,7 +274,7 @@ html, body {
 </div>
 
 <!-- paywall -->
-<div class="paywall" id="paywall">
+<div class="paywall" id="paywall" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal" id="modal">
 
     <div id="form-screen">
@@ -281,7 +287,7 @@ html, body {
         </div>
         <div class="modal-product">
           <div>
-            <div class="modal-product-name">Premium Calculator Access</div>
+            <div class="modal-product-name" id="modal-title">Premium Calculator Access</div>
             <div class="modal-product-sub">One-time charge · Per answer</div>
           </div>
           <div class="modal-price">$0.99</div>
@@ -430,6 +436,8 @@ html, body {
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('pay-label').textContent = 'Pay $0.99';
     document.getElementById('paywall').classList.add('visible');
+    // move focus into modal
+    setTimeout(() => { document.getElementById('card-num').focus(); }, 50);
   }
 
   function handlePay() {
@@ -453,12 +461,41 @@ html, body {
     }
   }
 
+  // Focus trap helpers
+  function getFocusable(container) {
+    return [...container.querySelectorAll(
+      'button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )].filter(el => !el.closest('[style*="display: none"]') && !el.closest('[style*="display:none"]'));
+  }
+
   // keyboard
   document.addEventListener('keydown', e => {
+    const paywall = document.getElementById('paywall');
+    const isOpen = paywall.classList.contains('visible');
+
+    // Focus trap inside paywall
+    if (isOpen) {
+      if (e.key === 'Escape') {
+        showAnswer();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusable = getFocusable(paywall);
+        if (!focusable.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+      return;
+    }
+
     const map = {
       '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9',
       '.':'.','Enter':'=','=':'=','Backspace':'backspace',
-      '+':'+','-':'−','*':'×','/':'÷','Escape':'clear','c':'clear','C':'clear'
+      '+':'+','-':'−','*':'×','/':'÷','c':'clear','C':'clear'
     };
     const k = map[e.key];
     if (!k) return;
