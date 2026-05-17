@@ -521,6 +521,7 @@ footer {
 </header>
 <div id="mobile-menu">
   <a href="/links" onclick="toggleMenu()">Links</a>
+  <a href="/globe" onclick="toggleMenu()">Globe</a>
   <a href="/status" onclick="toggleMenu()">Status</a>
 </div>
 
@@ -534,7 +535,7 @@ footer {
   </p>
   <div class="hero-actions">
     <a href="/links" class="btn btn-primary"><span>Links ↗</span></a>
-    <a href="/radar" class="btn btn-ghost"><span>Radar →</span></a>
+    <a href="/globe" class="btn btn-ghost"><span>Globe →</span></a>
   </div>
 
   <div class="scroll-hint">
@@ -582,7 +583,17 @@ footer {
       <div class="project-link">Open radar →</div>
     </a>
 
-    <a href="/modpack" class="project-card reveal" style="transition-delay:.15s">
+    <a href="/globe" class="project-card reveal" style="transition-delay:.15s">
+      <div class="project-top">
+        <div class="project-icon">🌍</div>
+        <span class="project-badge badge-live">Live</span>
+      </div>
+      <div class="project-name">Globe</div>
+      <div class="project-desc">A live 3D earth for earthquakes, severe storms, wildfires, and volcanic activity using official free feeds.</div>
+      <div class="project-link">Open globe →</div>
+    </a>
+
+    <a href="/modpack" class="project-card reveal" style="transition-delay:.2s">
       <div class="project-top">
         <div class="project-icon">⛏️</div>
         <span class="project-badge badge-live">Live</span>
@@ -592,7 +603,7 @@ footer {
       <div class="project-link">View page →</div>
     </a>
 
-    <a href="/calculator" class="project-card reveal" style="transition-delay:.2s">
+    <a href="/calculator" class="project-card reveal" style="transition-delay:.25s">
       <div class="project-top">
         <div class="project-icon">🧮</div>
         <span class="project-badge badge-live">Live</span>
@@ -703,6 +714,7 @@ footer {
   <span class="foot-l">© 2026 koels.site</span>
   <div class="foot-links">
     <a href="/links">Links</a>
+    <a href="/globe">Globe</a>
     <a href="/radar">Radar</a>
     <a href="/modpack">Modpack</a>
     <a href="/status">Status</a>
