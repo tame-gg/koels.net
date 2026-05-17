@@ -552,6 +552,100 @@ button {
 
 .status-toast.show { opacity: 1; }
 
+.beta-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 8, 16, 0.78);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.beta-overlay.hidden {
+  display: none;
+}
+
+.beta-modal {
+  width: min(480px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(64, 200, 255, 0.2);
+  background: rgba(7, 12, 24, 0.96);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  padding: 24px 22px 20px;
+}
+
+.beta-title {
+  margin-top: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.beta-copy {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.beta-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.beta-list div::before {
+  content: "•";
+  color: var(--cyan);
+  margin-right: 8px;
+}
+
+.beta-actions {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.beta-dismiss {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(64, 200, 255, 0.28);
+  background: rgba(0, 120, 200, 0.16);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.beta-dismiss:hover {
+  background: rgba(0, 120, 200, 0.24);
+}
+
+.beta-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.66rem;
+  color: var(--muted);
+}
+
+.beta-toggle input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--cyan);
+}
+
 .loading-cover {
   position: fixed;
   inset: 0;
@@ -737,6 +831,26 @@ button {
 <div id="app">
   <canvas id="globe-canvas"></canvas>
 
+  <div class="beta-overlay" id="beta-overlay">
+    <div class="beta-modal" role="dialog" aria-modal="true" aria-labelledby="beta-title">
+      <div class="hud-kicker">koels.site / globe beta</div>
+      <div class="beta-title" id="beta-title">This globe is still in beta.</div>
+      <div class="beta-copy">It is live and uses real feeds, but some categories can be sparse or temporarily empty depending on what the official sources are publishing right now.</div>
+      <div class="beta-list">
+        <div>Earthquakes come from USGS real-time GeoJSON feeds.</div>
+        <div>Storms, wildfires, and volcanoes come from NASA EONET open events.</div>
+        <div>If storms show zero, that means the current public source is quiet, not that the page is faking data.</div>
+      </div>
+      <div class="beta-actions">
+        <button class="beta-dismiss" id="beta-dismiss" type="button">Enter globe</button>
+        <label class="beta-toggle">
+          <input type="checkbox" id="beta-no-show" />
+          Don’t show again
+        </label>
+      </div>
+    </div>
+  </div>
+
   <div class="topbar">
     <a class="brand" href="/">
       <span class="brand-mark" aria-hidden="true">
@@ -847,6 +961,9 @@ const canvas = document.getElementById('globe-canvas');
 const loadingCover = document.getElementById('loading-cover');
 const statusToast = document.getElementById('status-toast');
 const a11yStatus = document.getElementById('a11y-status');
+const betaOverlay = document.getElementById('beta-overlay');
+const betaDismiss = document.getElementById('beta-dismiss');
+const betaNoShow = document.getElementById('beta-no-show');
 const eventList = document.getElementById('event-list');
 const selectedCard = document.getElementById('selected-card');
 const panelUpdated = document.getElementById('panel-updated');
@@ -1074,6 +1191,19 @@ let focusVector = null;
 let focusDistance = 10.4;
 let refreshTimer = null;
 
+try {
+  if (localStorage.getItem('globe_beta_dismissed') === '1') {
+    betaOverlay.classList.add('hidden');
+  }
+} catch (error) {}
+
+betaDismiss.addEventListener('click', () => {
+  try {
+    if (betaNoShow.checked) localStorage.setItem('globe_beta_dismissed', '1');
+  } catch (error) {}
+  betaOverlay.classList.add('hidden');
+});
+
 function showStatus(text) {
   statusToast.textContent = text;
   statusToast.classList.add('show');
@@ -1124,7 +1254,7 @@ function categorySummary(event) {
   if (event.kind === 'quakes') {
     return `${quakeIntensity(event.magnitude)} quake · M${event.magnitude.toFixed(1)}`;
   }
-  if (event.kind === 'storms') return 'Open severe storm event';
+  if (event.kind === 'storms') return event.magnitudeText || 'Open severe storm event';
   if (event.kind === 'wildfires') return event.magnitudeText || 'Active wildfire';
   if (event.kind === 'volcanoes') return event.magnitudeText || 'Volcanic activity';
   return event.kind;
@@ -1164,7 +1294,16 @@ async function fetchQuakes() {
         source: 'USGS',
         description: props.place || 'Recent seismic activity',
         markerScale: THREE.MathUtils.clamp(0.16 + ((props.mag || 0) * 0.055), 0.2, 0.58),
-        magnitudeText: `Depth ${depth ? Math.round(depth) : 0} km`
+        magnitudeText: `Depth ${depth ? Math.round(depth) : 0} km`,
+        detailLines: [
+          `Coordinates ${lat.toFixed(2)}, ${lon.toFixed(2)}`,
+          `Updated ${formatAgo(new Date(timestamp).toISOString())}`,
+          depth ? `Depth ${Math.round(depth)} km` : ''
+        ].filter(Boolean),
+        sourceLinks: [
+          { label: 'USGS event', url: props.url || 'https://earthquake.usgs.gov/' },
+          { label: 'USGS feed', url: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php' }
+        ]
       };
     });
 }
@@ -1195,7 +1334,16 @@ async function fetchEonetEvents() {
         url: event.sources?.[0]?.url || event.link || 'https://eonet.gsfc.nasa.gov/',
         source: `NASA EONET${event.sources?.[0]?.id ? ` / ${event.sources[0].id}` : ''}`,
         description: event.description || `Open ${eventTypeLabel(kind).toLowerCase()} from NASA EONET`,
-        markerScale: kind === 'storms' ? 0.42 : kind === 'wildfires' ? 0.3 : 0.26
+        markerScale: kind === 'storms' ? 0.42 : kind === 'wildfires' ? 0.3 : 0.26,
+        detailLines: [
+          `Coordinates ${lat.toFixed(2)}, ${lon.toFixed(2)}`,
+          Number.isFinite(magnitudeValue) ? `${Math.round(magnitudeValue).toLocaleString()} ${magnitudeUnit || ''}`.trim() : '',
+          event.description || ''
+        ].filter(Boolean),
+        sourceLinks: [
+          ...(event.sources?.[0]?.url ? [{ label: `${event.sources[0].id || 'Source'} report`, url: event.sources[0].url }] : []),
+          ...(event.link ? [{ label: 'NASA EONET event', url: event.link }] : [])
+        ]
       };
     })
     .filter(Boolean);
@@ -1280,6 +1428,14 @@ function setSelectedCard(event) {
     return;
   }
 
+  const sourceLinks = (event.sourceLinks || [{ label: 'Open source event', url: event.url }])
+    .filter(link => link?.url)
+    .map(link => `<a class="selected-link" href="${escapeAttr(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.label)} ↗</a>`)
+    .join('');
+  const detailRows = (event.detailLines || [])
+    .map(line => `<div class="selected-copy">${escapeHtml(line)}</div>`)
+    .join('');
+
   selectedCard.className = 'selected';
   selectedCard.innerHTML = `
     <div class="selected-type"><span class="chip-dot" style="background:${eventColor(event.kind)}"></span>${eventTypeLabel(event.kind)}</div>
@@ -1290,7 +1446,8 @@ function setSelectedCard(event) {
       <span class="meta-pill">${escapeHtml(event.source)}</span>
     </div>
     <div class="selected-copy">${escapeHtml(event.place || event.description || 'Open event')}</div>
-    <a class="selected-link" href="${escapeAttr(event.url)}" target="_blank" rel="noopener">Open source event ↗</a>
+    ${detailRows}
+    <div class="selected-meta">${sourceLinks}</div>
   `;
 }
 
@@ -1316,13 +1473,17 @@ function renderEventList() {
       </div>
       <div class="event-title">${escapeHtml(event.title)}</div>
       <div class="event-sub">${escapeHtml(categorySummary(event))} · ${escapeHtml(event.place || 'Live event')}</div>
+      <div class="event-sub">${escapeHtml(event.source)}</div>
     `;
     btn.addEventListener('click', () => focusEvent(event.id));
     eventList.appendChild(btn);
   });
 
   if (!visibleEvents.length) {
-    eventList.innerHTML = '<div class="event-sub" style="padding:8px 8px 20px;color:rgba(200,240,255,0.42)">All visible layers are off. Re-enable a feed to populate the globe.</div>';
+    const stormMessage = activeFilters.has('storms')
+      ? 'No active severe storms are being published in the current NASA EONET open-event feed.'
+      : 'All visible layers are off. Re-enable a feed to populate the globe.';
+    eventList.innerHTML = `<div class="event-sub" style="padding:8px 8px 20px;color:rgba(200,240,255,0.42)">${stormMessage}</div>`;
   }
 }
 
