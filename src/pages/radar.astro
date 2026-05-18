@@ -545,20 +545,6 @@ body { background:#020810; color:#c8f0ff; }
   font-family:"JetBrains Mono",monospace !important; font-size:0.6rem !important;
   padding:7px 10px !important; box-shadow:0 4px 20px rgba(0,0,0,0.5) !important;
 }
-.alert-box-label {
-  background:rgba(3,3,10,0.92) !important;
-  border:1px solid rgba(255,255,255,0.12) !important;
-  border-radius:6px !important;
-  color:#fff !important;
-  font-family:"JetBrains Mono",monospace !important;
-  font-size:0.54rem !important;
-  font-weight:700 !important;
-  letter-spacing:0.08em !important;
-  text-transform:uppercase !important;
-  padding:5px 8px !important;
-  box-shadow:0 4px 18px rgba(0,0,0,0.45) !important;
-}
-.alert-box-label::before { display:none !important; }
 
 /* Panel backdrop — hidden globally, shown on mobile when panel is open */
 #panel-backdrop {
@@ -1993,19 +1979,7 @@ function getVisibleAlerts() {
 
 function shouldDrawAlertBox(alert) {
   if (!alert.geometry) return false;
-  return /warning|watch/i.test(alert.event || '');
-}
-
-function alertBoxLabel(alert) {
-  const evt = (alert.event || '').toUpperCase();
-  if (evt.includes('TORNADO')) return 'TORNADO';
-  if (evt.includes('SEVERE THUNDERSTORM')) return 'SEVERE TSTM';
-  if (evt.includes('FLASH FLOOD')) return 'FLASH FLOOD';
-  if (evt.includes('FLOOD')) return 'FLOOD';
-  if (evt.includes('HURRICANE')) return 'HURRICANE';
-  if (evt.includes('RED FLAG')) return 'RED FLAG';
-  if (evt.includes('WINTER')) return 'WINTER';
-  return evt.replace(/\s+(WARNING|WATCH|ADVISORY)$/, '').slice(0, 18);
+  return /watch/i.test(alert.event || '');
 }
 
 function renderAlertLayers() {
@@ -2026,17 +2000,18 @@ function renderAlertLayers() {
 
     const col = SEV[a.severity] || SEV.Unknown;
     const isBoxed = shouldDrawAlertBox(a);
-    // Stronger boxed look for warning/watch polygons
-    const weight = isBoxed ? (zoom < 6 ? 1.5 : 2.25) : (zoom < 5 ? 1 : 1.5);
-    const fillOp = isBoxed ? (zoom < 6 ? 0.06 : 0.1) : (zoom < 5 ? 0.08 : 0.12);
+    const isWarning = /warning/i.test(a.event || '');
+    // Keep warnings readable with stronger real polygon outlines.
+    const weight = isWarning ? (zoom < 6 ? 1.6 : 2.2) : (zoom < 5 ? 1 : 1.4);
+    const fillOp = isWarning ? (zoom < 6 ? 0.04 : 0.08) : (zoom < 5 ? 0.05 : 0.08);
     const gl = L.geoJSON(a.geometry, {
       style:{
         color:col,
         fillColor:col,
         weight,
-        opacity:isBoxed ? 0.98 : 0.85,
+        opacity:isWarning ? 0.95 : 0.82,
         fillOpacity:fillOp,
-        dashArray:isBoxed && /watch/i.test(a.event || '') ? '10 6' : null
+        dashArray:isBoxed ? '10 6' : null
       }
     });
     gl.bindTooltip(`<strong>${a.event}</strong><br>${a.area}`, { className:'alert-tooltip', sticky:true });
@@ -2048,27 +2023,14 @@ function renderAlertLayers() {
       if (bounds && bounds.isValid()) {
         const box = L.rectangle(bounds, {
           color: col,
-          weight: zoom < 6 ? 1.5 : 2.5,
-          opacity: 0.95,
+          weight: zoom < 6 ? 1.2 : 1.8,
+          opacity: 0.75,
           fillOpacity: 0,
-          dashArray: /watch/i.test(a.event || '') ? '12 7' : null,
+          dashArray: '12 7',
           interactive: false,
         });
         box.addTo(map);
         alertLayers.push(box);
-
-        if (zoom >= 7) {
-          const label = L.tooltip({
-            permanent: true,
-            direction: 'center',
-            className: 'alert-box-label',
-            opacity: 1,
-          })
-          .setLatLng(bounds.getCenter())
-          .setContent(alertBoxLabel(a));
-          label.addTo(map);
-          alertLayers.push(label);
-        }
       }
     }
 
