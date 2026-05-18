@@ -114,15 +114,14 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
     .hero {
       position: relative; z-index: 2;
       padding: 5.5rem 2.5rem 4rem;
-      max-width: 1180px; margin: 0 auto;
+      max-width: 1100px; margin: 0 auto;
     }
 
     .launch-grid {
       display: block;
     }
 
-    .hero-card,
-    .panel-card {
+    .hero-card {
       background: rgba(2,12,28,0.55);
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -130,8 +129,7 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
       overflow: hidden;
     }
 
-    .hero-card::before,
-    .panel-card::before {
+    .hero-card::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 1px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
@@ -141,7 +139,7 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
     .hero-card {
       min-height: 0;
       padding: clamp(2rem, 5vw, 4rem);
-      max-width: 920px;
+      margin: 0 auto;
     }
 
     .badge {
@@ -183,6 +181,14 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
       color: var(--muted);
       line-height: 1.75;
       max-width: 640px;
+    }
+
+    .hero-note {
+      margin-top: 0.9rem;
+      max-width: 610px;
+      color: rgba(200,240,255,0.46);
+      font-size: 0.88rem;
+      line-height: 1.65;
     }
 
     .inline-alert {
@@ -229,141 +235,6 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
     }
     .btn-ghost:hover { color: #e8f8ff; border-color: rgba(64,200,255,0.35); background: rgba(0,120,200,0.08); }
 
-    .alpha-strip {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 1rem;
-      align-items: start;
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 1rem 1.25rem;
-      border-top: 1px solid rgba(64,200,255,0.16);
-      border-bottom: 1px solid rgba(64,200,255,0.1);
-      background: rgba(2,12,28,0.42);
-      color: rgba(200,240,255,0.68);
-    }
-
-    .alpha-strip strong {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--cyan);
-    }
-
-    .alpha-strip span {
-      font-size: 0.9rem;
-      line-height: 1.65;
-    }
-
-    .panel-stack { display: none; }
-
-    .panel-card { padding: 1.4rem; }
-    .panel-title {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--cyan);
-      margin-bottom: 1rem;
-    }
-
-    .alpha-card {
-      border-color: rgba(255,107,122,0.32);
-      background: rgba(32,7,18,0.42);
-    }
-    .alpha-card::before { background: linear-gradient(90deg, transparent, var(--red), transparent); }
-    .alpha-card .panel-title { color: var(--red); }
-    .alpha-card p {
-      color: rgba(255,216,222,0.82);
-      font-size: 0.92rem;
-      line-height: 1.75;
-    }
-
-    .terminal-card {
-      padding: 0;
-      background: rgba(2,5,12,0.85);
-      box-shadow:
-        0 40px 90px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(64,200,255,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.025);
-    }
-
-    .terminal-bar {
-      display: flex; align-items: center;
-      padding: 0.65rem 1.1rem;
-      background: rgba(255,255,255,0.022);
-      border-bottom: 1px solid rgba(64,200,255,0.08);
-      gap: 0.5rem;
-    }
-
-    .terminal-dots { display: flex; gap: 5px; flex-shrink: 0; }
-    .terminal-dots span { width: 9px; height: 9px; border-radius: 50%; }
-    .terminal-dots span:nth-child(1) { background: rgba(255,95,86,0.4); }
-    .terminal-dots span:nth-child(2) { background: rgba(255,189,46,0.4); }
-    .terminal-dots span:nth-child(3) { background: rgba(39,201,63,0.4); }
-
-    .terminal-filename {
-      flex: 1; text-align: center;
-      font-family: 'JetBrains Mono', monospace; font-size: 0.67rem;
-      letter-spacing: 0.1em; color: var(--dim);
-    }
-
-    .terminal-body {
-      padding: 1.15rem 1.4rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem; line-height: 1.9;
-    }
-
-    .t-line { display: block; }
-    .t-gap { display: block; height: 0.55rem; }
-    .t-comment { color: rgba(200,240,255,0.22); }
-    .t-section { color: var(--cyan); }
-    .t-key { color: var(--text); }
-    .t-val { color: var(--teal); }
-    .t-warn {
-      display: block;
-      margin: 0.45rem -1.4rem 0;
-      padding: 0.35rem 1.4rem;
-      border-left: 2px solid var(--red);
-      background: rgba(255,107,122,0.08);
-      color: rgba(255,216,222,0.88);
-    }
-
-    .mini-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .mini {
-      background: rgba(2,12,28,0.55);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.85rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
-
-    .mini-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #e8f8ff;
-      line-height: 1;
-    }
-    .mini-val.c { color: var(--cyan); }
-    .mini-val.g { color: var(--teal); }
-    .mini-val.r { color: var(--red); }
-    .mini-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.58rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--dim);
-    }
-
     .stats-strip {
       display: flex; justify-content: center;
       border-top: 1px solid var(--border);
@@ -383,15 +254,14 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
     .stat:last-child { border-right: none; }
 
     .stat-value {
-      font-size: 1.9rem;
+      font-size: clamp(1.5rem, 2.5vw, 1.9rem);
       font-weight: 900;
-      letter-spacing: -0.04em;
       line-height: 1;
       color: #e8f8ff;
+      text-align: center;
     }
     .stat-value.c { color: var(--cyan); text-shadow: 0 0 32px rgba(64,200,255,0.3); }
     .stat-value.g { color: var(--teal); text-shadow: 0 0 28px rgba(0,255,204,0.25); }
-    .stat-value.r { color: var(--red); text-shadow: 0 0 28px rgba(255,107,122,0.18); }
 
     .stat-label {
       font-family: 'JetBrains Mono', monospace;
@@ -596,7 +466,6 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
       h1 { font-size: clamp(2.65rem, 13vw, 4rem); }
       .hero-actions { flex-direction: column; }
       .btn-primary, .btn-ghost { justify-content: center; }
-      .alpha-strip { grid-template-columns: 1fr; margin: 0 1.25rem; border: 1px solid rgba(64,200,255,0.16); border-radius: 12px; }
       .stats-strip { flex-wrap: wrap; }
       .stat { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
       .section { padding: 4rem 1.25rem; }
@@ -640,6 +509,7 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
             SilkMC keeps Folia's regional multithreading architecture while narrowing the rough edge for Paper, Bukkit, and Spigot plugins.
             It is meant to make failures clearer, startup safer, and testing less mysterious.
           </p>
+          <p class="hero-note">Early alpha build. Test on a backup or staging server first.</p>
         </div>
         <div>
           <div class="hero-actions">
@@ -652,23 +522,18 @@ const paperclipUrl = 'https://github.com/tame-gg/SilkMC/releases/download/v0.1.1
     </div>
   </section>
 
-  <div class="alpha-strip">
-    <strong>Early alpha</strong>
-    <span>SilkMC is still being hardened. Test on a backup or staging server first; bugs, leaks, security issues, or plugin edge cases may still exist.</span>
-  </div>
-
   <div class="stats-strip" id="status">
     <div class="stat">
       <span class="stat-value c" id="release-name">v0.1.1</span>
       <span class="stat-label">latest public release</span>
     </div>
     <div class="stat">
-      <span class="stat-value g">safe</span>
-      <span class="stat-label">failures should be clearer</span>
+      <span class="stat-value g">Folia</span>
+      <span class="stat-label">regional architecture</span>
     </div>
     <div class="stat">
-      <span class="stat-value r">alpha</span>
-      <span class="stat-label">early testing build</span>
+      <span class="stat-value">paperclip</span>
+      <span class="stat-label">runnable server jar</span>
     </div>
     <div class="stat">
       <span class="stat-value">GPL-3.0</span>
