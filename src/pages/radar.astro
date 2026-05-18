@@ -1401,7 +1401,10 @@ const timeAgo = iso => {
 // ── US — NWS CAP alerts (severe thunderstorm, tornado, flash flood, etc.) ─
 async function fetchNWSAlerts() {
   try {
-    const data = await (await fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert&limit=500')).json();
+    const data = await (await fetch(
+      'https://api.weather.gov/alerts/active?status=actual&message_type=alert',
+      { headers: { 'Accept': 'application/geo+json, application/json' } }
+    )).json();
     return (data.features||[]).map(f => {
       const p = f.properties || {};
       const event = p.event || 'Alert';
@@ -1820,9 +1823,7 @@ async function loadAlerts() {
 
   // Store and render
   cachedAlerts = allAlerts;
-  activeRegionFilter = 'ALL';
-  // Reset tab highlight to ALL
-  document.querySelectorAll('.rtab').forEach(t => t.classList.toggle('active', t.dataset.region === 'ALL'));
+  syncAlertRegionFilter();
   renderAlertList();
   renderAlertLayers();
 }
@@ -1835,11 +1836,30 @@ function startAlertsPolling() {
 
 // ── ALERT LIST RENDERING ───────────────────────────────────────────────────
 let activeRegionFilter = 'ALL';
+let autoAlertRegion = true;
+
+function mapRegionToAlertRegion(region) {
+  if (['EU', 'UK', 'DE', 'ES', 'NL', 'NO'].includes(region)) return 'EU';
+  if (['US', 'CA', 'AU', 'NZ', 'JP', 'SA', 'IN'].includes(region)) return region;
+  return 'ALL';
+}
+
+function setActiveAlertRegion(region, { auto = false } = {}) {
+  activeRegionFilter = region;
+  if (!auto) autoAlertRegion = false;
+  document.querySelectorAll('.rtab').forEach(t => t.classList.toggle('active', t.dataset.region === region));
+}
+
+function syncAlertRegionFilter() {
+  if (!autoAlertRegion) return;
+  const centerRegion = mapRegionToAlertRegion(detectRegion(map.getCenter().lat, map.getCenter().lng));
+  setActiveAlertRegion(centerRegion, { auto: true });
+}
 
 function filterRegion(tab) {
-  activeRegionFilter = tab.dataset.region;
-  document.querySelectorAll('.rtab').forEach(t => t.classList.toggle('active', t === tab));
+  setActiveAlertRegion(tab.dataset.region);
   renderAlertList();
+  renderAlertLayers();
 }
 window.filterRegion = filterRegion;
 
@@ -1912,9 +1932,7 @@ function makeAlertCard(a) {
 
 function renderAlertList() {
   const list = document.getElementById('alerts-list');
-  const filtered = activeRegionFilter === 'ALL'
-    ? cachedAlerts
-    : cachedAlerts.filter(a => a.region === activeRegionFilter);
+  const filtered = getVisibleAlerts();
 
   if (!filtered.length) {
     list.innerHTML = cachedAlerts.length
@@ -1953,6 +1971,12 @@ function renderAlertList() {
 // Severity → minimum zoom level before showing on map
 const SEV_MIN_ZOOM = { Extreme:2, Severe:3, Moderate:5, Minor:6, Unknown:7 };
 
+function getVisibleAlerts() {
+  return activeRegionFilter === 'ALL'
+    ? cachedAlerts
+    : cachedAlerts.filter(a => a.region === activeRegionFilter);
+}
+
 function renderAlertLayers() {
   // Tear down existing layers safely
   alertLayers.forEach(l => { try { map.removeLayer(l); } catch(e){} });
@@ -1962,7 +1986,7 @@ function renderAlertLayers() {
   let drawn = 0;
   const MAX_LAYERS = 300; // hard cap to prevent frame-rate collapse
 
-  cachedAlerts.forEach(a => {
+  getVisibleAlerts().forEach(a => {
     if (!a.geometry) return;
     if (drawn >= MAX_LAYERS) return;
     // Only render if zoom meets severity threshold
@@ -1996,6 +2020,8 @@ map.on('zoomend moveend', () => {
     if (key !== _lastRegionCheck) {
       _lastRegionCheck = key;
       refreshRadarForRegion();
+      syncAlertRegionFilter();
+      renderAlertList();
     }
     // Force tiles to redraw at new zoom
     if (activeRV && map.hasLayer(activeRV)) activeRV.redraw();
