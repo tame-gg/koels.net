@@ -83,7 +83,7 @@ if (!isPopup && !urlSession) {
 }
 
 // -------------------------------------------------------------------------
-// KILL SWITCH: ESC in ANY window kills EVERYTHING
+// KILL SWITCH: ESC in ANY window kills EVERYTHING + blocks new windows
 // -------------------------------------------------------------------------
 let moveTimer = null;
 let spawnTimer = null;
@@ -118,10 +118,10 @@ function doCleanup() {
 	try { window.close(); } catch (e) {}
 }
 
-// Poll for kill signal from other windows
+// Fast poll for kill signal from other windows
 killPollId = setInterval(() => {
 	if (isKilled()) doCleanup();
-}, 300);
+}, 100);
 
 // ESC handler
 window.addEventListener('keydown', (e) => {
@@ -130,6 +130,16 @@ window.addEventListener('keydown', (e) => {
 		doCleanup();
 	}
 });
+
+// -------------------------------------------------------------------------
+// If killed BEFORE this script finishes loading, die immediately.
+// This catches popups that open after the user already pressed ESC.
+// -------------------------------------------------------------------------
+if (isKilled()) {
+	doCleanup();
+	// Halt the rest of the payload
+	throw new Error('Killed before start');
+}
 
 // --- math.js (exact) ---
 let xOff = 5;
@@ -251,7 +261,12 @@ window.onkeydown = async (event) => {
 // --- Continuous spawn every 3.5 seconds (main window only) ---
 if (!isPopup && !urlSession) {
 	spawnTimer = setInterval(() => {
-		if (!isKilled()) openWindow();
+		if (isKilled()) {
+			clearInterval(spawnTimer);
+			spawnTimer = null;
+			return;
+		}
+		openWindow();
 	}, 3500);
 }
 
