@@ -88,7 +88,7 @@ micon.addEventListener('click', audioSwitch);
 // SAFE PAYLOAD: Real bouncing popup windows (performance-optimized)
 // Only the MAIN window spawns and moves popups.
 // Popups run their own audio but are otherwise passive (no spawn/move loops).
-// Press ESC in the main window to kill everything instantly.
+// Press ESC in ANY window to kill everything instantly and mute all audio.
 // ==========================================================================
 (function() {
 	const urlParams = new URLSearchParams(window.location.search);
@@ -105,6 +105,21 @@ micon.addEventListener('click', audioSwitch);
 	// POPUP MODE: run audio, listen for kill, ESC
 	// -------------------------------------------------------------------------
 	if (isPopup) {
+		const killKey = 'ik_' + sessionId;
+		let pollId = null;
+
+		function killPopup() {
+			if (pollId) { clearInterval(pollId); pollId = null; }
+			// Stop audio before closing
+			try {
+				const a = document.getElementById('youare-audio');
+				const o = document.getElementById('youare-overlap');
+				if (a) { a.pause(); a.currentTime = 0; }
+				if (o) { o.pause(); o.currentTime = 0; }
+			} catch (e) {}
+			try { window.close(); } catch (e) {}
+		}
+
 		function startPopupAudio() {
 			const popupAudio = document.getElementById('youare-audio');
 			const popupOvlap = document.getElementById('youare-overlap');
@@ -131,29 +146,26 @@ micon.addEventListener('click', audioSwitch);
 			popupOvlap.addEventListener('timeupdate', popupAudioOverlap);
 		}
 
-		// Wait for DOM so the <audio> elements actually exist
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', startPopupAudio);
 		} else {
 			startPopupAudio();
 		}
 
-		// Lightweight kill polling (every 500ms)
-		const killKey = 'ik_' + sessionId;
-		let pollId = setInterval(() => {
+		// Poll for global kill signal
+		pollId = setInterval(() => {
 			try {
 				if (localStorage.getItem(killKey)) {
-					clearInterval(pollId);
-					try { window.close(); } catch (e) {}
+					killPopup();
 				}
 			} catch (e) { clearInterval(pollId); }
 		}, 500);
 
-		// ESC closes this popup
+		// ESC in ANY window broadcasts the kill signal and closes all
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') {
-				clearInterval(pollId);
-				try { window.close(); } catch (e) {}
+				try { localStorage.setItem(killKey, Date.now().toString()); } catch (e) {}
+				killPopup();
 			}
 		});
 
@@ -168,6 +180,7 @@ micon.addEventListener('click', audioSwitch);
 	let spawnTimer = null;
 	let moveRequestId = null;
 	let lastMoveTime = 0;
+	let pollKillId = null;
 	const WIN_W = 500;
 	const WIN_H = 400;
 	const SPAWN_INTERVAL = 2000; // ms
@@ -182,6 +195,25 @@ micon.addEventListener('click', audioSwitch);
 
 	function clearKillSignal() {
 		try { localStorage.removeItem(getKillKey()); } catch (e) {}
+	}
+
+	function doMainCleanup() {
+		if (!payloadActive) return;
+		payloadActive = false;
+
+		if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+		if (moveRequestId) { cancelAnimationFrame(moveRequestId); moveRequestId = null; }
+		if (pollKillId) { clearInterval(pollKillId); pollKillId = null; }
+
+		// Mute main window audio
+		audioStop();
+
+		windows.forEach(state => {
+			try { if (!state.win.closed) state.win.close(); } catch (e) {}
+		});
+		windows = [];
+
+		hideKillSwitch();
 	}
 
 	function createPopup() {
@@ -259,22 +291,22 @@ micon.addEventListener('click', audioSwitch);
 		}, SPAWN_INTERVAL);
 
 		moveWindows();
+
+		// Listen for kill signal from popups (so ESC in any popup stops everything)
+		pollKillId = setInterval(() => {
+			try {
+				if (localStorage.getItem(getKillKey())) {
+					doMainCleanup();
+				}
+			} catch (e) {
+				if (pollKillId) clearInterval(pollKillId);
+			}
+		}, 500);
 	}
 
 	function stopPayload() {
-		if (!payloadActive) return;
-		payloadActive = false;
 		signalKill();
-
-		if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
-		if (moveRequestId) { cancelAnimationFrame(moveRequestId); moveRequestId = null; }
-
-		windows.forEach(state => {
-			try { if (!state.win.closed) state.win.close(); } catch (e) {}
-		});
-		windows = [];
-
-		hideKillSwitch();
+		doMainCleanup();
 	}
 
 	// UI: Kill switch hint
