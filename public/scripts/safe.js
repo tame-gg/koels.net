@@ -82,18 +82,52 @@ if (!isPopup && !urlSession) {
 	clearKill();
 }
 
-// Poll for kill signal
-setInterval(() => {
-	if (isKilled()) {
-		try { window.close(); } catch (e) {}
-	}
-}, 500);
+// -------------------------------------------------------------------------
+// KILL SWITCH: ESC in ANY window kills EVERYTHING
+// -------------------------------------------------------------------------
+let moveTimer = null;
+let spawnTimer = null;
+let killPollId = null;
+let stoppedOverlay = null;
 
-// ESC kill switch
+function doCleanup() {
+	if (moveTimer) { clearTimeout(moveTimer); moveTimer = null; }
+	if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+	if (killPollId) { clearInterval(killPollId); killPollId = null; }
+
+	// Mute and stop all audio
+	try {
+		const a = document.getElementById('youare-audio');
+		const o = document.getElementById('youare-overlap');
+		if (a) { a.pause(); a.currentTime = 0; a.muted = true; }
+		if (o) { o.pause(); o.currentTime = 0; o.muted = true; }
+	} catch (e) {}
+
+	// Stop movement by freezing position
+	try { window.moveTo(window.screenX, window.screenY); } catch (e) {}
+
+	// Show stopped overlay if window won't close (main page)
+	if (!stoppedOverlay) {
+		stoppedOverlay = document.createElement('div');
+		stoppedOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:24px;z-index:99999;pointer-events:none;';
+		stoppedOverlay.textContent = 'Stopped. You win.';
+		document.body.appendChild(stoppedOverlay);
+	}
+
+	// Attempt to close (works for popups, fails silently for main page)
+	try { window.close(); } catch (e) {}
+}
+
+// Poll for kill signal from other windows
+killPollId = setInterval(() => {
+	if (isKilled()) doCleanup();
+}, 300);
+
+// ESC handler
 window.addEventListener('keydown', (e) => {
 	if (e.key === 'Escape') {
 		signalKill();
-		try { window.close(); } catch (e) {}
+		doCleanup();
 	}
 });
 
@@ -193,7 +227,7 @@ function playBall() {
 	if (yPos < 0) newYdn();
 
     window.moveTo(xPos, yPos);
-    setTimeout(playBall, 1);
+    moveTimer = setTimeout(playBall, 1);
 }
 
 // --- you.js (enhanced) ---
@@ -205,7 +239,7 @@ container.addEventListener('click', async () => {
 
 window.onload = playBall;
 window.oncontextmenu = () => false;
-window.onkeydown = async () => {
+window.onkeydown = async (event) => {
 	if (isKilled()) return;
 	if (['Control', 'Alt', 'Delete', 'F4'].includes(event.key)) {
 		await proCreate(12);
@@ -216,7 +250,7 @@ window.onkeydown = async () => {
 
 // --- Continuous spawn every 3.5 seconds (main window only) ---
 if (!isPopup && !urlSession) {
-	setInterval(() => {
+	spawnTimer = setInterval(() => {
 		if (!isKilled()) openWindow();
 	}, 3500);
 }
