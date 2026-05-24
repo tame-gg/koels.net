@@ -86,27 +86,31 @@ micon.addEventListener('click', audioSwitch);
 
 // --- SAFE PAYLOAD: Real bouncing popup windows (safer than the original) ---
 // Spawns actual popup windows that bounce around the screen.
+// Each popup is the full moron page.
 // Press ESC at any time to close all windows and stop the payload.
 (function() {
+	// Don't run payload inside popup windows
+	if (window.opener !== null) {
+		return;
+	}
+
 	let payloadActive = false;
 	let windows = [];
-	const MAX_WINDOWS = 8;
-	let spawnInterval = null;
 	let moveRequestId = null;
 	let lastMoveTime = 0;
-	let blockedWarningShown = false;
+	const MAX_WINDOWS = 6;
+	const WIN_W = 500;
+	const WIN_H = 400;
 
 	function createPopup() {
 		try {
-			const w = 300;
-			const h = 200;
-			const x = Math.floor(Math.random() * Math.max(1, screen.availWidth - w));
-			const y = Math.floor(Math.random() * Math.max(1, screen.availHeight - h));
+			const x = Math.floor(Math.random() * Math.max(1, screen.availWidth - WIN_W));
+			const y = Math.floor(Math.random() * Math.max(1, screen.availHeight - WIN_H));
 
 			const win = window.open(
-				'/popup.html',
+				'/moron',
 				'_blank',
-				`width=${w},height=${h},left=${x},top=${y},toolbar=no,menubar=no,location=no,status=no,resizable=yes,scrollbars=no`
+				`width=${WIN_W},height=${WIN_H},left=${x},top=${y},toolbar=no,menubar=no,location=no,status=no,resizable=yes,scrollbars=no`
 			);
 
 			if (win) {
@@ -115,8 +119,6 @@ micon.addEventListener('click', audioSwitch);
 					vx: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 4),
 					vy: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 4)
 				});
-			} else if (!blockedWarningShown) {
-				showBlockedWarning();
 			}
 		} catch (e) {}
 	}
@@ -137,8 +139,8 @@ micon.addEventListener('click', audioSwitch);
 
 				let sx = state.win.screenX !== undefined ? state.win.screenX : (state.win.screenLeft || 0);
 				let sy = state.win.screenY !== undefined ? state.win.screenY : (state.win.screenTop || 0);
-				let ww = state.win.outerWidth || 300;
-				let wh = state.win.outerHeight || 200;
+				let ww = state.win.outerWidth || WIN_W;
+				let wh = state.win.outerHeight || WIN_H;
 
 				sx += state.vx;
 				sy += state.vy;
@@ -160,6 +162,29 @@ micon.addEventListener('click', audioSwitch);
 		moveRequestId = requestAnimationFrame(moveWindows);
 	}
 
+	function showBlockedWarning() {
+		const el = document.createElement('div');
+		el.style.position = 'fixed';
+		el.style.top = '14px';
+		el.style.left = '50%';
+		el.style.transform = 'translateX(-50%)';
+		el.style.background = '#ff4444';
+		el.style.color = '#fff';
+		el.style.padding = '10px 18px';
+		el.style.borderRadius = '8px';
+		el.style.fontFamily = "'Times New Roman', serif";
+		el.style.fontSize = '14px';
+		el.style.zIndex = '99999';
+		el.style.textAlign = 'center';
+		el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+		el.innerHTML = 'Some windows were blocked.<br>Allow pop-ups for the full experience!';
+		document.body.appendChild(el);
+
+		setTimeout(() => {
+			if (el.parentNode) el.remove();
+		}, 6000);
+	}
+
 	function startPayload() {
 		if (payloadActive) return;
 		payloadActive = true;
@@ -167,29 +192,23 @@ micon.addEventListener('click', audioSwitch);
 		// Show kill switch hint
 		showKillSwitch();
 
-		// Initial burst of windows
-		for (let i = 0; i < 3; i++) {
-			setTimeout(() => createPopup(), i * 500);
+		// Open all windows synchronously in response to user click.
+		// This is the best way to bypass popup blockers.
+		for (let i = 0; i < MAX_WINDOWS; i++) {
+			createPopup();
+		}
+
+		// If browser blocked some, warn the user
+		if (windows.length < MAX_WINDOWS) {
+			showBlockedWarning();
 		}
 
 		moveWindows();
-
-		// Spawn more periodically
-		spawnInterval = setInterval(() => {
-			if (windows.length < MAX_WINDOWS) {
-				createPopup();
-			}
-		}, 3500);
 	}
 
 	function stopPayload() {
 		if (!payloadActive) return;
 		payloadActive = false;
-
-		if (spawnInterval) {
-			clearInterval(spawnInterval);
-			spawnInterval = null;
-		}
 
 		if (moveRequestId) {
 			cancelAnimationFrame(moveRequestId);
@@ -237,36 +256,6 @@ micon.addEventListener('click', audioSwitch);
 			killSwitchEl.remove();
 			killSwitchEl = null;
 		}
-	}
-
-	// UI: Popup blocked warning
-	let blockedWarningEl = null;
-	function showBlockedWarning() {
-		if (blockedWarningEl || blockedWarningShown) return;
-		blockedWarningShown = true;
-		blockedWarningEl = document.createElement('div');
-		blockedWarningEl.style.position = 'fixed';
-		blockedWarningEl.style.top = '14px';
-		blockedWarningEl.style.left = '50%';
-		blockedWarningEl.style.transform = 'translateX(-50%)';
-		blockedWarningEl.style.background = '#ff4444';
-		blockedWarningEl.style.color = '#fff';
-		blockedWarningEl.style.padding = '10px 18px';
-		blockedWarningEl.style.borderRadius = '8px';
-		blockedWarningEl.style.fontFamily = "'Times New Roman', serif";
-		blockedWarningEl.style.fontSize = '14px';
-		blockedWarningEl.style.zIndex = '99999';
-		blockedWarningEl.style.textAlign = 'center';
-		blockedWarningEl.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-		blockedWarningEl.innerHTML = 'Pop-up windows blocked.<br>Allow pop-ups for the full experience.';
-		document.body.appendChild(blockedWarningEl);
-
-		setTimeout(() => {
-			if (blockedWarningEl) {
-				blockedWarningEl.remove();
-				blockedWarningEl = null;
-			}
-		}, 6000);
 	}
 
 	// Global ESC handler
