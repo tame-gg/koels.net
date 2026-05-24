@@ -85,30 +85,98 @@ container.addEventListener('click', () => {
 micon.addEventListener('click', audioSwitch);
 
 // --- SAFE PAYLOAD: Real bouncing popup windows (safer than the original) ---
-// Spawns actual popup windows that bounce around the screen.
-// Each popup is the full moron page.
+// Spawns actual popup windows that multiply and bounce around the screen.
+// Each popup is the full moron page with audio auto-playing.
 // Press ESC at any time to close all windows and stop the payload.
 (function() {
-	// Don't run payload inside popup windows
-	if (window.opener !== null) {
-		return;
+	// Detect if this is the main page or a popup
+	const urlParams = new URLSearchParams(window.location.search);
+	const urlSession = urlParams.get('session');
+	const isMain = (window.opener === null && !urlSession);
+	
+	// Session ID for coordinating kills across windows
+	let sessionId;
+	if (isMain) {
+		sessionId = 'i_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+	} else {
+		sessionId = urlSession || 'orphan';
 	}
 
 	let payloadActive = false;
 	let windows = [];
+	let spawnTimer = null;
 	let moveRequestId = null;
 	let lastMoveTime = 0;
-	const MAX_WINDOWS = 6;
+	let pollKillId = null;
 	const WIN_W = 500;
 	const WIN_H = 400;
+	const MAX_CHILDREN = 3; // Max children each window spawns
+
+	// --- Auto-play audio in popups ---
+	if (!isMain) {
+		// Popup windows try to auto-play immediately
+		// (Browsers usually allow autoplay in windows opened via user gesture)
+		try {
+			if (audio) {
+				audio.currentTime = 0;
+				const p = audio.play();
+				if (p !== undefined) p.catch(() => {});
+			}
+		} catch (e) {}
+		
+		// Setup overlap tracking for the popup's own audio
+		try {
+			if (audio && ovlap) {
+				audio.addEventListener('timeupdate', audioOverlap);
+				ovlap.addEventListener('timeupdate', audioOverlap);
+			}
+		} catch (e) {}
+	}
+
+	// --- Global kill coordination via localStorage ---
+	function getKillKey() {
+		return 'ik_' + sessionId;
+	}
+	
+	function signalKill() {
+		try {
+			localStorage.setItem(getKillKey(), Date.now().toString());
+		} catch (e) {}
+	}
+	
+	function checkKillSignal() {
+		try {
+			const val = localStorage.getItem(getKillKey());
+			if (val) {
+				const age = Date.now() - parseInt(val, 10);
+				if (age < 30000) {
+					stopPayload();
+					try { window.close(); } catch (e) {}
+				}
+			}
+		} catch (e) {}
+	}
+	
+	function clearKillSignal() {
+		try {
+			localStorage.removeItem(getKillKey());
+		} catch (e) {}
+	}
+
+	function startKillPolling() {
+		if (pollKillId) return;
+		pollKillId = setInterval(checkKillSignal, 250);
+	}
 
 	function createPopup() {
+		if (!payloadActive) return;
 		try {
 			const x = Math.floor(Math.random() * Math.max(1, screen.availWidth - WIN_W));
 			const y = Math.floor(Math.random() * Math.max(1, screen.availHeight - WIN_H));
+			const url = '/moron?session=' + encodeURIComponent(sessionId);
 
 			const win = window.open(
-				'/moron',
+				url,
 				'_blank',
 				`width=${WIN_W},height=${WIN_H},left=${x},top=${y},toolbar=no,menubar=no,location=no,status=no,resizable=yes,scrollbars=no`
 			);
@@ -162,45 +230,32 @@ micon.addEventListener('click', audioSwitch);
 		moveRequestId = requestAnimationFrame(moveWindows);
 	}
 
-	function showBlockedWarning() {
-		const el = document.createElement('div');
-		el.style.position = 'fixed';
-		el.style.top = '14px';
-		el.style.left = '50%';
-		el.style.transform = 'translateX(-50%)';
-		el.style.background = '#ff4444';
-		el.style.color = '#fff';
-		el.style.padding = '10px 18px';
-		el.style.borderRadius = '8px';
-		el.style.fontFamily = "'Times New Roman', serif";
-		el.style.fontSize = '14px';
-		el.style.zIndex = '99999';
-		el.style.textAlign = 'center';
-		el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-		el.innerHTML = 'Some windows were blocked.<br>Allow pop-ups for the full experience!';
-		document.body.appendChild(el);
-
-		setTimeout(() => {
-			if (el.parentNode) el.remove();
-		}, 6000);
-	}
-
 	function startPayload() {
 		if (payloadActive) return;
 		payloadActive = true;
-
-		// Show kill switch hint
+		clearKillSignal();
+		startKillPolling();
 		showKillSwitch();
 
-		// Open all windows synchronously in response to user click.
-		// This is the best way to bypass popup blockers.
-		for (let i = 0; i < MAX_WINDOWS; i++) {
-			createPopup();
-		}
+		let childrenSpawned = 0;
+		
+		// Spawn children every 2 seconds, up to MAX_CHILDREN
+		spawnTimer = setInterval(() => {
+			if (!payloadActive) return;
+			if (childrenSpawned < MAX_CHILDREN) {
+				createPopup();
+				childrenSpawned++;
+			} else {
+				// Done spawning
+				clearInterval(spawnTimer);
+				spawnTimer = null;
+			}
+		}, 2000);
 
-		// If browser blocked some, warn the user
-		if (windows.length < MAX_WINDOWS) {
-			showBlockedWarning();
+		// Popups also spawn one child immediately
+		if (!isMain) {
+			createPopup();
+			childrenSpawned++;
 		}
 
 		moveWindows();
@@ -209,10 +264,19 @@ micon.addEventListener('click', audioSwitch);
 	function stopPayload() {
 		if (!payloadActive) return;
 		payloadActive = false;
+		signalKill();
 
+		if (spawnTimer) {
+			clearInterval(spawnTimer);
+			spawnTimer = null;
+		}
 		if (moveRequestId) {
 			cancelAnimationFrame(moveRequestId);
 			moveRequestId = null;
+		}
+		if (pollKillId) {
+			clearInterval(pollKillId);
+			pollKillId = null;
 		}
 
 		windows.forEach(state => {
@@ -232,7 +296,6 @@ micon.addEventListener('click', audioSwitch);
 	function showKillSwitch() {
 		if (killSwitchEl) return;
 		killSwitchEl = document.createElement('div');
-		killSwitchEl.id = 'idiot-killswitch';
 		killSwitchEl.style.position = 'fixed';
 		killSwitchEl.style.bottom = '14px';
 		killSwitchEl.style.left = '50%';
@@ -262,9 +325,16 @@ micon.addEventListener('click', audioSwitch);
 	document.addEventListener('keydown', (e) => {
 		if (e.key === 'Escape') {
 			stopPayload();
+			try { window.close(); } catch (e) {}
 		}
 	});
 
-	// Start payload on first click of the main idiot container
-	container.addEventListener('click', startPayload, { once: true });
+	// Start payload
+	if (isMain) {
+		// Main page waits for user click
+		container.addEventListener('click', startPayload, { once: true });
+	} else {
+		// Popup starts automatically after a tiny delay
+		setTimeout(startPayload, 100);
+	}
 })();
