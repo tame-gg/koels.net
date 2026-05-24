@@ -59,6 +59,7 @@ micon.addEventListener('click', audioSwitch);
 
 // ==========================================================================
 // ENHANCED REPLICATION: exact youareanidiot.cc + continuous spawn + loud audio + kill switch
+// Closing ANY window kills ALL windows.
 // ==========================================================================
 
 const sessionId = 'i_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
@@ -83,7 +84,7 @@ if (!isPopup && !urlSession) {
 }
 
 // -------------------------------------------------------------------------
-// KILL SWITCH: ESC in ANY window kills EVERYTHING + blocks new windows
+// KILL SWITCH: Closing ANY window or pressing ESC kills EVERYTHING
 // -------------------------------------------------------------------------
 let moveTimer = null;
 let spawnTimer = null;
@@ -95,7 +96,6 @@ function doCleanup() {
 	if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
 	if (killPollId) { clearInterval(killPollId); killPollId = null; }
 
-	// Mute and stop all audio
 	try {
 		const a = document.getElementById('youare-audio');
 		const o = document.getElementById('youare-overlap');
@@ -103,10 +103,8 @@ function doCleanup() {
 		if (o) { o.pause(); o.currentTime = 0; o.muted = true; }
 	} catch (e) {}
 
-	// Stop movement by freezing position
 	try { window.moveTo(window.screenX, window.screenY); } catch (e) {}
 
-	// Show stopped overlay if window won't close (main page)
 	if (!stoppedOverlay) {
 		stoppedOverlay = document.createElement('div');
 		stoppedOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:24px;z-index:99999;pointer-events:none;';
@@ -114,16 +112,15 @@ function doCleanup() {
 		document.body.appendChild(stoppedOverlay);
 	}
 
-	// Attempt to close (works for popups, fails silently for main page)
 	try { window.close(); } catch (e) {}
 }
 
-// Fast poll for kill signal from other windows
+// Aggressive kill polling
 killPollId = setInterval(() => {
 	if (isKilled()) doCleanup();
-}, 100);
+}, 50);
 
-// ESC handler
+// ESC kills everything
 window.addEventListener('keydown', (e) => {
 	if (e.key === 'Escape') {
 		signalKill();
@@ -131,13 +128,19 @@ window.addEventListener('keydown', (e) => {
 	}
 });
 
-// -------------------------------------------------------------------------
-// If killed BEFORE this script finishes loading, die immediately.
-// This catches popups that open after the user already pressed ESC.
-// -------------------------------------------------------------------------
+// CLOSING ANY WINDOW kills everything: set kill signal before unload
+window.addEventListener('beforeunload', () => {
+	signalKill();
+});
+
+// Also catch pagehide (fires even if beforeunload is skipped)
+window.addEventListener('pagehide', () => {
+	signalKill();
+});
+
+// Immediate kill check for popups that open after the apocalypse
 if (isKilled()) {
 	doCleanup();
-	// Halt the rest of the payload
 	throw new Error('Killed before start');
 }
 
@@ -163,7 +166,6 @@ function triggerPopupAudio(win) {
 			o.volume = 1.0;
 		}
 	} catch (e) {}
-	// Retry after load
 	try {
 		win.addEventListener('load', () => {
 			const a = win.document.getElementById('youare-audio');
