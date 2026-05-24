@@ -58,61 +58,9 @@ container.addEventListener('click', () => container.classList.remove('clicky'));
 micon.addEventListener('click', audioSwitch);
 
 // ==========================================================================
-// ENHANCED REPLICATION: exact youareanidiot.cc + aggressive multiplication + kill switch
+// ENHANCED REPLICATION: exact youareanidiot.cc + continuous spawn + loud audio + kill switch
 // ==========================================================================
 
-// --- math.js (exact) ---
-let xOff = 5;
-let yOff = 5;
-let xPos = 400;
-let yPos = -100;
-
-function openWindow(url) {
-	window.open(url, "_blank", 'menubar=no, status=no, toolbar=no, resizable=no, width=357, height=330, titlebar=no, alwaysRaised=yes');
-}
-
-async function proCreate(count) {	
-	for (let i = 0; i < count; i++) {
-		openWindow('/moron?session=' + encodeURIComponent(sessionId));
-		await new Promise(r => setTimeout(r, 50));
-	}
-}
-
-function newXlt() {
-	xOff = Math.ceil(-6 * Math.random()) * 5 - 10;
-	window.focus();
-}
-
-function newXrt() {
-	xOff = Math.ceil(7 * Math.random())  * 5 - 10;
-	window.focus();
-}
-
-function newYup() {
-	yOff = Math.ceil(-6 * Math.random()) * 5 - 10;
-	window.focus();
-}
-
-function newYdn() {
-	yOff = Math.ceil( 7 * Math.random()) * 5 - 10;
-	window.focus();
-}
-
-function playBall() {
-    xPos += xOff;
-    yPos += yOff;
-    
-	if (xPos > screen.width - 357) newXlt();    
-	if (xPos < 0) newXrt();
-    
-	if (yPos > screen.height - 330) newYup(); 		
-	if (yPos < 0) newYdn();
-
-    window.moveTo(xPos, yPos);
-    setTimeout(playBall, 1);
-}
-
-// --- Kill switch (localStorage) ---
 const sessionId = 'i_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
 const killKey = 'ik_' + sessionId;
 
@@ -141,7 +89,114 @@ setInterval(() => {
 	}
 }, 500);
 
-// --- you.js (enhanced spawn counts) ---
+// ESC kill switch
+window.addEventListener('keydown', (e) => {
+	if (e.key === 'Escape') {
+		signalKill();
+		try { window.close(); } catch (e) {}
+	}
+});
+
+// --- math.js (exact) ---
+let xOff = 5;
+let yOff = 5;
+let xPos = 400;
+let yPos = -100;
+
+function triggerPopupAudio(win) {
+	if (!win || win.closed) return;
+	try {
+		const a = win.document.getElementById('youare-audio');
+		const o = win.document.getElementById('youare-overlap');
+		if (a) {
+			a.muted = false;
+			a.volume = 1.0;
+			a.currentTime = 0;
+			a.play().catch(() => {});
+		}
+		if (o) {
+			o.muted = false;
+			o.volume = 1.0;
+		}
+	} catch (e) {}
+	// Retry after load
+	try {
+		win.addEventListener('load', () => {
+			const a = win.document.getElementById('youare-audio');
+			const o = win.document.getElementById('youare-overlap');
+			if (a) {
+				a.muted = false;
+				a.volume = 1.0;
+				a.currentTime = 0;
+				a.play().catch(() => {});
+			}
+			if (o) {
+				o.muted = false;
+				o.volume = 1.0;
+			}
+		});
+	} catch (e) {}
+}
+
+function openWindow() {
+	if (isKilled()) return null;
+	const win = window.open(
+		'/moron?session=' + encodeURIComponent(sessionId),
+		"_blank",
+		'menubar=no, status=no, toolbar=no, resizable=no, width=357, height=330, titlebar=no, alwaysRaised=yes'
+	);
+	if (win) {
+		triggerPopupAudio(win);
+		setTimeout(() => triggerPopupAudio(win), 100);
+		setTimeout(() => triggerPopupAudio(win), 300);
+	}
+	return win;
+}
+
+async function proCreate(count) {	
+	for (let i = 0; i < count; i++) {
+		if (isKilled()) return;
+		openWindow();
+		await new Promise(r => setTimeout(r, 50));
+	}
+}
+
+function newXlt() {
+	xOff = Math.ceil(-6 * Math.random()) * 5 - 10;
+	window.focus();
+}
+
+function newXrt() {
+	xOff = Math.ceil(7 * Math.random()) * 5 - 10;
+	window.focus();
+}
+
+function newYup() {
+	yOff = Math.ceil(-6 * Math.random()) * 5 - 10;
+	window.focus();
+}
+
+function newYdn() {
+	yOff = Math.ceil(7 * Math.random()) * 5 - 10;
+	window.focus();
+}
+
+function playBall() {
+	if (isKilled()) return;
+    xPos += xOff;
+    yPos += yOff;
+    
+	if (xPos > screen.width - 357) newXlt();    
+	if (xPos < 0) newXrt();
+    
+	if (yPos > screen.height - 330) newYup(); 		
+	if (yPos < 0) newYdn();
+
+    window.moveTo(xPos, yPos);
+    setTimeout(playBall, 1);
+}
+
+// --- you.js (enhanced) ---
 container.addEventListener('click', async () => {
 	if (isKilled()) return;
 	await proCreate(12);
@@ -159,30 +214,35 @@ window.onkeydown = async () => {
 	return null;
 }
 
-// ESC kill switch
-window.addEventListener('keydown', (e) => {
-	if (e.key === 'Escape') {
-		signalKill();
-		try { window.close(); } catch (e) {}
-	}
-});
+// --- Continuous spawn every 3.5 seconds (main window only) ---
+if (!isPopup && !urlSession) {
+	setInterval(() => {
+		if (!isKilled()) openWindow();
+	}, 3500);
+}
 
-// Popup audio autoplay
+// --- Popup self-audio fallback (loud, unmuted) ---
 (function() {
 	if (!isPopup) return;
 	function startPopupAudio() {
 		const a = document.getElementById('youare-audio');
 		const o = document.getElementById('youare-overlap');
 		if (!a) return false;
+		a.muted = false;
+		a.volume = 1.0;
 		let popupOverlap = false;
 		function pOverlap() {
 			if (!popupOverlap && a.currentTime > a.duration - .45) {
 				o.currentTime = 0;
+				o.muted = false;
+				o.volume = 1.0;
 				o.play().catch(() => {});
 				popupOverlap = true;
 			}
 			if (popupOverlap && o.currentTime > o.duration - .5) {
 				a.currentTime = 0;
+				a.muted = false;
+				a.volume = 1.0;
 				a.play().catch(() => {});
 				popupOverlap = false;
 			}
