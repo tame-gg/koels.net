@@ -84,92 +84,84 @@ container.addEventListener('click', () => {
 
 micon.addEventListener('click', audioSwitch);
 
-// --- SAFE PAYLOAD: Real bouncing popup windows (safer than the original) ---
-// Spawns actual popup windows that multiply and bounce around the screen.
-// Each popup is the full moron page with audio auto-playing.
-// Press ESC at any time to close all windows and stop the payload.
+// ==========================================================================
+// SAFE PAYLOAD: Real bouncing popup windows (performance-optimized)
+// Only the MAIN window spawns and moves popups.
+// Popups are passive display windows — no spawn timers, no move loops.
+// Press ESC in the main window to kill everything instantly.
+// ==========================================================================
 (function() {
-	// Detect if this is the main page or a popup
 	const urlParams = new URLSearchParams(window.location.search);
 	const urlSession = urlParams.get('session');
-	const isMain = (window.opener === null && !urlSession);
-	
-	// Session ID for coordinating kills across windows
-	let sessionId;
-	if (isMain) {
-		sessionId = 'i_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
-	} else {
-		sessionId = urlSession || 'orphan';
-	}
+	const isPopup = (window.opener !== null || !!urlSession);
+	const isMain = !isPopup;
 
-	let payloadActive = false;
-	let windows = [];
-	let spawnTimer = null;
-	let moveRequestId = null;
-	let lastMoveTime = 0;
-	let pollKillId = null;
-	const WIN_W = 500;
-	const WIN_H = 400;
-	const MAX_CHILDREN = 3; // Max children each window spawns
+	// Shared session ID so popups can listen for the kill signal
+	const sessionId = isMain
+		? 'i_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7)
+		: (urlSession || 'orphan');
 
-	// --- Auto-play audio in popups ---
-	if (!isMain) {
-		// Popup windows try to auto-play immediately
-		// (Browsers usually allow autoplay in windows opened via user gesture)
+	// -------------------------------------------------------------------------
+	// POPUP MODE: light weight — autoplay audio once, listen for kill, ESC
+	// -------------------------------------------------------------------------
+	if (isPopup) {
+		// Try to autoplay audio (usually allowed since opened via user gesture)
 		try {
 			if (audio) {
 				audio.currentTime = 0;
-				const p = audio.play();
-				if (p !== undefined) p.catch(() => {});
+				audio.play().catch(() => {});
 			}
 		} catch (e) {}
-		
-		// Setup overlap tracking for the popup's own audio
-		try {
-			if (audio && ovlap) {
-				audio.addEventListener('timeupdate', audioOverlap);
-				ovlap.addEventListener('timeupdate', audioOverlap);
+
+		// Lightweight kill polling (every 500ms)
+		const killKey = 'ik_' + sessionId;
+		let pollId = setInterval(() => {
+			try {
+				if (localStorage.getItem(killKey)) {
+					clearInterval(pollId);
+					try { window.close(); } catch (e) {}
+				}
+			} catch (e) { clearInterval(pollId); }
+		}, 500);
+
+		// ESC closes this popup
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				clearInterval(pollId);
+				try { window.close(); } catch (e) {}
 			}
-		} catch (e) {}
+		});
+
+		return; // Popups skip the heavy payload controller below
 	}
 
-	// --- Global kill coordination via localStorage ---
+	// -------------------------------------------------------------------------
+	// MAIN WINDOW MODE: single controller for all popups
+	// -------------------------------------------------------------------------
+	let payloadActive = false;
+	let windows = [];         // { win, vx, vy }
+	let spawnTimer = null;
+	let moveRequestId = null;
+	let lastMoveTime = 0;
+	const MAX_WINDOWS = 6;
+	const WIN_W = 500;
+	const WIN_H = 400;
+	const SPAWN_INTERVAL = 2000; // ms
+
 	function getKillKey() {
 		return 'ik_' + sessionId;
 	}
-	
+
 	function signalKill() {
-		try {
-			localStorage.setItem(getKillKey(), Date.now().toString());
-		} catch (e) {}
-	}
-	
-	function checkKillSignal() {
-		try {
-			const val = localStorage.getItem(getKillKey());
-			if (val) {
-				const age = Date.now() - parseInt(val, 10);
-				if (age < 30000) {
-					stopPayload();
-					try { window.close(); } catch (e) {}
-				}
-			}
-		} catch (e) {}
-	}
-	
-	function clearKillSignal() {
-		try {
-			localStorage.removeItem(getKillKey());
-		} catch (e) {}
+		try { localStorage.setItem(getKillKey(), Date.now().toString()); } catch (e) {}
 	}
 
-	function startKillPolling() {
-		if (pollKillId) return;
-		pollKillId = setInterval(checkKillSignal, 250);
+	function clearKillSignal() {
+		try { localStorage.removeItem(getKillKey()); } catch (e) {}
 	}
 
 	function createPopup() {
-		if (!payloadActive) return;
+		if (windows.length >= MAX_WINDOWS) return;
 		try {
 			const x = Math.floor(Math.random() * Math.max(1, screen.availWidth - WIN_W));
 			const y = Math.floor(Math.random() * Math.max(1, screen.availHeight - WIN_H));
@@ -184,8 +176,8 @@ micon.addEventListener('click', audioSwitch);
 			if (win) {
 				windows.push({
 					win: win,
-					vx: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 4),
-					vy: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 4)
+					vx: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 3),
+					vy: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 3)
 				});
 			}
 		} catch (e) {}
@@ -194,6 +186,7 @@ micon.addEventListener('click', audioSwitch);
 	function moveWindows() {
 		if (!payloadActive) return;
 
+		// Throttle to ~60fps
 		const now = performance.now();
 		if (now - lastMoveTime < 16) {
 			moveRequestId = requestAnimationFrame(moveWindows);
@@ -215,14 +208,14 @@ micon.addEventListener('click', audioSwitch);
 
 				if (sx <= 0) { sx = 0; state.vx = Math.abs(state.vx); }
 				if (sy <= 0) { sy = 0; state.vy = Math.abs(state.vy); }
-				if (sx + ww >= screen.availWidth) { sx = screen.availWidth - ww; state.vx = -Math.abs(state.vx); }
+				if (sx + ww >= screen.availWidth)  { sx = screen.availWidth  - ww; state.vx = -Math.abs(state.vx); }
 				if (sy + wh >= screen.availHeight) { sy = screen.availHeight - wh; state.vy = -Math.abs(state.vy); }
 
 				state.win.moveTo(Math.floor(sx), Math.floor(sy));
 			} catch (e) {}
 		});
 
-		// Clean up closed windows
+		// Prune closed windows so array doesn't bloat
 		windows = windows.filter(w => {
 			try { return !w.win.closed; } catch (e) { return false; }
 		});
@@ -234,29 +227,25 @@ micon.addEventListener('click', audioSwitch);
 		if (payloadActive) return;
 		payloadActive = true;
 		clearKillSignal();
-		startKillPolling();
 		showKillSwitch();
 
-		let childrenSpawned = 0;
-		
-		// Spawn children every 2 seconds, up to MAX_CHILDREN
+		let spawned = 0;
+
+		const trySpawn = () => {
+			if (!payloadActive || spawned >= MAX_WINDOWS) return;
+			createPopup();
+			spawned++;
+		};
+
+		// Spawn one immediately, then every 2 seconds
+		trySpawn();
 		spawnTimer = setInterval(() => {
-			if (!payloadActive) return;
-			if (childrenSpawned < MAX_CHILDREN) {
-				createPopup();
-				childrenSpawned++;
-			} else {
-				// Done spawning
+			trySpawn();
+			if (spawned >= MAX_WINDOWS && spawnTimer) {
 				clearInterval(spawnTimer);
 				spawnTimer = null;
 			}
-		}, 2000);
-
-		// Popups also spawn one child immediately
-		if (!isMain) {
-			createPopup();
-			childrenSpawned++;
-		}
+		}, SPAWN_INTERVAL);
 
 		moveWindows();
 	}
@@ -266,25 +255,11 @@ micon.addEventListener('click', audioSwitch);
 		payloadActive = false;
 		signalKill();
 
-		if (spawnTimer) {
-			clearInterval(spawnTimer);
-			spawnTimer = null;
-		}
-		if (moveRequestId) {
-			cancelAnimationFrame(moveRequestId);
-			moveRequestId = null;
-		}
-		if (pollKillId) {
-			clearInterval(pollKillId);
-			pollKillId = null;
-		}
+		if (spawnTimer) { clearInterval(spawnTimer); spawnTimer = null; }
+		if (moveRequestId) { cancelAnimationFrame(moveRequestId); moveRequestId = null; }
 
 		windows.forEach(state => {
-			try {
-				if (!state.win.closed) {
-					state.win.close();
-				}
-			} catch (e) {}
+			try { if (!state.win.closed) state.win.close(); } catch (e) {}
 		});
 		windows = [];
 
@@ -321,20 +296,13 @@ micon.addEventListener('click', audioSwitch);
 		}
 	}
 
-	// Global ESC handler
+	// ESC kills everything from the main window
 	document.addEventListener('keydown', (e) => {
 		if (e.key === 'Escape') {
 			stopPayload();
-			try { window.close(); } catch (e) {}
 		}
 	});
 
-	// Start payload
-	if (isMain) {
-		// Main page waits for user click
-		container.addEventListener('click', startPayload, { once: true });
-	} else {
-		// Popup starts automatically after a tiny delay
-		setTimeout(startPayload, 100);
-	}
+	// Start payload on first click of the main idiot container
+	container.addEventListener('click', startPayload, { once: true });
 })();
