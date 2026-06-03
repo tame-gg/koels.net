@@ -1589,6 +1589,23 @@ function buildNWSHazards(params) {
   return hazards;
 }
 
+function parseNWSProduct(params) {
+  const awips = String(getParamFirst(params, 'AWIPSidentifier') || '').trim().toUpperCase();
+  const match = awips.match(/^([A-Z0-9]{3})([A-Z0-9]{3})$/);
+  return match ? { product: match[1], office: match[2] } : null;
+}
+
+function buildNWSOfficialUrl(event, params) {
+  const product = parseNWSProduct(params);
+  if (product && event) {
+    return `https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=${encodeURIComponent(product.office)}&wwa=${encodeURIComponent(event)}`;
+  }
+  if (product) {
+    return `https://forecast.weather.gov/product.php?site=NWS&issuedby=${encodeURIComponent(product.office)}&product=${encodeURIComponent(product.product)}&format=CI&version=1&glossary=0`;
+  }
+  return 'https://www.weather.gov/alerts';
+}
+
 // Map bounds → which region APIs to query
 // We always fetch NWS (US). For Europe we use MeteoAlarm.
 // For other regions we use national APIs where available.
@@ -1640,7 +1657,7 @@ async function fetchNWSAlerts() {
         geometry: f.geometry,
         region:   'US',
         source:   'NWS',
-        url:      'https://www.weather.gov/alerts',
+        url:      buildNWSOfficialUrl(event, params),
         instruction: p.instruction || null,
         headline:    p.headline || null,
         description: p.description || null,
