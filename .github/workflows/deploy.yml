@@ -1,4 +1,4 @@
-name: Deploy Astro to GitHub Pages
+name: Deploy Next.js to GitHub Pages
 
 on:
   push:
@@ -34,13 +34,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Astro
+      - name: Build Next.js
         run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./out
 
   deploy:
     needs: build
