@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import parse from 'html-react-parser';
 import type { ReactNode } from 'react';
+import { pageEnhancementScript, pageEnhancementStyles } from './page-enhancements';
 
 export interface StaticHtmlDocument {
   readonly head: string;
@@ -33,12 +34,14 @@ export function StaticHtmlPage({ document }: StaticHtmlPageProps) {
     <>
       <Head>
         {parse(safeHead) as ReactNode}
-        <style>{'#__next{display:contents}'}</style>
+        <style>{`#__next{display:contents}${pageEnhancementStyles}`}</style>
       </Head>
       <div
         suppressHydrationWarning
         style={{ display: 'contents' }}
-        dangerouslySetInnerHTML={{ __html: bodyPrefix + document.body }}
+        dangerouslySetInnerHTML={{
+          __html: `${bodyPrefix}${document.body}<script>${pageEnhancementScript}</script>`,
+        }}
       />
     </>
   );
