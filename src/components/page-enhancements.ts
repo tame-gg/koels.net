@@ -147,30 +147,35 @@ html.koels-route-leaving body {
 
 .preview-radar {
   background:
-    radial-gradient(circle at 44% 56%, rgba(0, 255, 204, 0.2) 0 5%, transparent 6%),
-    repeating-radial-gradient(circle at 44% 56%, rgba(64, 200, 255, 0.16) 0 1px, transparent 1px 20px),
+    radial-gradient(circle at 50% 52%, rgba(0, 255, 204, 0.2) 0 7%, transparent 8%),
+    repeating-radial-gradient(circle at 50% 52%, rgba(64, 200, 255, 0.16) 0 1px, transparent 1px 22px),
     linear-gradient(135deg, rgba(2, 20, 34, 0.95), rgba(4, 10, 24, 0.78));
 }
 
 .preview-radar .sweep {
   position: absolute;
-  inset: -20%;
-  background: conic-gradient(from 0deg at 44% 56%, rgba(0, 255, 204, 0.26), transparent 18%, transparent);
+  inset: 0;
+  background: conic-gradient(from -36deg at 50% 52%, rgba(0, 255, 204, 0.34), rgba(64, 200, 255, 0.12) 18%, transparent 28%, transparent);
+  clip-path: circle(48% at 50% 52%);
   animation: koels-spin 3.2s linear infinite;
+  transform-origin: 50% 52%;
 }
 
 .preview-radar .storm {
   position: absolute;
-  width: 42px;
-  height: 24px;
+  width: 54px;
+  height: 28px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #40c8ff, #00ffcc, #ffd166);
-  filter: blur(0.2px);
-  opacity: 0.82;
+  background:
+    radial-gradient(circle at 28% 50%, #40c8ff 0 28%, transparent 30%),
+    radial-gradient(circle at 52% 48%, #00ffcc 0 30%, transparent 32%),
+    radial-gradient(circle at 74% 50%, #ffd166 0 24%, transparent 26%);
+  filter: drop-shadow(0 0 12px rgba(0, 255, 204, 0.24));
+  opacity: 0.9;
 }
 
-.preview-radar .storm.one { left: 18%; top: 28%; transform: rotate(-18deg); }
-.preview-radar .storm.two { right: 16%; bottom: 22%; transform: rotate(18deg) scale(0.78); }
+.preview-radar .storm.one { left: 18%; top: 24%; transform: rotate(-16deg); }
+.preview-radar .storm.two { right: 14%; bottom: 20%; transform: rotate(17deg) scale(0.82); }
 
 @keyframes koels-spin {
   to { transform: rotate(360deg); }
@@ -179,30 +184,60 @@ html.koels-route-leaving body {
 .preview-globe {
   display: grid;
   place-items: center;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(64, 200, 255, 0.13), transparent 42%),
+    linear-gradient(135deg, rgba(2, 18, 38, 0.92), rgba(2, 8, 16, 0.72));
 }
 
 .preview-globe .mini-earth {
-  width: 74px;
-  height: 74px;
+  position: relative;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 28% 24%, rgba(232, 248, 255, 0.9), transparent 0 4px, transparent 5px),
-    linear-gradient(90deg, rgba(0, 255, 204, 0.25), transparent 28% 72%, rgba(64, 200, 255, 0.22)),
-    repeating-linear-gradient(90deg, rgba(64, 200, 255, 0.26) 0 2px, transparent 2px 16px),
-    radial-gradient(circle at 45% 50%, #0b385f, #020810 72%);
+    radial-gradient(ellipse at 32% 30%, rgba(0, 255, 204, 0.72) 0 10%, transparent 11%),
+    radial-gradient(ellipse at 58% 38%, rgba(0, 255, 204, 0.62) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 45% 68%, rgba(0, 255, 204, 0.5) 0 11%, transparent 12%),
+    radial-gradient(circle at 34% 26%, rgba(232, 248, 255, 0.72), transparent 0 4px, transparent 5px),
+    radial-gradient(circle at 42% 42%, #155d8c, #052b4e 58%, #020810 100%);
   box-shadow:
-    0 0 38px rgba(64, 200, 255, 0.28),
-    inset -18px -8px 30px rgba(0, 0, 0, 0.48);
+    0 0 34px rgba(64, 200, 255, 0.3),
+    inset -18px -10px 28px rgba(0, 0, 0, 0.46),
+    inset 12px 6px 18px rgba(232, 248, 255, 0.08);
   animation: koels-float 3.8s ease-in-out infinite;
+}
+
+.preview-globe .mini-earth::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 248, 255, 0.08);
+  border-left-color: rgba(64, 200, 255, 0.22);
+  border-right-color: rgba(64, 200, 255, 0.18);
 }
 
 .preview-globe .orbit {
   position: absolute;
-  width: 104px;
-  height: 104px;
+  width: 122px;
+  height: 64px;
   border: 1px solid rgba(64, 200, 255, 0.18);
   border-radius: 50%;
-  transform: rotateX(64deg);
+  transform: rotate(-14deg);
+}
+
+.preview-globe .pin {
+  position: absolute;
+  z-index: 2;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00ffcc;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.65);
+}
+
+.preview-globe .pin.one { left: calc(50% - 22px); top: calc(50% - 8px); }
+.preview-globe .pin.two { right: calc(50% - 28px); top: calc(50% + 15px); background: #40c8ff; }
 }
 
 @keyframes koels-float {
@@ -211,14 +246,16 @@ html.koels-route-leaving body {
 }
 
 .preview-calc .calc-display {
-  height: 24px;
+  height: 30px;
   border-radius: 7px;
-  padding: 5px 8px;
+  padding: 6px 10px;
   background: rgba(232, 248, 255, 0.08);
   color: #00ffcc;
   font-family: var(--mono, monospace);
-  font-size: 0.72rem;
+  font-size: 0.82rem;
+  font-weight: 700;
   text-align: right;
+  box-shadow: inset 0 1px 0 rgba(232, 248, 255, 0.05);
 }
 
 .preview-calc .calc-grid {
@@ -228,14 +265,21 @@ html.koels-route-leaving body {
   margin-top: 10px;
 }
 
-.preview-calc .calc-dot {
-  height: 13px;
+.preview-calc .calc-key {
+  min-height: 18px;
+  display: grid;
+  place-items: center;
   border-radius: 5px;
   background: rgba(200, 240, 255, 0.14);
+  color: rgba(232, 248, 255, 0.72);
+  font-family: var(--mono, monospace);
+  font-size: 0.56rem;
+  font-weight: 700;
 }
 
-.preview-calc .calc-dot.hot {
+.preview-calc .calc-key.hot {
   background: linear-gradient(135deg, #40c8ff, #00ffcc);
+  color: #020810;
 }
 
 .preview-vanta .stat-row {
@@ -468,10 +512,10 @@ export const pageEnhancementScript = `
       return '<div class="project-preview preview-radar"><div class="sweep"></div><div class="storm one"></div><div class="storm two"></div><div class="project-preview-inner"><div class="project-preview-kicker">Live radar</div></div></div>';
     }
     if (name.includes('globe')) {
-      return '<div class="project-preview preview-globe"><div class="orbit"></div><div class="mini-earth"></div><div class="project-preview-inner"><div class="project-preview-kicker">Earth feed</div></div></div>';
+      return '<div class="project-preview preview-globe"><div class="orbit"></div><div class="mini-earth"></div><span class="pin one"></span><span class="pin two"></span><div class="project-preview-inner"><div class="project-preview-kicker">Earth feed</div></div></div>';
     }
     if (name.includes('calculator')) {
-      return '<div class="project-preview preview-calc"><div class="project-preview-inner"><div class="project-preview-kicker">Premium math</div><div class="calc-display">42.00</div><div class="calc-grid"><span class="calc-dot"></span><span class="calc-dot"></span><span class="calc-dot"></span><span class="calc-dot hot"></span><span class="calc-dot"></span><span class="calc-dot"></span><span class="calc-dot"></span><span class="calc-dot hot"></span><span class="calc-dot"></span><span class="calc-dot"></span><span class="calc-dot"></span><span class="calc-dot hot"></span></div></div></div>';
+      return '<div class="project-preview preview-calc"><div class="project-preview-inner"><div class="project-preview-kicker">Premium math</div><div class="calc-display">128 / 4 = ?</div><div class="calc-grid"><span class="calc-key">7</span><span class="calc-key">8</span><span class="calc-key">9</span><span class="calc-key hot">÷</span><span class="calc-key">4</span><span class="calc-key">5</span><span class="calc-key">6</span><span class="calc-key hot">×</span><span class="calc-key">1</span><span class="calc-key">2</span><span class="calc-key">3</span><span class="calc-key hot">=</span></div></div></div>';
     }
     if (name.includes('vanta')) {
       return '<div class="project-preview preview-vanta"><div class="project-preview-inner"><div class="project-preview-kicker">Tracker concept</div><div class="stat-row"><span>ACS</span><span class="bar"><i style="width:72%"></i></span><span>248</span></div><div class="stat-row"><span>HS%</span><span class="bar"><i style="width:48%"></i></span><span>28%</span></div><div class="stat-row"><span>RR</span><span class="bar"><i style="width:84%"></i></span><span>+18</span></div></div></div>';
