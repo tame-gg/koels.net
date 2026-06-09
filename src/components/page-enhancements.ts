@@ -160,6 +160,34 @@ html.koels-route-leaving body {
   display: block;
 }
 
+.preview-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.preview-radar::after,
+.preview-globe::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(232, 248, 255, 0.08) 50%, transparent 58%),
+    linear-gradient(180deg, rgba(2, 8, 16, 0.02), rgba(2, 8, 16, 0.22));
+  transform: translateX(-130%);
+  animation: koels-preview-scan 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes koels-preview-scan {
+  0%, 58% { transform: translateX(-130%); }
+  86%, 100% { transform: translateX(130%); }
+}
+
 .mini-radar,
 .mini-globe {
   position: absolute;
@@ -643,7 +671,9 @@ html.koels-route-leaving body {
   .globe-body::before,
   .globe-atmosphere,
   .globe-orbit-ring,
-  .globe-event {
+  .globe-event,
+  .preview-radar::after,
+  .preview-globe::after {
     animation: none !important;
     transition: none !important;
   }
@@ -785,10 +815,10 @@ export const pageEnhancementScript = `
   function previewMarkup(projectName) {
     const name = projectName.toLowerCase();
     if (name.includes('radar')) {
-      return '<div class="project-preview preview-radar"><div class="mini-radar" aria-hidden="true"><div class="mini-radar-map"></div><div class="radar-rings"></div><div class="radar-sweep-panel"></div><span class="radar-cell c1"></span><span class="radar-cell c2"></span><span class="radar-cell c3"></span><span class="radar-core"></span><span class="radar-timeline"></span></div><div class="project-preview-inner"><div class="project-preview-kicker">Live radar</div></div></div>';
+      return '<div class="project-preview preview-radar"><img class="preview-image" src="/images/radar-preview.png" alt="" loading="lazy" decoding="async"><div class="project-preview-inner"></div></div>';
     }
     if (name.includes('globe')) {
-      return '<div class="project-preview preview-globe"><div class="mini-globe" aria-hidden="true"><span class="globe-scene-line"></span><span class="globe-orbit-ring"></span><span class="globe-atmosphere"></span><span class="globe-body"></span><span class="globe-event e1"></span><span class="globe-event e2"></span><span class="globe-event e3"></span></div><div class="project-preview-inner"><div class="project-preview-kicker">Earth feed</div></div></div>';
+      return '<div class="project-preview preview-globe"><img class="preview-image" src="/images/globe-preview.png" alt="" loading="lazy" decoding="async"><div class="project-preview-inner"></div></div>';
     }
     if (name.includes('calculator')) {
       return '<div class="project-preview preview-calc"><div class="project-preview-inner"><div class="project-preview-kicker">Premium math</div><div class="calc-display">128 / 4 = ?</div><div class="calc-grid"><span class="calc-key">7</span><span class="calc-key">8</span><span class="calc-key">9</span><span class="calc-key hot">÷</span><span class="calc-key">4</span><span class="calc-key">5</span><span class="calc-key">6</span><span class="calc-key hot">×</span><span class="calc-key">1</span><span class="calc-key">2</span><span class="calc-key">3</span><span class="calc-key hot">=</span></div></div></div>';
