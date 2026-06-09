@@ -160,6 +160,69 @@ html.koels-route-leaving body {
   display: block;
 }
 
+.radar-real-sweep {
+  transform-origin: 156px 62px;
+  animation: koels-radar-real-sweep 4.2s linear infinite;
+}
+
+.radar-real-weather {
+  transform-origin: center;
+  animation: koels-radar-real-weather 5.6s ease-in-out infinite;
+}
+
+.radar-real-ping,
+.globe-real-ping {
+  transform-origin: center;
+  animation: koels-preview-ping 2.4s ease-in-out infinite;
+}
+
+.radar-real-ping.two,
+.globe-real-ping.two {
+  animation-delay: -0.9s;
+}
+
+.radar-real-timeline {
+  animation: koels-real-timeline 3.8s ease-in-out infinite;
+}
+
+.globe-real-earth {
+  transform-origin: 156px 60px;
+  animation: koels-globe-real-float 4.2s ease-in-out infinite;
+}
+
+.globe-real-orbit {
+  transform-origin: 156px 61px;
+  animation: koels-globe-real-orbit 6.8s linear infinite;
+}
+
+@keyframes koels-radar-real-sweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes koels-radar-real-weather {
+  0%, 100% { transform: translateX(-3px) translateY(0); opacity: 0.88; }
+  50% { transform: translateX(5px) translateY(-2px); opacity: 1; }
+}
+
+@keyframes koels-preview-ping {
+  0%, 100% { opacity: 0.46; transform: scale(0.82); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes koels-real-timeline {
+  0%, 100% { transform: translateX(-18px); }
+  50% { transform: translateX(96px); }
+}
+
+@keyframes koels-globe-real-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes koels-globe-real-orbit {
+  to { transform: rotate(360deg); }
+}
+
 .preview-image {
   position: absolute;
   inset: 0;
@@ -672,6 +735,13 @@ html.koels-route-leaving body {
   .globe-atmosphere,
   .globe-orbit-ring,
   .globe-event,
+  .radar-real-sweep,
+  .radar-real-weather,
+  .radar-real-ping,
+  .radar-real-timeline,
+  .globe-real-earth,
+  .globe-real-orbit,
+  .globe-real-ping,
   .preview-radar::after,
   .preview-globe::after {
     animation: none !important;
@@ -815,10 +885,10 @@ export const pageEnhancementScript = `
   function previewMarkup(projectName) {
     const name = projectName.toLowerCase();
     if (name.includes('radar')) {
-      return '<div class="project-preview preview-radar"><img class="preview-image" src="/images/radar-preview.png" alt="" loading="lazy" decoding="async"><div class="project-preview-inner"></div></div>';
+      return '<div class="project-preview preview-radar"><svg class="preview-svg" viewBox="0 0 312 112" aria-hidden="true"><defs><linearGradient id="radarSweepReal" x1="0" x2="1"><stop stop-color="#00ffcc" stop-opacity=".34"/><stop offset=".62" stop-color="#40c8ff" stop-opacity=".13"/><stop offset="1" stop-color="#40c8ff" stop-opacity="0"/></linearGradient><filter id="radarSoftGlow"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M-12 79 C32 62 70 70 112 51 C154 32 186 43 226 34 C263 26 288 37 324 27" fill="none" stroke="#40c8ff" stroke-opacity=".14" stroke-width="1.4"/><path d="M-12 94 C42 78 78 83 128 66 C170 51 210 61 254 48 C282 40 300 42 324 35" fill="none" stroke="#00ffcc" stroke-opacity=".12" stroke-width="1.2"/><g fill="none" stroke="#40c8ff" stroke-opacity=".2"><circle cx="156" cy="62" r="18"/><circle cx="156" cy="62" r="42"/><circle cx="156" cy="62" r="66"/><circle cx="156" cy="62" r="90"/><path d="M72 62 H240 M156 2 V112"/></g><path class="radar-real-sweep" d="M156 62 L252 31 A101 101 0 0 1 244 93 Z" fill="url(#radarSweepReal)"/><g class="radar-real-weather" filter="url(#radarSoftGlow)"><path d="M42 74 C62 62 82 58 102 62 C118 65 130 75 146 78 C126 88 95 92 69 86 C56 83 48 80 42 74Z" fill="#1dbb7f" opacity=".72"/><path d="M58 70 C78 58 101 58 119 68 C107 75 84 78 58 70Z" fill="#35df7d" opacity=".88"/><path d="M78 67 C91 62 105 64 113 70 C102 75 89 75 78 67Z" fill="#ffd75e" opacity=".9"/><path d="M208 44 C230 35 262 37 286 48 C270 58 239 62 214 54 C203 51 199 48 208 44Z" fill="#29c979" opacity=".72"/><path d="M226 42 C249 36 272 42 286 52 C268 60 244 57 226 42Z" fill="#5be982" opacity=".9"/><path d="M252 44 C268 43 281 50 288 58 C274 62 260 57 252 44Z" fill="#ffd75e" opacity=".95"/><path d="M265 49 C277 49 286 55 291 62 C280 66 270 61 265 49Z" fill="#ff8f4d" opacity=".78"/></g><g filter="url(#radarSoftGlow)"><circle cx="156" cy="62" r="5" fill="#00ffcc"/><circle cx="156" cy="62" r="10" fill="none" stroke="#e8f8ff" stroke-opacity=".78" stroke-width="2"/><circle class="radar-real-ping" cx="112" cy="68" r="4" fill="#40c8ff"/><circle class="radar-real-ping two" cx="264" cy="52" r="4" fill="#ffd75e"/></g><rect x="18" y="97" width="214" height="3" rx="2" fill="rgba(200,240,255,.12)"/><rect class="radar-real-timeline" x="18" y="97" width="96" height="3" rx="2" fill="#00ffcc"/></svg><div class="project-preview-inner"><div class="project-preview-kicker">Live radar</div></div></div>';
     }
     if (name.includes('globe')) {
-      return '<div class="project-preview preview-globe"><img class="preview-image" src="/images/globe-preview.png" alt="" loading="lazy" decoding="async"><div class="project-preview-inner"></div></div>';
+      return '<div class="project-preview preview-globe"><svg class="preview-svg" viewBox="0 0 312 112" aria-hidden="true"><defs><radialGradient id="globeOceanReal" cx="35%" cy="28%" r="74%"><stop stop-color="#7deeff"/><stop offset=".35" stop-color="#218fc9"/><stop offset=".78" stop-color="#06406e"/><stop offset="1" stop-color="#021225"/></radialGradient><clipPath id="globeClipReal"><circle cx="156" cy="60" r="42"/></clipPath><filter id="globeSoftGlow"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M22 84 C70 48 132 48 180 62 C230 77 270 63 292 44" fill="none" stroke="#40c8ff" stroke-opacity=".14" stroke-width="1.4"/><g class="globe-real-orbit" fill="none" stroke-linecap="round"><ellipse cx="156" cy="64" rx="105" ry="29" stroke="#40c8ff" stroke-opacity=".24" stroke-width="2"/><ellipse cx="156" cy="64" rx="72" ry="19" stroke="#00ffcc" stroke-opacity=".1"/></g><g class="globe-real-earth" filter="url(#globeSoftGlow)"><circle cx="156" cy="60" r="43" fill="url(#globeOceanReal)"/><g clip-path="url(#globeClipReal)"><path d="M112 45 C120 35 134 31 147 35 C142 44 130 45 127 56 C120 57 114 53 112 45Z" fill="#58dd91" opacity=".9"/><path d="M128 59 C137 58 146 65 150 78 C143 85 133 80 130 70 C128 66 126 63 128 59Z" fill="#35c87d" opacity=".88"/><path d="M150 32 C169 27 190 34 199 48 C185 49 176 43 164 49 C156 45 153 39 150 32Z" fill="#74e69f" opacity=".88"/><path d="M180 52 C194 52 204 63 201 76 C189 80 180 70 180 52Z" fill="#61d88c" opacity=".82"/><path d="M152 78 C166 72 182 76 189 88 C175 96 158 91 152 78Z" fill="#2ebe72" opacity=".82"/><path d="M113 62 C122 59 129 63 130 72 C120 75 113 70 113 62Z" fill="#8cf0b2" opacity=".82"/><path d="M156 18 C144 34 144 78 156 102 M156 18 C171 34 171 78 156 102 M114 60 H198 M123 39 C143 46 173 46 190 39 M123 80 C144 72 174 72 190 80" fill="none" stroke="#e8f8ff" stroke-opacity=".15" stroke-width="1.1"/></g><circle cx="156" cy="60" r="43" fill="none" stroke="#91f3ff" stroke-opacity=".34" stroke-width="1.5"/><path d="M183 23 C198 36 205 60 197 80" fill="none" stroke="#020810" stroke-opacity=".42" stroke-width="18" stroke-linecap="round"/></g><g filter="url(#globeSoftGlow)"><circle class="globe-real-ping" cx="102" cy="74" r="4" fill="#00ffcc"/><circle class="globe-real-ping two" cx="223" cy="73" r="4" fill="#40c8ff"/><circle class="globe-real-ping" cx="200" cy="41" r="3.5" fill="#ffd75e"/></g></svg><div class="project-preview-inner"><div class="project-preview-kicker">Earth feed</div></div></div>';
     }
     if (name.includes('calculator')) {
       return '<div class="project-preview preview-calc"><div class="project-preview-inner"><div class="project-preview-kicker">Premium math</div><div class="calc-display">128 / 4 = ?</div><div class="calc-grid"><span class="calc-key">7</span><span class="calc-key">8</span><span class="calc-key">9</span><span class="calc-key hot">÷</span><span class="calc-key">4</span><span class="calc-key">5</span><span class="calc-key">6</span><span class="calc-key hot">×</span><span class="calc-key">1</span><span class="calc-key">2</span><span class="calc-key">3</span><span class="calc-key hot">=</span></div></div></div>';
