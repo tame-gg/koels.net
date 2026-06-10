@@ -321,8 +321,7 @@ html.koels-route-leaving body {
   background-image:url('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
   background-size:200% 100%; background-repeat:repeat-x;
   box-shadow:inset -14px -9px 26px rgba(2,8,16,0.85),inset 12px 8px 22px rgba(145,243,255,0.18),0 0 26px rgba(64,200,255,0.32);
-  animation:kp-rotate 24s linear infinite; }
-@keyframes kp-rotate { to{background-position:-200% 0} }
+  background-position:-50% 0; }
 .kp-earth::after { content:""; position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 34% 30%,rgba(120,200,255,0.22),transparent 38%),radial-gradient(circle at 72% 74%,rgba(2,6,13,0.55),transparent 60%); }
 .kp-atmo { position:absolute; left:50%; top:50%; height:94%; aspect-ratio:1; border-radius:50%; border:1px solid rgba(145,243,255,0.3); box-shadow:0 0 24px rgba(64,200,255,0.4),0 0 54px rgba(64,200,255,0.12); transform:translate(-50%,-50%); pointer-events:none; }
 .kp-gmark { position:absolute; width:7px; height:7px; border-radius:50%; z-index:4; transform:translate(-50%,-50%); }
