@@ -454,62 +454,114 @@ export const pageEnhancementScript = `
       }
     }
 
-    async function updatePresence() {
+    function renderPresence(data) {
       const STATUS_META = {
         online: { label: 'Online', icon: '🟢' },
         idle: { label: 'Idle', icon: '🌙' },
         dnd: { label: 'Do Not Disturb', icon: '⛔' },
         offline: { label: 'Offline', icon: '⚫' }
       };
+      if (!data) {
+        setLiveCard('now', 'Offline', 'presence unavailable');
+        return;
+      }
+      const status = STATUS_META[data.discord_status] || STATUS_META.offline;
+      const activities = Array.isArray(data.activities) ? data.activities : [];
+      const byType = function (type) { return activities.find(function (a) { return a && a.type === type && a.name; }); };
+
+      if (data.listening_to_spotify && data.spotify) {
+        setLiveCard('now', '🎧 ' + (data.spotify.song || 'Spotify'), data.spotify.artist ? 'by ' + data.spotify.artist : 'on Spotify');
+        return;
+      }
+      const game = byType(0);
+      if (game) {
+        setLiveCard('now', '🎮 ' + game.name, game.details || game.state || ('Playing · ' + status.label));
+        return;
+      }
+      const streaming = byType(1);
+      if (streaming) {
+        setLiveCard('now', '🔴 ' + streaming.name, streaming.details || streaming.state || 'Streaming');
+        return;
+      }
+      const watching = byType(3);
+      if (watching) {
+        setLiveCard('now', '📺 ' + watching.name, watching.details || watching.state || 'Watching');
+        return;
+      }
+      const custom = activities.find(function (a) { return a && a.type === 4 && a.state; });
+      if (custom) {
+        const emoji = custom.emoji && custom.emoji.name && !custom.emoji.id ? custom.emoji.name + ' ' : '';
+        setLiveCard('now', emoji + custom.state, status.label);
+        return;
+      }
+      setLiveCard('now', status.icon + ' ' + status.label, 'Discord presence');
+    }
+
+    async function updatePresence() {
       try {
         const response = await fetch('https://api.lanyard.rest/v1/users/' + LANYARD_USER_ID, { cache: 'no-store' });
         const payload = await response.json();
-        const data = payload && payload.data;
-        if (!data) {
-          setLiveCard('now', 'Offline', 'presence unavailable');
-          return;
-        }
-        const status = STATUS_META[data.discord_status] || STATUS_META.offline;
-        const activities = Array.isArray(data.activities) ? data.activities : [];
-        const byType = function (type) { return activities.find(function (a) { return a && a.type === type && a.name; }); };
-
-        if (data.listening_to_spotify && data.spotify) {
-          setLiveCard('now', '🎧 ' + (data.spotify.song || 'Spotify'), data.spotify.artist ? 'by ' + data.spotify.artist : 'on Spotify');
-          return;
-        }
-        const game = byType(0);
-        if (game) {
-          setLiveCard('now', '🎮 ' + game.name, game.details || game.state || ('Playing · ' + status.label));
-          return;
-        }
-        const streaming = byType(1);
-        if (streaming) {
-          setLiveCard('now', '🔴 ' + streaming.name, streaming.details || streaming.state || 'Streaming');
-          return;
-        }
-        const watching = byType(3);
-        if (watching) {
-          setLiveCard('now', '📺 ' + watching.name, watching.details || watching.state || 'Watching');
-          return;
-        }
-        const custom = activities.find(function (a) { return a && a.type === 4 && a.state; });
-        if (custom) {
-          const emoji = custom.emoji && custom.emoji.name && !custom.emoji.id ? custom.emoji.name + ' ' : '';
-          setLiveCard('now', emoji + custom.state, status.label);
-          return;
-        }
-        setLiveCard('now', status.icon + ' ' + status.label, 'Discord presence');
+        renderPresence(payload && payload.data);
       } catch (error) {
         setLiveCard('now', 'Unavailable', 'presence check failed');
       }
     }
 
+    // Live presence via Lanyard's WebSocket (pushes updates instantly),
+    // with REST polling as an automatic fallback if the socket is unavailable.
+    function connectPresence() {
+      let socket, heartbeat, pollTimer, reconnectTimer;
+
+      function startPolling() {
+        if (pollTimer) return;
+        updatePresence();
+        pollTimer = window.setInterval(updatePresence, 15000);
+      }
+      function stopPolling() {
+        if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+      }
+
+      function open() {
+        try {
+          socket = new WebSocket('wss://api.lanyard.rest/socket');
+        } catch (error) {
+          startPolling();
+          return;
+        }
+        socket.addEventListener('message', function (event) {
+          let msg;
+          try { msg = JSON.parse(event.data); } catch (error) { return; }
+          if (msg.op === 1) {
+            const interval = msg.d && msg.d.heartbeat_interval ? msg.d.heartbeat_interval : 30000;
+            heartbeat = window.setInterval(function () {
+              if (socket && socket.readyState === 1) socket.send(JSON.stringify({ op: 3 }));
+            }, interval);
+            socket.send(JSON.stringify({ op: 2, d: { subscribe_to_id: LANYARD_USER_ID } }));
+            return;
+          }
+          if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) {
+            stopPolling();
+            renderPresence(msg.d);
+          }
+        });
+        socket.addEventListener('error', function () { startPolling(); });
+        socket.addEventListener('close', function () {
+          if (heartbeat) { window.clearInterval(heartbeat); heartbeat = null; }
+          startPolling();
+          window.clearTimeout(reconnectTimer);
+          reconnectTimer = window.setTimeout(open, 8000);
+        });
+      }
+
+      if ('WebSocket' in window) open();
+      else startPolling();
+    }
+
     updateTime();
     updateWeather();
-    updatePresence();
+    connectPresence();
     window.setInterval(updateTime, 30000);
     window.setInterval(updateWeather, 600000);
-    window.setInterval(updatePresence, 15000);
   }
 
   function previewMarkup(projectName) {
