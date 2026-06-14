@@ -7,12 +7,12 @@ export const silkmcDocument: StaticHtmlDocument = {
   <meta name="description" content="SilkMC is an early Folia-derived Minecraft server platform focused on regional multithreading and practical Paper, Bukkit, and Spigot plugin compatibility." />
 
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://koels.site/silkmc" />
+  <meta property="og:url" content="https://koels.net/silkmc" />
   <meta property="og:title" content="SilkMC - Region-Threaded Minecraft Server Software" />
   <meta property="og:description" content="A Folia fork focused on preserving regional multithreading while improving Paper, Bukkit, and Spigot plugin compatibility." />
   <meta property="og:site_name" content="SilkMC" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="canonical" href="https://koels.site/silkmc" />
+  <link rel="canonical" href="https://koels.net/silkmc" />
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23020810'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%230060b0' stroke-width='1' opacity='0.5'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2340c8ff' stroke-width='1.2' opacity='0.75'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%2340c8ff'/%3E%3Cpath d='M16 5 L16 11 M16 21 L16 27 M5 16 L11 16 M21 16 L27 16' stroke='%2340c8ff' stroke-width='1.2' stroke-linecap='round' opacity='0.6'/%3E%3C/svg%3E">
 
@@ -730,7 +730,7 @@ export const silkmcDocument: StaticHtmlDocument = {
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0">
       <path d="M8 2L4 6L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    koels.site
+    koels.net
   </a>
   <div class="nav-right">
     <ul class="nav-links">
