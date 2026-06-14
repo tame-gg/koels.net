@@ -960,7 +960,7 @@ cd SilkMC
 <footer>
   <a href="/" class="footer-logo">
     <span class="logo-dot"></span>
-    Koels.site
+    Koels.net
   </a>
   <div class="footer-links">
     <a href="/">Home</a>
