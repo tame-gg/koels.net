@@ -339,7 +339,7 @@ html.koels-route-leaving body {
 .koels-domain-notice {
   position: fixed;
   left: 50%;
-  bottom: 18px;
+  top: 18px;
   transform: translateX(-50%);
   z-index: 1000;
   width: min(560px, calc(100vw - 28px));
@@ -359,12 +359,12 @@ html.koels-route-leaving body {
 }
 .koels-domain-notice.is-leaving {
   opacity: 0;
-  transform: translateX(-50%) translateY(12px);
+  transform: translateX(-50%) translateY(-12px);
   transition: opacity 0.3s ease, transform 0.3s ease;
   animation: none;
 }
 @keyframes koels-notice-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 .koels-domain-notice__text {
