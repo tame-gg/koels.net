@@ -334,6 +334,102 @@ html.koels-route-leaving body {
 .kp-stat { position:absolute; left:9px; bottom:9px; z-index:6; display:flex; align-items:baseline; gap:6px; padding:5px 10px; border-radius:9px; background:rgba(3,8,18,0.72); border:1px solid rgba(64,200,255,0.18); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
 .kp-stat b { font-size:0.95rem; font-weight:800; color:#e8f8ff; letter-spacing:-0.02em; }
 .kp-stat span { font-family:var(--mono,monospace); font-size:0.46rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(200,240,255,0.5); }
+
+/* ===== Domain migration notice (only shown on koels.site) ===== */
+.koels-domain-notice {
+  position: fixed;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: min(560px, calc(100vw - 28px));
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px 13px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(64, 200, 255, 0.22);
+  background: linear-gradient(135deg, rgba(6, 22, 46, 0.94), rgba(2, 10, 24, 0.94));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  color: #e8f8ff;
+  opacity: 1;
+  animation: koels-notice-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+.koels-domain-notice.is-leaving {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  animation: none;
+}
+@keyframes koels-notice-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.koels-domain-notice__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(232, 248, 255, 0.85);
+}
+.koels-domain-notice__text strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+.koels-domain-notice__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.koels-domain-notice__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 15px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #02101f;
+  background: linear-gradient(135deg, #40c8ff, #00ffcc);
+  box-shadow: 0 6px 18px rgba(64, 200, 255, 0.28);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.koels-domain-notice__btn:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(64, 200, 255, 0.38); }
+.koels-domain-notice__btn:focus-visible { outline: 2px solid #9bf3ff; outline-offset: 2px; }
+.koels-domain-notice__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(64, 200, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(200, 240, 255, 0.7);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.koels-domain-notice__close:hover { background: rgba(64, 200, 255, 0.12); color: #ffffff; border-color: rgba(64, 200, 255, 0.4); }
+.koels-domain-notice__close:focus-visible { outline: 2px solid #9bf3ff; outline-offset: 2px; }
+@media (max-width: 520px) {
+  .koels-domain-notice { flex-wrap: wrap; gap: 11px; padding: 13px; }
+  .koels-domain-notice__text { flex-basis: 100%; font-size: 0.78rem; }
+  .koels-domain-notice__actions { width: 100%; justify-content: space-between; }
+  .koels-domain-notice__btn { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .koels-domain-notice { animation: none !important; }
+  .koels-domain-notice.is-leaving { transition: none !important; }
+}
 `;
 
 export const pageEnhancementScript = `
@@ -598,10 +694,70 @@ export const pageEnhancementScript = `
     });
   }
 
+  // Soft domain migration notice. Rendered only when the page is served from
+  // the legacy koels.site domain; koels.net visitors never see it. Uses fixed
+  // positioning so showing/dismissing it never reflows page content, and
+  // remembers dismissal in localStorage for 30 days.
+  function domainNotice() {
+    var host = window.location.hostname;
+    if (host !== 'koels.site' && host !== 'www.koels.site') return;
+    if (document.querySelector('.koels-domain-notice')) return;
+
+    var STORAGE_KEY = 'koels-site-notice-dismissed';
+    try {
+      var until = parseInt(window.localStorage.getItem(STORAGE_KEY) || '', 10);
+      if (until && Date.now() < until) return;
+    } catch (error) {}
+
+    var target = 'https://koels.net' + window.location.pathname + window.location.search;
+
+    var notice = document.createElement('div');
+    notice.className = 'koels-domain-notice';
+    notice.setAttribute('role', 'region');
+    notice.setAttribute('aria-label', 'Domain migration notice');
+
+    var text = document.createElement('div');
+    text.className = 'koels-domain-notice__text';
+    text.innerHTML = 'This website has moved to <strong>koels.net</strong>. The koels.site domain will be retired in the future. Please update your bookmarks and use koels.net going forward.';
+
+    var actions = document.createElement('div');
+    actions.className = 'koels-domain-notice__actions';
+
+    var link = document.createElement('a');
+    link.className = 'koels-domain-notice__btn';
+    link.href = target;
+    link.textContent = 'Go to koels.net';
+
+    var close = document.createElement('button');
+    close.className = 'koels-domain-notice__close';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Dismiss notice');
+    close.innerHTML = '&times;';
+
+    function dismiss() {
+      notice.classList.add('is-leaving');
+      try {
+        window.localStorage.setItem(STORAGE_KEY, String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      } catch (error) {}
+      window.setTimeout(function () {
+        if (notice.parentNode) notice.parentNode.removeChild(notice);
+      }, 320);
+    }
+
+    close.addEventListener('click', dismiss);
+
+    actions.appendChild(link);
+    actions.appendChild(close);
+    notice.appendChild(text);
+    notice.appendChild(actions);
+    document.body.appendChild(notice);
+  }
+
   onReady(function () {
     enhanceTransitions();
     enhanceHome();
     enhanceProjectCards();
+    domainNotice();
   });
 })();
 `;
