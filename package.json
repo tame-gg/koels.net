@@ -8,6 +8,7 @@
     "preview": "serve out"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "html-react-parser": "^6.1.3",
     "next": "^16.2.7",
     "react": "^19.2.7",
