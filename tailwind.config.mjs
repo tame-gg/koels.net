@@ -3,12 +3,6 @@ export default {
   content: ['./src/**/*.{html,js,jsx,md,mdx,ts,tsx}'],
   theme: {
     extend: {
-      colors: {
-        'vanta-red':     '#ff4655',
-        'vanta-red-dim': '#cc3544',
-        'vanta-bg':      '#08080e',
-        'vanta-bg2':     '#0d0d16',
-      },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
