@@ -3,22 +3,12 @@
 The canonical domain is **koels.net**. **koels.site** is the legacy domain and
 will be retired.
 
-## Current state (soft migration — banner only)
+## Current state
 
-A non-intrusive notice is shown **only** when the site is loaded from
-`koels.site` (or `www.koels.site`). It tells visitors the site has moved,
-provides a button to `https://koels.net` (preserving the current path), and can
-be dismissed (remembered for 30 days via `localStorage`).
-
-- Implementation: `src/components/page-enhancements.ts`
-  (`domainNotice()` + `.koels-domain-notice` styles). This runs on every page
-  because the enhancement script/styles are injected by
-  `src/components/StaticHtmlPage.tsx`.
-- The banner uses `position: fixed`, so appearing/dismissing it causes no layout
-  shift. On `koels.net` it is never rendered.
-
-There is currently **no server-side redirect** — this is intentional so the
-legacy domain keeps working while visitors are nudged to update bookmarks.
+There is currently **no migration banner and no server-side redirect**. The
+soft-migration notice that previously appeared on `koels.site` has been removed.
+The legacy domain keeps working and serves the same deployment; enable a
+permanent redirect (below) when you're ready to fully retire it.
 
 ## Is Vercel already configured to redirect?
 
@@ -65,6 +55,5 @@ Add a host-conditioned redirect so only `koels.site` traffic is redirected
 
 ## Once a redirect is enabled
 
-The banner becomes effectively dead code — after the redirect, visitors never
-land on `koels.site` long enough to see it. It is safe to leave (harmless) or to
-remove `domainNotice()` and the `.koels-domain-notice` styles in a follow-up.
+After the redirect, `koels.site` traffic is sent straight to `koels.net`,
+completing the migration.
