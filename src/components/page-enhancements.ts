@@ -182,31 +182,6 @@ html.koels-route-leaving body {
   color: #020810;
 }
 
-.preview-vanta .stat-row {
-  display: grid;
-  grid-template-columns: 40px 1fr 34px;
-  gap: 8px;
-  align-items: center;
-  margin-top: 10px;
-  font-family: var(--mono, monospace);
-  font-size: 0.58rem;
-  color: rgba(200, 240, 255, 0.55);
-}
-
-.preview-vanta .bar {
-  height: 5px;
-  border-radius: 99px;
-  background: rgba(200, 240, 255, 0.1);
-  overflow: hidden;
-}
-
-.preview-vanta .bar i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #ff4655, #40c8ff);
-}
-
 .preview-conduit .flow {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -670,9 +645,6 @@ export const pageEnhancementScript = `
     }
     if (name.includes('calculator')) {
       return '<div class="project-preview preview-calc"><div class="project-preview-inner"><div class="project-preview-kicker">Premium math</div><div class="calc-display">128 / 4 = ?</div><div class="calc-grid"><span class="calc-key">7</span><span class="calc-key">8</span><span class="calc-key">9</span><span class="calc-key hot">÷</span><span class="calc-key">4</span><span class="calc-key">5</span><span class="calc-key">6</span><span class="calc-key hot">×</span><span class="calc-key">1</span><span class="calc-key">2</span><span class="calc-key">3</span><span class="calc-key hot">=</span></div></div></div>';
-    }
-    if (name.includes('vanta')) {
-      return '<div class="project-preview preview-vanta"><div class="project-preview-inner"><div class="project-preview-kicker">Tracker concept</div><div class="stat-row"><span>ACS</span><span class="bar"><i style="width:72%"></i></span><span>248</span></div><div class="stat-row"><span>HS%</span><span class="bar"><i style="width:48%"></i></span><span>28%</span></div><div class="stat-row"><span>RR</span><span class="bar"><i style="width:84%"></i></span><span>+18</span></div></div></div>';
     }
     if (name.includes('conduit')) {
       return '<div class="project-preview preview-conduit"><div class="project-preview-inner"><div class="project-preview-kicker">Network path</div><div class="flow"><div class="node">Client</div><div class="node">Proxy</div><div class="node">Server</div></div></div></div>';
