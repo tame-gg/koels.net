@@ -1002,7 +1002,7 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     const btn = document.getElementById('download-btn');
     const channel = document.getElementById('release-channel');
     if (btn && jar) {
-      btn.href = jar.browser_download_url;
+      btn.href = /^https:\/\//i.test(jar.browser_download_url || '') ? jar.browser_download_url : '#';
       btn.removeAttribute('target');
       btn.removeAttribute('rel');
       btn.setAttribute('download', jar.name);
